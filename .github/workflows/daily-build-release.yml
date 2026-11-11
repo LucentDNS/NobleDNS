@@ -1,0 +1,469 @@
+name: NobleDNS daily build and release
+
+on:
+  schedule:
+    # 02:23 China Standard Time (UTC+8); GitHub Actions cron uses UTC.
+    - cron: '23 18 * * *'
+
+  workflow_dispatch:
+    inputs:
+      allow_large_change:
+        description: "Allow a large upstream/rule change after manual review"
+        required: false
+        type: boolean
+        default: false
+
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'config/**'
+      - 'tests/**'
+      - 'docs/**'
+      - 'update.py'
+      - 'README.md'
+      - 'LICENSE'
+      - 'THIRD-PARTY-NOTICES.md'
+      - 'licenses/**'
+      - 'dist/**'
+      - '.gitattributes'
+      - '.gitignore'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nobledns-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-test:
+    name: Build and validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    outputs:
+      publish_update: ${{ steps.compare.outputs.publish_update }}
+      new_hash: ${{ steps.compare.outputs.new_hash }}
+      release_hash: ${{ steps.compare.outputs.release_hash }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check project license files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s LICENSE
+          test -s THIRD-PARTY-NOTICES.md
+          test -s licenses/GPL-3.0.txt
+
+          cmp -s LICENSE licenses/GPL-3.0.txt
+
+          echo "Project license files exist and the GPL-3.0 copies match."
+
+      - name: Run regression tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build from upstream sources with drift protection
+        shell: bash
+        env:
+          ALLOW_LARGE_CHANGE: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_large_change || false }}
+        run: |
+          set -euo pipefail
+
+          EXTRA_ARGS=()
+
+          if [ "$ALLOW_LARGE_CHANGE" = "true" ]; then
+            EXTRA_ARGS+=(--allow-large-change)
+          fi
+
+          if [ -f dist/manifest.json ]; then
+            python update.py \
+              --out build-output \
+              --previous-manifest dist/manifest.json \
+              "${EXTRA_ARGS[@]}"
+          else
+            python update.py \
+              --out build-output \
+              "${EXTRA_ARGS[@]}"
+          fi
+
+      - name: Verify generated artifacts and manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          OUT="build-output/latest"
+
+          test -s "$OUT/dns-filter.txt"
+          test -s "$OUT/manifest.json"
+          test -s "$OUT/validation-report.txt"
+          test -s "$OUT/whitelist-review.txt"
+          test -s "$OUT/parser-exclusions.csv"
+          test -s "$OUT/LICENSE"
+          test -s "$OUT/THIRD-PARTY-NOTICES.md"
+          test -s "$OUT/licenses/GPL-3.0.txt"
+          test -s "$OUT/sources/sources-manifest.json"
+
+          cmp -s LICENSE "$OUT/LICENSE"
+          cmp -s THIRD-PARTY-NOTICES.md "$OUT/THIRD-PARTY-NOTICES.md"
+          cmp -s licenses/GPL-3.0.txt "$OUT/licenses/GPL-3.0.txt"
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest_path = Path("build-output/latest/manifest.json")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+          assert manifest.get("blocking_rules", 0) <= 500_000, \
+              "Blocking rule count exceeds the project ceiling"
+
+          assert len(manifest.get("sources", {})) == 2, \
+              "Expected exactly two upstream sources"
+
+          licensing = manifest.get("licensing", {})
+          original_code = licensing.get("original_project_code", {})
+          upstream_data = licensing.get("upstream_rule_data", [])
+
+          assert original_code.get("spdx") == "GPL-3.0-only", \
+              "Unexpected original project code license metadata"
+
+          assert isinstance(upstream_data, list) and len(upstream_data) == 2, \
+              "Expected licensing metadata for exactly two upstream sources"
+
+          print("Manifest source count, rule ceiling, and licensing metadata verified.")
+          PY
+
+      - name: Compare rules and source fingerprints
+        id: compare
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          new = json.loads(
+              Path("build-output/latest/manifest.json").read_text(encoding="utf-8")
+          )
+
+          old_path = Path("dist/manifest.json")
+          old = (
+              json.loads(old_path.read_text(encoding="utf-8"))
+              if old_path.exists()
+              else {}
+          )
+
+          new_hash = new["main_subscription_sha256"]
+
+          new_sources = {
+              key: value["sha256"]
+              for key, value in new["sources"].items()
+          }
+
+          expected_source_keys = {"adguard_dns", "hagezi_normal"}
+          if set(new_sources) != expected_source_keys:
+              raise ValueError("Release identity requires exactly the two approved source hashes")
+
+          if len(new_hash) != 64 or any(len(value) != 64 for value in new_sources.values()):
+              raise ValueError("Invalid SHA256 length in build manifest")
+
+          release_identity = {
+              "main_subscription_sha256": new_hash,
+              "sources": new_sources,
+          }
+          release_payload = json.dumps(
+              release_identity,
+              sort_keys=True,
+              separators=(",", ":"),
+          ).encode("utf-8")
+          release_hash = hashlib.sha256(release_payload).hexdigest()
+          old_sources = {
+              key: value["sha256"]
+              for key, value in old.get("sources", {}).items()
+          }
+
+          rules_changed = new_hash != old.get("main_subscription_sha256", "")
+          sources_changed = new_sources != old_sources
+          publish_update = rules_changed or sources_changed
+
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as f:
+              f.write(f"rules_changed={str(rules_changed).lower()}\n")
+              f.write(f"sources_changed={str(sources_changed).lower()}\n")
+              f.write(f"publish_update={str(publish_update).lower()}\n")
+              f.write(f"new_hash={new_hash}\n")
+              f.write(f"release_hash={release_hash}\n")
+
+          print(f"Rules changed: {rules_changed}")
+          print(f"Sources changed: {sources_changed}")
+          print(f"Publish update required: {publish_update}")
+          print(f"New rule SHA256: {new_hash}")
+          print(f"Release identity SHA256: {release_hash}")
+          PY
+
+      - name: Archive build and source audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: nobledns-build-audit-${{ github.run_number }}
+          path: build-output/latest/
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish candidate release
+    needs: build-test
+
+    # Pull requests and non-default branches must never publish.
+    if: >-
+      ${{
+        github.event_name != 'pull_request' &&
+        github.ref == format(
+          'refs/heads/{0}',
+          github.event.repository.default_branch
+        )
+      }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout exact build commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download validated build
+        uses: actions/download-artifact@v4
+        with:
+          name: nobledns-build-audit-${{ github.run_number }}
+          path: build-output/latest
+
+      - name: Verify candidate release channel
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CHANNEL=$(python -c "import json; print(json.load(open('config/sources.json', encoding='utf-8'))['release_channel'])")
+
+          if [ "$CHANNEL" != "candidate" ]; then
+            echo "::error::Only the candidate release channel is permitted by this workflow."
+            echo "Stable publishing requires a separate qualification and workflow review."
+            exit 1
+          fi
+
+          echo "Release channel: $CHANNEL"
+
+      - name: Verify branch has not advanced since build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin "refs/heads/${GITHUB_REF_NAME}"
+          REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
+
+          if [ "$REMOTE_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Default branch advanced after this build started."
+            echo "Expected: $GITHUB_SHA"
+            echo "Remote:   $REMOTE_SHA"
+            echo "Aborting publication; the next run must rebuild from the new commit."
+            exit 1
+          fi
+
+          echo "Build commit still matches the default branch."
+
+      - name: Prepare public artifacts
+        if: needs.build-test.outputs.publish_update == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist
+
+          cp build-output/latest/dns-filter.txt dist/dns-filter.txt
+          cp build-output/latest/manifest.json dist/manifest.json
+          cp build-output/latest/validation-report.txt dist/validation-report.txt
+          cp build-output/latest/whitelist-review.txt dist/whitelist-review.txt
+          cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
+
+      - name: Commit updated public artifacts
+        if: needs.build-test.outputs.publish_update == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add dist/
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(data): refresh NobleDNS artifacts $(date -u +%Y-%m-%d)"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo "No file-level changes to commit."
+          fi
+
+      - name: Verify branch still points to published commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin "refs/heads/${GITHUB_REF_NAME}"
+          REMOTE_SHA="$(git rev-parse FETCH_HEAD)"
+          LOCAL_SHA="$(git rev-parse HEAD)"
+
+          if [ "$REMOTE_SHA" != "$LOCAL_SHA" ]; then
+            echo "::error::Remote branch no longer points to the validated publication commit."
+            echo "Local:  $LOCAL_SHA"
+            echo "Remote: $REMOTE_SHA"
+            exit 1
+          fi
+
+          echo "Remote branch and publication commit match."
+
+      - name: Verify all release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s dist/dns-filter.txt
+          test -s dist/manifest.json
+          test -s dist/validation-report.txt
+          test -s dist/whitelist-review.txt
+          test -s dist/parser-exclusions.csv
+          test -s LICENSE
+          test -s THIRD-PARTY-NOTICES.md
+          test -s licenses/GPL-3.0.txt
+
+      - name: Create or synchronize content-addressed Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_HASH: ${{ needs.build-test.outputs.release_hash }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CHANNEL=$(python -c "import json; print(json.load(open('config/sources.json', encoding='utf-8'))['release_channel'])")
+
+          TAG="nobledns-${RELEASE_HASH}"
+          TITLE="NobleDNS ${CHANNEL} ${RELEASE_HASH:0:12}"
+
+          echo "Release tag: $TAG"
+          echo "Release channel: $CHANNEL"
+
+          ASSETS=(
+            dist/dns-filter.txt
+            dist/manifest.json
+            dist/validation-report.txt
+            dist/whitelist-review.txt
+            dist/parser-exclusions.csv
+            LICENSE
+            THIRD-PARTY-NOTICES.md
+            licenses/GPL-3.0.txt
+          )
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release exists; checking its status and assets."
+
+            IS_PRERELEASE="$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')"
+            if [ "$IS_PRERELEASE" != "true" ]; then
+              echo "Correcting existing Release to prerelease."
+              gh release edit "$TAG" --prerelease
+            fi
+
+            EXISTING_ASSETS="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
+            MISSING_ASSETS=()
+
+            for asset in "${ASSETS[@]}"; do
+              asset_name="${asset##*/}"
+              if ! grep -Fqx -- "$asset_name" <<< "$EXISTING_ASSETS"; then
+                MISSING_ASSETS+=("$asset_name")
+              fi
+            done
+
+            VERIFY_DIR="$(mktemp -d)"
+            trap 'rm -rf "$VERIFY_DIR"' EXIT
+
+            if [ "${#MISSING_ASSETS[@]}" -gt 0 ]; then
+              echo "Release has missing assets; synchronizing all assets."
+              printf 'Missing asset: %s\n' "${MISSING_ASSETS[@]}"
+              gh release upload "$TAG" "${ASSETS[@]}" --clobber
+            fi
+
+            gh release download "$TAG" --dir "$VERIFY_DIR"
+
+            MISMATCHED_ASSETS=()
+            for asset in "${ASSETS[@]}"; do
+              asset_name="${asset##*/}"
+              if [ ! -f "$VERIFY_DIR/$asset_name" ] ||
+                 ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
+                MISMATCHED_ASSETS+=("$asset_name")
+              fi
+            done
+
+            if [ "${#MISMATCHED_ASSETS[@]}" -gt 0 ]; then
+              echo "Release assets are missing or differ from local files."
+              printf 'Mismatched asset: %s\n' "${MISMATCHED_ASSETS[@]}"
+
+              gh release upload "$TAG" "${ASSETS[@]}" --clobber
+
+              rm -f "$VERIFY_DIR"/*
+              gh release download "$TAG" --dir "$VERIFY_DIR"
+
+              MISMATCHED_ASSETS=()
+              for asset in "${ASSETS[@]}"; do
+                asset_name="${asset##*/}"
+                if [ ! -f "$VERIFY_DIR/$asset_name" ] ||
+                   ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
+                  MISMATCHED_ASSETS+=("$asset_name")
+                fi
+              done
+
+              if [ "${#MISMATCHED_ASSETS[@]}" -gt 0 ]; then
+                echo "::error::Release asset verification failed after upload."
+                printf 'Still mismatched: %s\n' "${MISMATCHED_ASSETS[@]}"
+                exit 1
+              fi
+            else
+              echo "All eight Release assets match local files."
+            fi
+
+            # Recover a draft left behind by an interrupted release creation.
+            gh release edit "$TAG" --draft=false --prerelease
+            echo "Release is published as a prerelease."
+          else
+            echo "Release does not exist; creating a candidate prerelease."
+
+            gh release create "$TAG" \
+              "${ASSETS[@]}" \
+              --target "$(git rev-parse HEAD)" \
+              --title "$TITLE" \
+              --generate-notes \
+              --prerelease
+          fi

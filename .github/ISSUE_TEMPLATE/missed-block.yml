@@ -1,0 +1,28 @@
+name: Missed ad, tracker or malicious domain
+description: Report a hostname that should be reviewed for blocking.
+title: "[Missed block] "
+labels: ["feedback", "missed-block"]
+body:
+  - type: input
+    id: domain
+    attributes:
+      label: Exact hostname
+      placeholder: tracker.example.com
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Why should this hostname be blocked?
+      description: Explain the observed advertising, tracking or malicious behavior and provide evidence.
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: DNS client and NobleDNS version
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and reproduction steps
+      description: Include sanitized logs or reliable references; remove personal data.

@@ -1,0 +1,36 @@
+name: False positive / broken site or app
+description: Report a domain that NobleDNS blocks but should work.
+title: "[False positive] "
+labels: ["feedback", "false-positive"]
+body:
+  - type: input
+    id: domain
+    attributes:
+      label: Affected domain
+      description: Exact hostname, not just the website name.
+      placeholder: login.example.com
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: Affected website or app
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: What is broken?
+      description: Login, payment, video, push notifications, page loading, etc.
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: DNS client and NobleDNS version
+      placeholder: AdGuard Android / AdGuard Home; version or commit
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and reproduction steps
+      description: Include DNS log or a minimal reproduction; remove personal data.

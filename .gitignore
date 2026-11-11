@@ -1,0 +1,22 @@
+﻿__pycache__/
+*.py[cod]
+.venv/
+venv/
+build-output/
+.pytest_cache/
+.coverage
+.DS_Store
+Thumbs.db
+
+# Local test outputs and audit files
+*-local-test/
+*-online-test/
+*-diff.csv
+*-attribution.csv
+*.bak
+*.tmp
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
