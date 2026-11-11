@@ -1,10 +1,9 @@
 # Changelog
 
-## Unreleased
+This file preserves the RC3 candidate's original release notes.
+Ongoing and unreleased project changes are tracked in the repository-root
+[CHANGELOG.md](../CHANGELOG.md).
 
-- Added parser support for preserving `.domain^` and `.domain` leading-dot rules without rewriting their syntax.
-- Added a real upstream regression fixture covering 28 records: 27 accepted rules and one trailing-dot rule that remains excluded.
-- Kept broad DNS-client compatibility and production qualification outstanding.
 ## 1.0.0-rc3 — automation candidate
 
 - Consolidated the RC2.2 domain-anchor parser behavior into one fail-closed builder.
