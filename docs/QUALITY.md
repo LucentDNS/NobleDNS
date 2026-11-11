@@ -14,7 +14,9 @@ NobleDNS should be no worse than established DNS blocklists in practical blockin
 
 ## Current parser scope
 
-The compiler supports `||domain^`, `||domain` and `@@||domain^` when the hostname is a valid multi-label DNS name. Bare domain-anchor rules are preserved exactly. Exceptions are not placed in the main list. Wildcards, modifiers, regex/path patterns, IP literals, trailing-dot/open suffix patterns and other unsupported syntax are excluded and recorded.
+The compiler supports `||domain^`, `||domain`, `@@||domain^`, `.domain^` and `.domain` when the hostname is a valid multi-label DNS name. Each supported form is preserved exactly; leading-dot rules are not rewritten as `||domain` rules because their matching semantics may differ. Exceptions are not placed in the main list. Wildcards, modifiers, regex/path patterns, IP literals, trailing-dot/open suffix patterns and other unsupported syntax are excluded and recorded.
+
+The real upstream leading-dot regression fixture contains 28 source records: 23 `.domain^` rules, 4 `.domain` rules and 1 trailing-dot rule that must remain excluded. Parser regression coverage does not establish broad DNS-client compatibility. Live compatibility and production qualification remain outstanding.
 
 Do not expand parser scope unless tests prove semantic equivalence for the target clients. Do not silently turn unsupported patterns into ordinary domain blocks.
 

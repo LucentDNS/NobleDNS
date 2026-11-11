@@ -67,4 +67,87 @@ class ParserTests(unittest.TestCase):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
         self.assertEqual(blocks, {"||ads.example.com^"})
 
+
+    def test_leading_dot_caret_preserved(self):
+        blocks, _, rejected, _ = self.parse(".ads.example.com^\n")
+        self.assertEqual(blocks, {".ads.example.com^"})
+        self.assertEqual(sum(rejected.values()), 0)
+
+    def test_leading_dot_bare_preserved(self):
+        blocks, _, rejected, _ = self.parse(".ads.example.com\n")
+        self.assertEqual(blocks, {".ads.example.com"})
+        self.assertEqual(sum(rejected.values()), 0)
+
+    def test_leading_dot_rules_mixed(self):
+        blocks, _, rejected, _ = self.parse(
+            ".a.example.com^\n"
+            ".b.example.com\n"
+            "||c.example.com^\n"
+        )
+        self.assertEqual(
+            blocks,
+            {
+                ".a.example.com^",
+                ".b.example.com",
+                "||c.example.com^",
+            },
+        )
+        self.assertEqual(sum(rejected.values()), 0)
+
+    def test_leading_dot_trailing_dot_rejected(self):
+        blocks, _, rejected, rows = self.parse(
+            ".1080.x.90.\n"
+            "||ok.example.com^\n"
+        )
+        self.assertEqual(blocks, {"||ok.example.com^"})
+        self.assertEqual(
+            rejected["invalid_domain_length_or_trailing_dot"], 1
+        )
+        self.assertTrue(
+            any(row[3] == ".1080.x.90." for row in rows)
+        )
+
+    def test_leading_dot_wildcard_rejected(self):
+        blocks, _, rejected, _ = self.parse(
+            ".*.example.com^\n"
+            "||ok.example.com^\n"
+        )
+        self.assertEqual(blocks, {"||ok.example.com^"})
+        self.assertEqual(rejected["wildcard_syntax"], 1)
+
+    def test_real_upstream_leading_dot_fixture(self):
+        fixture = Path(__file__).parent / "fixtures" / "leading-dot-rules.txt"
+        raw = fixture.read_bytes()
+        rules = raw.decode("utf-8").splitlines()
+
+        self.assertEqual(len(rules), 28)
+        self.assertEqual(len(set(rules)), 28)
+
+        caret = [rule for rule in rules if rule.endswith("^")]
+        bare = [
+            rule for rule in rules
+            if not rule.endswith("^") and not rule.endswith(".")
+        ]
+        trailing = [rule for rule in rules if rule.endswith(".")]
+
+        self.assertEqual(len(caret), 23)
+        self.assertEqual(len(bare), 4)
+        self.assertEqual(len(trailing), 1)
+        self.assertEqual(trailing, [".1080.x.90."])
+
+        blocks, exceptions, rejected, rows = mod.parse_source(
+            raw, "adguard_dns", min_blocks=1
+        )
+
+        expected = {rule for rule in rules if not rule.endswith(".")}
+
+        self.assertEqual(blocks, expected)
+        self.assertEqual(len(blocks), 27)
+        self.assertEqual(exceptions, set())
+        self.assertEqual(
+            dict(rejected),
+            {"invalid_domain_length_or_trailing_dot": 1},
+        )
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][3], ".1080.x.90.")
 if __name__ == "__main__": unittest.main()

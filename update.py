@@ -20,6 +20,8 @@ TIMEOUT = 120
 BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
+LEADING_DOT_CARET_RE = re.compile(r"^\.([^\^/$|]+)\^$")
+LEADING_DOT_BARE_RE = re.compile(r"^\.([^\^/$|]+)$")
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
@@ -153,13 +155,23 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         if not line or line.startswith(("!", "#", "[", "//")):
             continue
         kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
+        leading_dot = False
         if not match:
-            m = BARE_RE.fullmatch(line)
-            if m and not m.group(1).endswith("."):
-                match, bare = m, True
+            m = LEADING_DOT_CARET_RE.fullmatch(line)
+            if m:
+                match, leading_dot = m, True
             else:
-                match = EXCEPTION_RE.fullmatch(line)
-                if match: kind = "exception"
+                m = LEADING_DOT_BARE_RE.fullmatch(line)
+                if m:
+                    match, bare, leading_dot = m, True, True
+                else:
+                    m = BARE_RE.fullmatch(line)
+                    if m and not m.group(1).endswith("."):
+                        match, bare = m, True
+                    else:
+                        match = EXCEPTION_RE.fullmatch(line)
+                        if match:
+                            kind = "exception"
         if match:
             candidate = match.group(1)
             if "*" in candidate:
@@ -167,8 +179,12 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
                 rejected[reason] += 1; rows.append((source_key, line_no, reason, line)); continue
             ok, result = valid_domain(candidate)
             if ok:
-                if kind == "exception": exceptions.add(f"@@||{result}^")
-                else: blocks.add(f"||{result}" + ("" if bare else "^"))
+                if kind == "exception":
+                    exceptions.add(f"@@||{result}^")
+                elif leading_dot:
+                    blocks.add("." + result + ("" if bare else "^"))
+                else:
+                    blocks.add(f"||{result}" + ("" if bare else "^"))
             else:
                 rejected[result] += 1; rows.append((source_key, line_no, result, line))
             continue
@@ -272,11 +288,16 @@ def build(args) -> Path:
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
     if len(lines) != len(merged) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
     for line in lines:
-        m = BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line)
+        m = (
+            BLOCK_RE.fullmatch(line)
+            or BARE_RE.fullmatch(line)
+            or LEADING_DOT_CARET_RE.fullmatch(line)
+            or LEADING_DOT_BARE_RE.fullmatch(line)
+        )
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED", "release_channel": cfg.get("release_channel", "candidate"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "policy": {"main_list": "block-only", "exceptions": "separate review artifact; not active in main list", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "source_drift_gate_percent": args.max_source_change_percent}, "qualification": {"live_dns_compatibility_tested": False, "real_world_false_positive_rate_measured": False, "production_ready": False}}
+    manifest = {"project": PROJECT, "version": version, "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED", "release_channel": cfg.get("release_channel", "candidate"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "policy": {"main_list": "block-only", "exceptions": "separate review artifact; not active in main list", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression; broad client compatibility not qualified", "source_drift_gate_percent": args.max_source_change_percent}, "qualification": {"live_dns_compatibility_tested": False, "real_world_false_positive_rate_measured": False, "production_ready": False}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: CANDIDATE_NOT_PRODUCTION_QUALIFIED", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Separate exceptions: {len(all_exceptions):,}", f"Rule cap: {len(merged):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, uniqueness, rule cap.", "Not yet proven: live DNS client compatibility, false-positive rate, missed-block rate, payment/login/push/app compatibility."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
