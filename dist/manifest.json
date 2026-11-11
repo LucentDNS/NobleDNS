@@ -1,16 +1,43 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0-rc3-20261111-050204-UTC",
+  "version": "1.0.0-rc3-20261111-073308-UTC",
   "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED",
   "release_channel": "candidate",
-  "built_at_utc": "2026-11-11T05:02:04.720369+00:00",
+  "built_at_utc": "2026-11-11T07:33:08.295881+00:00",
+  "licensing": {
+    "original_project_code": {
+      "spdx": "GPL-3.0-only",
+      "license_file": "LICENSE"
+    },
+    "upstream_rule_data": [
+      {
+        "key": "adguard_dns",
+        "name": "AdGuard DNS Filter",
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
+        "qualification": "upstream project license; third-party rights may apply"
+      },
+      {
+        "key": "hagezi_normal",
+        "name": "HaGeZi Multi Normal",
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+        "qualification": "upstream project license; third-party input terms may apply"
+      }
+    ],
+    "third_party_notices": "THIRD-PARTY-NOTICES.md",
+    "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."
+  },
   "sources": {
     "adguard_dns": {
       "name": "AdGuard DNS Filter",
       "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-      "bytes": 4608290,
-      "sha256": "7da6bb29aa032f1cf5c133ac22148f0adb52d56a54f67aa7fccfaeb4bfbd342a",
-      "simple_block_rules": 187612,
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
+      "license_basis": "upstream project license; third-party rights may apply",
+      "bytes": 4616261,
+      "sha256": "70912916869e294f866b2dca255a5cca14bf03d1bfbbac2817c73e96155c0ba9",
+      "simple_block_rules": 187941,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -22,30 +49,33 @@
         "other_modifier": 7,
         "modifier_badfilter": 5,
         "single_label_not_fqdn": 1,
-        "other_exception_syntax": 193
+        "other_exception_syntax": 194
       }
     },
     "hagezi_normal": {
       "name": "HaGeZi Multi Normal",
       "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt",
-      "bytes": 4834543,
-      "sha256": "033f3080c48121df1b2fea61eaeed79891ca75a82ed2849f39add0579e5c9225",
-      "simple_block_rules": 207300,
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+      "license_basis": "upstream project license; third-party input terms may apply",
+      "bytes": 4830614,
+      "sha256": "047dd5451cc6af13bddf5a105a8172c9f141904bae6da86b34cfe994daaead0b",
+      "simple_block_rules": 207080,
       "simple_exception_rules": 0,
       "excluded_lines_by_reason": {
         "invalid_punycode_label": 1
       }
     }
   },
-  "blocking_rules": 301975,
-  "common_rules": 92937,
+  "blocking_rules": 301928,
+  "common_rules": 93093,
   "source_only_rules": {
-    "adguard_dns": 94675,
-    "hagezi_normal": 114363
+    "adguard_dns": 94848,
+    "hagezi_normal": 113987
   },
   "exception_rules_separate": 11,
   "max_rules": 500000,
-  "main_subscription_sha256": "32ec199b8d3f408877f13a2712b29555f208b11a9fd8ecfe6951a5627c280bd2",
+  "main_subscription_sha256": "308e275604206da72116368dde48664092fce65c44650edc9b43988dde74bdf4",
   "policy": {
     "main_list": "block-only",
     "exceptions": "separate review artifact; not active in main list",
