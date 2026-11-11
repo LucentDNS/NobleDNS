@@ -10,6 +10,8 @@ been qualified for production use.
 ### Added
 
 - Added automatic build and validation checks for pushes to the `main` branch.
+- Added parser support for preserving `.domain^` and `.domain` leading-dot rules without rewriting their syntax.
+- Added a real upstream regression fixture covering 28 records: 27 accepted rules and one trailing-dot rule that remains excluded.
 
 ### Changed
 
@@ -23,6 +25,7 @@ been qualified for production use.
 ### Documentation
 
 - Added the personal maintainer guide.
+- Clarified that leading-dot parser regression coverage does not establish broad DNS-client compatibility or production qualification.
 
 ## Changelog maintenance
 
