@@ -51,4 +51,20 @@ class ParserTests(unittest.TestCase):
         blocks, _, _, _ = self.parse("||a.example.com^\n||a.example.com^\n")
         self.assertEqual(len(blocks), 1)
 
+    def test_valid_idna2008_punycode_is_kept(self):
+        blocks, _, rejected, _ = self.parse("||xn--fufrieden-h1a.de^\n")
+        self.assertIn("||xn--fufrieden-h1a.de^", blocks)
+        self.assertEqual(rejected["invalid_punycode_label"], 0)
+
+    def test_invalid_alabel_is_rejected(self):
+        blocks, _, rejected, _ = self.parse(
+            "||xn--abc.example.com^\n||ok.example.com^\n"
+        )
+        self.assertEqual(blocks, {"||ok.example.com^"})
+        self.assertEqual(rejected["invalid_punycode_label"], 1)
+
+    def test_ascii_domain_is_unchanged(self):
+        blocks, _, _, _ = self.parse("||ads.example.com^\n")
+        self.assertEqual(blocks, {"||ads.example.com^"})
+
 if __name__ == "__main__": unittest.main()

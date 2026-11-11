@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""NobleDNS RC3 candidate builder. Standard library only; fail closed."""
+"""NobleDNS RC3 candidate builder. Pinned dependencies; fail closed."""
 from __future__ import annotations
 import argparse, csv, hashlib, ipaddress, json, os, re, shutil, socket, sys, tempfile, time
 import http.client, urllib.error, urllib.request
+import idna
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -115,10 +116,14 @@ def valid_domain(raw: str) -> tuple[bool, str]:
     for label in labels:
         if label.startswith("xn--"):
             try:
-                decoded = label.encode("ascii").decode("idna")
-                if not decoded:
+                # Strict IDNA2008 validation; avoid Python's legacy IDNA2003 codec.
+                decoded = idna.decode(label, uts46=False, std3_rules=True)
+                encoded = idna.encode(
+                    decoded, uts46=False, std3_rules=True
+                ).decode("ascii").lower()
+                if not decoded or encoded != label:
                     return False, "invalid_punycode_label"
-            except UnicodeError:
+            except (idna.IDNAError, UnicodeError):
                 return False, "invalid_punycode_label"
     return True, domain
 
