@@ -67,38 +67,34 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             continue
 
         if is_exception:
-            exceptions.add(domain)
+            exceptions.add(domain + "^")
         elif leading_dot:
-            blocks.add("." + domain)
+            blocks.add("." + domain + ("^" if has_caret else ""))
         else:
-            blocks.add(domain)
+            blocks.add(domain + ("^" if has_caret else ""))
 
     return blocks, exceptions, invalid
 
 
-def covers(rule_domain: str, hostname: str) -> bool:
-    """Return whether a rule covers a hostname, respecting leading-dot scope."""
-    if rule_domain.startswith("."):
-        domain = rule_domain[1:]
+def covers(rule: str, hostname: str) -> bool:
+    """Model the documented DNS hostname-pattern semantics for supported rules."""
+    if rule.startswith("."):
+        domain = rule[1:].removesuffix("^")
         return hostname != domain and hostname.endswith("." + domain)
-    return hostname == rule_domain or hostname.endswith("." + rule_domain)
+    if rule.endswith("^"):
+        domain = rule[:-1]
+        return hostname == domain or hostname.endswith("." + domain)
+    # Without ^, the hostname-start pattern has no hostname-end separator.
+    domain = rule
+    return hostname.startswith(domain) or ("." + domain) in hostname
 
 
 def matching_rules(hostname: str, rules: set[str]) -> set[str]:
-    labels = hostname.split(".")
-    suffixes = {".".join(labels[index:]) for index in range(len(labels))}
-    return rules.intersection(suffixes)
+    return {rule for rule in rules if covers(rule, hostname)}
 
 
 def is_blocked(hostname: str, blocks: set[str], exceptions: set[str]) -> bool:
-    parent_blocks = {rule for rule in blocks if not rule.startswith(".")}
-    subdomain_blocks = {rule[1:] for rule in blocks if rule.startswith(".")}
-    parent_match = bool(matching_rules(hostname, parent_blocks))
-    subdomain_match = any(
-        hostname != domain and hostname.endswith("." + domain)
-        for domain in subdomain_blocks
-    )
-    return (parent_match or subdomain_match) and not bool(
+    return bool(matching_rules(hostname, blocks)) and not bool(
         matching_rules(hostname, exceptions)
     )
 
@@ -117,6 +113,15 @@ class QualityGateTests(unittest.TestCase):
             is_blocked("abchina.com", {"abchina.com"}, {"abchina.com"})
         )
         self.assertFalse(is_blocked("doubleclick.net", set(), set()))
+
+    def test_bare_anchor_has_no_hostname_end_separator(self) -> None:
+        bare = {"example.com"}
+        caret = {"example.com^"}
+        self.assertTrue(is_blocked("example.com.evil.test", bare, set()))
+        self.assertTrue(is_blocked("www.example.com.evil.test", bare, set()))
+        self.assertFalse(is_blocked("notexample.com", bare, set()))
+        self.assertFalse(is_blocked("example.com.evil.test", caret, set()))
+        self.assertTrue(is_blocked("www.example.com", caret, set()))
 
     def test_leading_dot_rule_blocks_subdomains_but_not_apex(self) -> None:
         blocks = {".example.com"}
