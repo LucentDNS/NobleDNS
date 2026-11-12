@@ -89,15 +89,22 @@ def validate_observations(document: object, now: datetime | None = None) -> list
         if not isinstance(endpoint, str):
             raise ValueError("resolver_endpoint must be a string")
         parsed_endpoint = urlsplit(endpoint)
+        try:
+            endpoint_port = parsed_endpoint.port
+        except ValueError as exc:
+            raise ValueError("resolver_endpoint has an invalid port") from exc
+        valid_https = parsed_endpoint.scheme == "https" and bool(parsed_endpoint.path)
+        valid_tls = parsed_endpoint.scheme == "tls" and parsed_endpoint.path in {"", "/"}
         if (
-            parsed_endpoint.scheme not in {"https", "tls"}
-            or not parsed_endpoint.hostname
+            not parsed_endpoint.hostname
+            or not (valid_https or valid_tls)
             or parsed_endpoint.username or parsed_endpoint.password
             or parsed_endpoint.query or parsed_endpoint.fragment
+            or (endpoint_port is not None and not 1 <= endpoint_port <= 65535)
         ):
-            raise ValueError("resolver_endpoint must be a safe HTTPS or TLS endpoint")
+            raise ValueError("resolver_endpoint must be a safe HTTPS DoH or pathless TLS DoT endpoint")
         endpoint_host = parsed_endpoint.hostname.lower()
-        operator_key = row["resolver_operator"].lower()
+        operator_key = row["resolver_operator"].strip().lower()
         resolver_identity = (operator_key, endpoint)
         previous_identity = resolver_identities.setdefault(row["resolver"], resolver_identity)
         if previous_identity != resolver_identity:
