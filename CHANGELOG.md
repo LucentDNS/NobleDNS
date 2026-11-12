@@ -4,6 +4,24 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+### Fixed
+- Enforce the selected AdGuard DNS syntax contract and exclude unsupported leading-dot source rules with audit records.
+- Restore the root-level `NobleDNS.txt` compatibility subscription as a byte-identical generated artifact.
+- Add an evidence-gated project allowlist that generates active exceptions; keep upstream exceptions review-only.
+- Add version and expiry metadata, strengthen proxy validation, and verify legacy/allowlist artifacts during publication.
+
+## [1.1.0] - 2026-11-12
+
+### Added
+- Active project-maintained allowlist input with strict domain validation and regression coverage.
+- Root-level `NobleDNS.txt` compatibility subscription generated alongside the canonical `dist/dns-filter.txt`.
+
+### Changed
+- Subscription metadata now declares the build version and a one-day refresh interval.
+- The compiler publishes only `||domain^` and `||domain` forms; unsupported leading-dot source records are excluded and audited.
+- Explicit proxy configuration is validated and ambient proxy discovery is disabled unless `--proxy` is supplied.
+
+
 ### Changed
 - Rework the project homepages to lead with user value, the single balanced edition, mainland-use priorities and practical subscription guidance.
 - Keep detailed verification scope and evidence limitations in the quality documentation rather than foregrounding them as a warning block on the homepage.
