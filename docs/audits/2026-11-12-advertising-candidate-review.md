@@ -75,6 +75,17 @@ The following public community rule collections also contain some matching Baidu
 
 These are community-maintained or historical lists, not authoritative vendor documentation, current traffic captures, independent security research, or proof of present-day endpoint behavior. Their publication date, derivation and shared upstream lineage may be uncertain. They are weak corroboration only and must not be used as the sole acceptance basis.
 
+
+## 4.1 Additional official evidence: Vivo advertising ecosystem
+
+A targeted follow-up search found first-party Vivo documentation relevant to the Vivo-namespaced candidates:
+
+- The official `open-ad.vivo.com.cn` site describes a commercial advertising open platform for advertiser account management, promotion management, campaign data insights, conversion-data upload and audience management: https://open-ad.vivo.com.cn/ . This confirms that the hostname is associated with advertising business operations. It does **not** show that ordinary consumer devices or unrelated apps need this host, nor does it establish that blocking it is safe for all users.
+- Vivo's official Marketing API documentation uses `open-ad.vivo.com.cn` for OAuth authorization and advertiser account access: https://open-ad.vivo.com.cn/doc/index?id=388 . This is evidence of an advertiser-facing management/API function, not proof that it is a consumer ad-delivery endpoint.
+- Vivo's official advertising-network SDK privacy policy describes advertising SDK use and associated data processing: https://adnet.vivo.com.cn/home/agreement/18 . It establishes the existence and purpose of the Vivo advertising SDK ecosystem, but it does not map `ad-market.vivo.com.cn` or `uapi-ads.vivo.com.cn` to specific request paths or consumer app functions.
+
+**Decision remains unchanged:** `open-ad.vivo.com.cn`, `ad-market.vivo.com.cn` and `uapi-ads.vivo.com.cn` are not approved for the public blocklist. The official evidence improves ecosystem attribution but does not supply the hostname-to-client-traffic mapping, current endpoint observations, or compatibility evidence needed for a block decision.
+
 ## 5. License and provenance gate
 
 - OISD declares GPL-3.0 for its list. It is the clearest candidate source for a controlled technical evaluation, but any reused rule still needs required attribution/notices and review of third-party inputs.
