@@ -43,7 +43,7 @@ NobleDNS 是一个独立维护的 DNS 过滤规则项目，面向日常网络使
 - [构建清单](dist/manifest.json)
 - [最新验证报告](dist/validation-report.txt)
 - [当前生效的上游例外规则](dist/allowlist-active.txt)
-- [正式版本发布页](https://github.com/LucentDNS/NobleDNS/releases)
+- [最新正式版本](https://github.com/LucentDNS/NobleDNS/releases/latest)
 
 ## 过滤范围
 
@@ -75,6 +75,7 @@ NobleDNS 在 DNS 层面过滤来源规则所覆盖的广告、跟踪、遥测及
 
 - [质量与维护策略](docs/QUALITY.md)
 - [DNS 客户端兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md)
+- [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md)
 - [单一均衡版政策](docs/EDITION-POLICY.md)
 - [最新验证报告](dist/validation-report.txt)
 - [规则语法统计](dist/syntax-audit.json)
