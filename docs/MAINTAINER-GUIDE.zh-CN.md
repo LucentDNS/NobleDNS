@@ -160,7 +160,7 @@ git diff --check
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
+所有测试必须通过。真实上游前导点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证：27 条有效规则按“仅匹配子域名、不匹配根域名”的语义保留；1 条带尾随点的无效域名由常规域名校验拒绝。AdGuard DNS 官方语法文档明确说明 `.domain^` 和 `.domain` 只匹配子域名，不匹配根域名；不得把前导点规则改写成 `||domain^`。
 
 #### 添加回归用例
 
