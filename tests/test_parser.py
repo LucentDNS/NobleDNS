@@ -20,6 +20,35 @@ class ParserTests(unittest.TestCase):
             ],
         )
 
+    def test_syntax_audit_classifies_without_rewriting(self):
+        rules = {
+            "||ads.example.com^",
+            "||bare.example.com",
+            ".sub.example.com^",
+            ".bare.example.com",
+        }
+        summary, review = mod.syntax_audit(
+            rules,
+            {
+                "adguard_dns": {".sub.example.com^", "||ads.example.com^"},
+                "hagezi_normal": {"||bare.example.com", ".bare.example.com"},
+            },
+        )
+        self.assertEqual(summary["total"], 4)
+        self.assertEqual(
+            summary["forms"],
+            {
+                "anchored_domain_with_separator": 1,
+                "anchored_domain_without_separator": 1,
+                "leading_dot_with_separator": 1,
+                "leading_dot_without_separator": 1,
+            },
+        )
+        self.assertEqual(
+            {row[0] for row in review},
+            {".sub.example.com^", ".bare.example.com", "||bare.example.com"},
+        )
+
     def test_caret_rule(self):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
         self.assertEqual(blocks, {"||ads.example.com^"})
