@@ -123,6 +123,33 @@ class EvidenceCorpusTests(unittest.TestCase):
         record["source_snapshot_sha256"] = ["not-a-hash"]
         self.assertTrue(any("SHA-256 hashes" in e for e in validate_corpus(self.corpus([record]), NOW)))
 
+    def test_evidence_reference_must_be_safe_and_traceable(self):
+        record = copy.deepcopy(VALID)
+        record["evidence_reference"] = "http://example.org/insecure"
+        self.assertTrue(any("evidence_reference must be an HTTPS URL" in e for e in validate_corpus(self.corpus([record]), NOW)))
+        record["evidence_reference"] = "https://user:pass@example.org/private"
+        self.assertTrue(any("evidence_reference must be an HTTPS URL" in e for e in validate_corpus(self.corpus([record]), NOW)))
+        record["evidence_reference"] = "docs/../private.log"
+        self.assertTrue(any("evidence_reference must be an HTTPS URL" in e for e in validate_corpus(self.corpus([record]), NOW)))
+        record["evidence_reference"] = "docs/audits/evidence.md"
+        self.assertEqual(validate_corpus(self.corpus([record]), NOW), [])
+
+    def test_future_observation_and_review_are_rejected(self):
+        record = copy.deepcopy(VALID)
+        record["observed_at_utc"] = "2026-11-13T00:00:00Z"
+        record["reviewed_at_utc"] = "2026-11-13T01:00:00Z"
+        record["review_due_utc"] = "2026-12-13T01:00:00Z"
+        errors = validate_corpus(self.corpus([record]), NOW)
+        self.assertTrue(any("observed_at_utc cannot be in the future" in e for e in errors))
+        self.assertTrue(any("reviewed_at_utc cannot be in the future" in e for e in errors))
+
+    def test_expiry_must_follow_review(self):
+        record = copy.deepcopy(VALID)
+        record["classification"] = "threat"
+        record["evidence_type"] = "threat_intelligence"
+        record["expires_at_utc"] = "2026-11-10T00:00:00Z"
+        self.assertTrue(any("expires_at_utc must be later" in e for e in validate_corpus(self.corpus([record]), NOW)))
+
     def test_invalid_timestamp_is_rejected(self):
         record = copy.deepcopy(VALID)
         record["observed_at_utc"] = "2026-11-10"
