@@ -10,6 +10,7 @@ All notable changes to NobleDNS are documented here.
 - Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.
 - Publish verified build statistics and clarify that compiled domains are included as DNS blocking targets only.
 - Preserve 193 documented upstream end-anchored exceptions (domain/subdomain and exact-hostname scope) and bound the active exception set at 250 to reject abnormal surges.
+- Preserve documented end-anchored block patterns (`||domain^|` and `|domain^`) without widening them into domain/subdomain rules.
 - Document the exact workflow for adding regression fixtures and updating their pinned counts.
 - Add code and upstream rule-data license metadata to the generated subscription banner.
 - Split the maintainer guide into separate English and Simplified Chinese documents while keeping their operational instructions aligned.
