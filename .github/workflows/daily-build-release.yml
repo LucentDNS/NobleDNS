@@ -22,6 +22,7 @@ on:
       - '.github/workflows/**'
       - 'config/**'
       - 'tests/**'
+      - 'tools/**'
       - 'docs/**'
       - 'update.py'
       - 'README.md'
