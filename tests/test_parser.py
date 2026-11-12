@@ -9,6 +9,17 @@ class ParserTests(unittest.TestCase):
     def parse(self, text):
         return mod.parse_source(text.encode("utf-8"), "test", min_blocks=1)
 
+    def test_filter_metadata_header(self):
+        self.assertEqual(
+            mod.FILTER_HEADER.splitlines(),
+            [
+                "! Title: NobleDNS Filter",
+                "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.",
+                "! Homepage: https://github.com/LucentDNS/NobleDNS",
+                "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal",
+            ],
+        )
+
     def test_caret_rule(self):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
         self.assertEqual(blocks, {"||ads.example.com^"})
