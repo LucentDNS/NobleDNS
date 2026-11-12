@@ -149,9 +149,15 @@ jobs:
           assert f"! Version: {manifest['version']}" in subscription.splitlines(), "Header version differs from manifest"
           assert "! Expires: 1 day" in subscription.splitlines(), "Filter expiry metadata missing"
           published_rules = [line for line in subscription.splitlines() if line and not line.startswith(("!", "#"))]
-          assert not any(line.startswith(".") for line in published_rules), "Undocumented leading-dot rule found in public output"
           syntax_forms = manifest.get("syntax_audit", {}).get("forms", {})
-          assert set(syntax_forms) == {"domain_and_subdomains", "domain_anchor_without_end_boundary"}, "Unexpected public DNS syntax form"
+          assert set(syntax_forms) == {
+              "domain_and_subdomains",
+              "domain_anchor_without_end_boundary",
+              "subdomains_only",
+          }, "Unexpected public DNS syntax form"
+          assert manifest.get("policy", {}).get("leading_dot_subdomain_only") == (
+              "preserved; matches subdomains only, not the apex domain"
+          ), "Leading-dot DNS semantics missing from manifest policy"
           assert manifest.get("syntax_audit", {}).get("total") == manifest.get("blocking_rules"), "Syntax audit total differs from blocking rule count"
           assert manifest.get("active_exception_rules", 0) == len([line for line in subscription.splitlines() if line.startswith("@@")]), "Active exception count differs from manifest"
           assert manifest.get("main_subscription_rules") == manifest.get("blocking_rules", 0) + manifest.get("active_exception_rules", 0), "Main subscription rule counts are inconsistent"
