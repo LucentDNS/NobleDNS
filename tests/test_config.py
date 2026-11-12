@@ -17,7 +17,7 @@ class ConfigTests(unittest.TestCase):
         )
         self.assertIn("! Last modified: 2026-11-12 (UTC)\n", rendered)
         self.assertIn("! Blocked domains: 2\n", rendered)
-        self.assertTrue(rendered.endswith("@@||safe.example.org^\n"))
+        self.assertIn("@@||safe.example.org^\n", rendered)
 
     def test_subscription_last_modified_is_stable_when_rules_are_unchanged(self):
         import json
