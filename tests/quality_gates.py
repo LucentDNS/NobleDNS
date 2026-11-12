@@ -1,11 +1,14 @@
 """Build-artifact quality gates for the published NobleDNS subscription."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import unittest
 import importlib.util
 from pathlib import Path
+
+from tools.validate_evidence_corpus import validate_corpus
 
 SPEC = importlib.util.spec_from_file_location("nobledns_quality_update", Path(__file__).resolve().parents[1] / "update.py")
 mod = importlib.util.module_from_spec(SPEC)
@@ -21,6 +24,7 @@ if not FILTER.is_absolute():
 
 ESSENTIAL = ROOT / "tests" / "fixtures" / "essential-domains.txt"
 KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
+EVIDENCE_CORPUS = ROOT / "tests" / "fixtures" / "evidence-corpus.json"
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 
@@ -92,6 +96,10 @@ class QualityGateTests(unittest.TestCase):
         cls.blocks, cls.exceptions, cls.invalid = load_rules()
         cls.essential = read_domains(ESSENTIAL)
         cls.known_ads = read_domains(KNOWN_ADS)
+        cls.evidence_corpus = json.loads(EVIDENCE_CORPUS.read_text(encoding="utf-8"))
+        corpus_errors = validate_corpus(cls.evidence_corpus)
+        if corpus_errors:
+            raise AssertionError("Invalid evidence corpus: " + "; ".join(corpus_errors))
 
     def test_guard_detects_direct_and_parent_blocks_and_honors_exceptions(self) -> None:
         self.assertTrue(is_blocked("abchina.com", {"abchina.com"}, set()))
@@ -143,4 +151,18 @@ class QualityGateTests(unittest.TestCase):
         self.assertFalse(
             missing,
             f"{len(missing)} known ad hostname(s) no longer blocked: {missing}",
+        )
+
+    def test_evidence_corpus_expected_policy_matches_subscription(self) -> None:
+        mismatches = []
+        for record in self.evidence_corpus["records"]:
+            hostname = record["hostname"]
+            policy = record["expected_policy"]
+            if policy == "blocked" and not is_blocked(hostname, self.blocks, self.exceptions):
+                mismatches.append((hostname, policy, "not blocked"))
+            elif policy == "allowed" and is_blocked(hostname, self.blocks, self.exceptions):
+                mismatches.append((hostname, policy, "blocked"))
+        self.assertFalse(
+            mismatches,
+            f"{len(mismatches)} evidence-backed policy mismatch(es): {mismatches[:20]}",
         )
