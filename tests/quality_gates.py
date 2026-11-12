@@ -109,6 +109,19 @@ class QualityGateTests(unittest.TestCase):
         )
         self.assertFalse(is_blocked("doubleclick.net", set(), set()))
 
+    def test_supported_exception_scope_is_suffix_aware(self) -> None:
+        # This models the simple supported ||domain^ / @@||domain^ subset.
+        # Modifiers such as $important are rejected by the production parser.
+        blocks = {"example.com", "ads.child.example.net"}
+        exceptions = {"safe.example.com", "example.net"}
+        self.assertFalse(is_blocked("safe.example.com", blocks, exceptions))
+        self.assertFalse(is_blocked("cdn.safe.example.com", blocks, exceptions))
+        self.assertFalse(is_blocked("ads.child.example.net", blocks, exceptions))
+        self.assertFalse(is_blocked("x.ads.child.example.net", blocks, exceptions))
+        self.assertTrue(is_blocked("other.example.com", blocks, exceptions))
+        self.assertTrue(is_blocked("example.com", blocks, exceptions))
+        self.assertFalse(is_blocked("notexample.com", blocks, exceptions))
+
     def test_exception_count_stays_small(self) -> None:
         """Exceptions are allow-rules; a sudden surge means the list is leaking."""
         self.assertLessEqual(
