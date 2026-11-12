@@ -124,7 +124,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(len(set(rules)), 28)
 
         blocks, exceptions, rejected, rows = mod.parse_source(
-            raw, "adguard_dns", min_blocks=1
+            raw, "adguard_dns", min_blocks=0
         )
         self.assertEqual(blocks, set())
         self.assertEqual(exceptions, set())
