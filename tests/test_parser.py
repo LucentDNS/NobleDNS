@@ -51,6 +51,11 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(review[0][0], "||bare.example.com")
         self.assertIn("hostname-start anchor", summary["semantics"]["domain_anchor_without_end_boundary"])
 
+    def test_syntax_audit_counts_important_block_rules(self):
+        summary, _ = mod.syntax_audit({"||ads.example.com^$important"}, {})
+        self.assertEqual(summary["important_block_rules"], 1)
+        self.assertNotIn("important_rules", summary)
+
     def test_caret_rule(self):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
         self.assertEqual(blocks, {"||ads.example.com^"})
