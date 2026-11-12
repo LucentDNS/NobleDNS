@@ -4,6 +4,7 @@ import csv
 import importlib.util
 import tempfile
 import unittest
+from unittest.mock import patch
 from datetime import date
 from pathlib import Path
 
@@ -87,7 +88,7 @@ class BenchmarkScorerTests(unittest.TestCase):
             output = root / "score.json"
             corpus.write_text(",".join(scorer.FIELDS) + "\n", encoding="utf-8")
             rules.write_text("||ads.example.test^\n", encoding="utf-8")
-            with unittest.mock.patch("sys.argv", [
+            with patch("sys.argv", [
                 "score_benchmark.py", "--rules", str(rules), "--corpus", str(corpus),
                 "--output", str(output), "--today", "2026-11-12",
             ]):
