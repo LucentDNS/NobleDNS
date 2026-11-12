@@ -1,0 +1,3 @@
+# NobleDNS project-maintained exact-domain allowlist.
+# Add one reviewed ASCII/IDNA hostname per line; entries generate active @@||domain^ rules.
+# Keep this file empty until a legitimate service exception is confirmed with reproducible evidence.
