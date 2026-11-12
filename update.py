@@ -336,7 +336,7 @@ def resolve_subscription_last_modified(
             }
             if previous_rules == rules:
                 for line in previous_lines:
-                    match = re.fullmatch(r"! Last modified: (\\d{4}-\\d{2}-\\d{2}) \\(UTC\\)", line.strip())
+                    match = re.fullmatch(r"! Last modified: (\d{4}-\d{2}-\d{2}) \(UTC\)", line.strip())
                     if match:
                         return match.group(1)
                 try:
@@ -360,10 +360,10 @@ def render_subscription(
     if not rules:
         raise ValueError("Refusing an empty subscription")
     metadata = (
-        f"! Last modified: {last_modified} (UTC)\\n"
-        f"! Blocked domains: {len(blocks):,}\\n\\n"
+        f"! Last modified: {last_modified} (UTC)\n"
+        f"! Blocked domains: {len(blocks):,}\n\n"
     )
-    return FILTER_HEADER + metadata + "\\n".join(sorted(rules)) + "\\n"
+    return FILTER_HEADER + metadata + "\n".join(sorted(rules)) + "\n"
 
 
 def build(args) -> Path:
