@@ -75,6 +75,14 @@ The current automated suite exercises parser and configuration behavior, includi
 
 These checks verify build integrity and the rules covered by the regression corpus. They do not measure real-world filtering efficacy. The [DNS client compatibility test plan](COMPATIBILITY-TEST-PLAN.md) defines a controlled procedure for testing syntax semantics without using production domains.
 
+## Rule liveness and stale-domain review
+
+A hostname returning NXDOMAIN is not automatically a dead rule. A resolver outage, regional DNS view, temporary delegation change, NODATA response, sinkhole, or domain reassignment can produce misleading signals. NobleDNS uses the offline [rule lifecycle review](RULE-LIFECYCLE.md) tool to classify reviewed observations without sending DNS queries or changing the subscription.
+
+A stable NXDOMAIN candidate requires both A and AAAA, at least three independent resolver operators, at least two vantage points, complete resolver/vantage pairs, and observations spanning at least seven elapsed days within the 30-day freshness window. This is only a manual-review trigger. SERVFAIL, REFUSED, TIMEOUT, NODATA, mixed regional results and sinkhole observations are not treated as dead domains.
+
+The daily workflow currently runs the audit with an intentionally empty observation fixture. This verifies the pipeline, not the liveness of the full rule set. No DNS observation corpus has yet been collected, and no rule is automatically removed or expired by this process. Any removal requires source provenance, independent evidence, compatibility review, a regression test and a rollback path.
+
 ## Current parser scope
 
 The public DNS subscription accepts the documented AdGuard hostname-pattern forms `||domain^` and `||domain`, provided the hostname is a valid multi-label domain. AdGuard documents `||` as matching the beginning of a hostname, including subdomains, and `^` as the hostname-end separator. A missing `^` is not, by itself, a reason to discard a rule; every retained bare-anchor rule is preserved unchanged and included in targeted client matching verification.
