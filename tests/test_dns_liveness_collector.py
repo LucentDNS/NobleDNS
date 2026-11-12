@@ -130,7 +130,7 @@ class DNSLivenessCollectorTests(unittest.TestCase):
         )
         self.assertEqual(len(mod.validate_config(config)), 4)
         broken = json.loads(json.dumps(config))
-        broken["resolvers"][2]["endpoint"] = "https://dns10.quad9.net/dns-query"
+        broken["resolvers"][3]["endpoint"] = "https://dns10.quad9.net/dns-query"
         with self.assertRaisesRegex(ValueError, "scheme/path"):
             mod.validate_config(broken)
 
