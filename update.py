@@ -258,16 +258,22 @@ def write_csv(path: Path, header, rows):
 
 
 def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
-    """Classify supported output forms without changing their matching semantics."""
+    """Inventory documented DNS rule forms; flag only forms needing semantic review."""
     forms = {
-        "anchored_domain_with_separator": re.compile(r"^\|\|[^\^/$|]+\^$"),
-        "anchored_domain_without_separator": re.compile(r"^\|\|[^\^/$|]+$"),
-        "leading_dot_with_separator": re.compile(r"^\.[^\^/$|]+\^$"),
-        "leading_dot_without_separator": re.compile(r"^\.[^\^/$|]+$"),
+        "domain_and_subdomains": re.compile(r"^\|\|[^\^/$|]+\^$"),
+        "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^\^/$|]+$"),
+        "subdomains_only_with_end_boundary": re.compile(r"^\.[^\^/$|]+\^$"),
+        "subdomains_only": re.compile(r"^\.[^\^/$|]+$"),
+    }
+    semantics = {
+        "domain_and_subdomains": "Blocks the domain and all subdomains.",
+        "domain_anchor_without_end_boundary": "Hostname-start anchor without explicit end boundary; retain source form and review client matching semantics.",
+        "subdomains_only_with_end_boundary": "Blocks subdomains only; does not block the apex domain.",
+        "subdomains_only": "Blocks subdomains only; does not block the apex domain.",
     }
     counts = {name: 0 for name in forms}
-    review_rows = []
     examples = {name: [] for name in forms}
+    review_rows = []
     for rule in sorted(rules):
         form = next((name for name, pattern in forms.items() if pattern.fullmatch(rule)), "unclassified")
         if form == "unclassified":
@@ -275,10 +281,16 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
         counts[form] += 1
         if len(examples[form]) < 10:
             examples[form].append(rule)
-        if form in ("anchored_domain_without_separator", "leading_dot_with_separator", "leading_dot_without_separator"):
+        if form == "domain_anchor_without_end_boundary":
             sources = [key for key, source_set in source_rules.items() if rule in source_set]
-            review_rows.append((rule, form, ";".join(sources)))
-    return {"total": len(rules), "forms": counts, "examples": examples}, review_rows
+            review_rows.append((rule, form, semantics[form], ";".join(sources)))
+    return {
+        "total": len(rules),
+        "forms": counts,
+        "semantics": semantics,
+        "review_required": counts["domain_anchor_without_end_boundary"],
+        "examples": examples,
+    }, review_rows
 
 
 def build(args) -> Path:
@@ -342,7 +354,7 @@ def build(args) -> Path:
         (stage / "validation-report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
         (stage / "whitelist-review.txt").write_text("! Source exceptions for manual review only; not active in dns-filter.txt\n" + "\n".join(sorted(all_exceptions)) + ("\n" if all_exceptions else ""), encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
-        write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "source"], syntax_review_rows)
+        write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "documented_semantics", "source"], syntax_review_rows)
         (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         source_dir = stage / "sources"; source_dir.mkdir()
         source_manifest = {}
