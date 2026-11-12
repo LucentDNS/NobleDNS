@@ -20,7 +20,7 @@ Multiple public variants would multiply testing and support obligations before t
 2. Rule additions require source provenance and a defensible classification.
 3. Prefer narrow hostname scope over broad parent-domain blocks.
 4. Preserve supported source syntax; do not invent semantic equivalence.
-5. Keep exceptions separate from the block-only main subscription.
+5. Preserve only simple, supported upstream exceptions (`@@||domain^`) in the main subscription; keep complex or unsupported exceptions excluded. Project-authored allowlist additions require independent evidence, narrow scope and cross-source precedence tests.
 6. Reject unexplained source drift and invalid build output.
 7. Publish limitations and test evidence alongside the subscription.
 
