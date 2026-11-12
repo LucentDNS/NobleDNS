@@ -221,11 +221,14 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
         current = list(latest.values())
         if current and all(row["rcode"] == "NXDOMAIN" for row in current):
             pairs = {(r["resolver"], r["resolver_operator"], r["vantage"]) for r in current}
-            operators = {r["resolver_operator"] for r in current}
+            operators = {r["resolver_operator"].strip().lower() for r in current}
             vantages = {r["vantage"] for r in current}
             qtypes_by_pair = defaultdict(set)
             for row in current:
-                qtypes_by_pair[(row["resolver"], row["resolver_operator"], row["vantage"])].add(row["qtype"])
+                qtypes_by_pair[(
+                    row["resolver"], row["resolver_operator"].strip().lower(),
+                    row["vantage"],
+                )].add(row["qtype"])
             complete_pairs = [pair for pair, qtypes in qtypes_by_pair.items() if qtypes == {"A", "AAAA"}]
             # A seven-day span must be demonstrated independently by every
             # resolver/operator/vantage pair. Do not combine one old result
