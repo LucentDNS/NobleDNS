@@ -395,12 +395,9 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         for baseline_domain in baseline_descendants.get(candidate_domain, []):
             if baseline_domain in effective_baseline_domains:
                 broadens[matching_rule].add(baseline_domain)
-    if new_bare_rules:
-        bare_candidates = [(rule, rule_domain(rule)) for rule in new_bare_rules]
-        for baseline_domain in effective_baseline_domains:
-            for candidate_rule, candidate_domain in bare_candidates:
-                if bare_domain_matches(candidate_domain, baseline_domain):
-                    broadens[candidate_rule].add(baseline_domain)
+    # Bare anchors are flagged as unbounded scope-expansion candidates.
+    # Their possible baseline-host matches are intentionally not enumerated;
+    # the parent-coverage check above still removes redundant bare candidates.
 
     affected_baseline_domains = set()
     for values in broadens.values():
@@ -431,6 +428,7 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         "unique_not_covered_by_baseline_parent": len(unique_not_parent_covered),
         "candidate_rules_broadening_existing_baseline_scope": len(broadens),
         "new_bare_anchor_rules_with_unbounded_matching": len(new_bare_rules),
+        "bare_anchor_scope_note": "New bare anchors are flagged as unbounded scope expansion; matching baseline hosts are not exhaustively enumerated.",
         "baseline_block_domains_affected_by_candidate_parent_rules": len(affected_baseline_domains),
         "candidate_blocks_overlapping_baseline_exceptions": len(block_exception_conflicts),
         "new_candidate_blocks_overlapping_baseline_exceptions": len(new_block_exception_conflicts),
