@@ -83,6 +83,22 @@ class DNSLivenessCollectorTests(unittest.TestCase):
         self.assertEqual(parsed["cname_chain"], ["edge.example.net"])
         self.assertEqual(parsed["answers"], ["192.0.2.22"])
 
+    def test_reject_conflicting_cname_targets(self):
+        packet = response_records([
+            ("ads.example.com", 5, "edge-a.example.net"),
+            ("ads.example.com", 5, "edge-b.example.net"),
+        ])
+        with self.assertRaisesRegex(ValueError, "conflicting CNAME targets"):
+            mod.parse_response(packet, 0x1234, "A", "ads.example.com")
+
+    def test_reject_cname_and_address_data_at_same_owner(self):
+        packet = response_records([
+            ("ads.example.com", 5, "edge.example.net"),
+            ("ads.example.com", 1, "192.0.2.23"),
+        ])
+        with self.assertRaisesRegex(ValueError, "both CNAME and address data"):
+            mod.parse_response(packet, 0x1234, "A", "ads.example.com")
+
     def test_ignore_unrelated_address_records_in_answer_section(self):
         packet = response_records([
             ("other.example.com", 1, "192.0.2.99"),
