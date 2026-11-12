@@ -20,6 +20,7 @@ All notable changes to NobleDNS are documented here.
 
 - Preserve documented leading-dot DNS rules (`.domain^` and `.domain`) with subdomain-only semantics; reject malformed hostnames rather than broadening their scope.
 - Model bare `||domain` rules without `^` as hostname-start patterns without an end separator in the critical-service regression gate.
+- Apply exact supported `$badfilter` directives across the merged approved sources, record their targets and outcomes, and prevent disabled upstream rules from re-entering the subscription.
 - Preserve documented `||domain` rules without an explicit `^`; do not apply a blanket trailing-caret rejection.
 - Disable implicit environment-proxy discovery when no proxy is specified and reject HTTPS-to-HTTP source redirects.
 - Bump the next immutable release to 1.0.3; keep v1.0.2 unchanged.
