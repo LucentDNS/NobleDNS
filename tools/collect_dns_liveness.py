@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import ProxyHandler, Request, build_opener
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -179,11 +179,16 @@ def validate_config(document: object) -> list[dict]:
         parsed = urlsplit(resolver["endpoint"])
         valid_doh = transport == "doh" and parsed.scheme == "https" and bool(parsed.path)
         valid_dot = transport == "dot" and parsed.scheme == "tls" and parsed.path in {"", "/"}
+        try:
+            port = parsed.port
+        except ValueError as exc:
+            raise ValueError(f"resolver[{index}].endpoint has an invalid port") from exc
         if (
             not parsed.hostname or parsed.username or parsed.password
             or parsed.query or parsed.fragment or not (valid_doh or valid_dot)
+            or (port is not None and not 1 <= port <= 65535)
         ):
-            raise ValueError(f"resolver[{index}] endpoint scheme/path does not match doh or dot transport")
+            raise ValueError(f"resolver[{index}] endpoint scheme/path/port does not match doh or dot transport")
     return resolvers
 
 
@@ -200,7 +205,9 @@ def query_doh(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
         },
     )
     try:
-        with urlopen(request, timeout=timeout) as response:
+        # Bypass ambient HTTP proxy settings: a proxy would invalidate resolver identity.
+        opener = build_opener(ProxyHandler({}))
+        with opener.open(request, timeout=timeout) as response:
             if response.status != 200 or response.headers.get_content_type() != "application/dns-message":
                 return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
             body = response.read(65536)
@@ -298,14 +305,14 @@ def main() -> int:
     parser.add_argument("--resolvers", required=True, type=Path, help="Resolver configuration JSON")
     parser.add_argument("--vantage", required=True, help="Operator-assigned vantage label; verify location independently")
     parser.add_argument("--output", required=True, type=Path, help="Output observation JSON")
-    parser.add_argument("--max-hostnames", type=int, default=50)
+    parser.add_argument("--max-hostnames", type=int, default=20)
     parser.add_argument("--timeout", type=int, default=8)
     parser.add_argument("--delay", type=float, default=0.5, help="Delay between requests in seconds")
     args = parser.parse_args()
     if not args.vantage.strip():
         parser.error("--vantage cannot be empty")
-    if not 1 <= args.max_hostnames <= 100:
-        parser.error("--max-hostnames must be between 1 and 100")
+    if not 1 <= args.max_hostnames <= 50:
+        parser.error("--max-hostnames must be between 1 and 50")
     if not 2 <= args.timeout <= 20:
         parser.error("--timeout must be between 2 and 20 seconds")
     if not 0.2 <= args.delay <= 5:
