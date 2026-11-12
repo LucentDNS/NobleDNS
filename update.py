@@ -309,7 +309,8 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     }
     semantics = {
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
-        "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",
+        "domain_anchor_without_end_boundary": "Hostname-start anchor without an end separator; a hostname may continue after the literal pattern, so retain unchanged and test its broader matching scope.",
+
         "subdomains_only": "Blocks subdomains of the specified domain, but not the apex domain; preserved using AdGuard's documented leading-dot DNS syntax.",
     }
     counts = {name: 0 for name in forms}
