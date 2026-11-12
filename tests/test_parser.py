@@ -19,6 +19,7 @@ class ParserTests(unittest.TestCase):
                 f"! Version: {mod.VERSION_BASE}",
                 "! Expires: 1 day",
                 "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal",
+                "! Content: Listed domains are included as blocking targets only.",
             ],
         )
 

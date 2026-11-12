@@ -4,7 +4,16 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+### Added
+- Add generated-subscription regression gates for 72 essential-service hostnames and 20 known advertising-infrastructure hostnames.
+- Enforce an additional absolute drift ceiling of 3,000 rule additions and 3,000 removals per build, alongside the existing percentage-based source drift gate.
+- Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.
+- Publish verified build statistics and clarify that compiled domains are included as DNS blocking targets only.
+
 ### Fixed
+- Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
+- Preserve the previous subscription modification date on identical rule content to avoid timestamp-only daily subscription churn.
+
 - Exclude undocumented leading-dot hostname patterns from the public DNS subscription and retain all excluded source lines in the parser audit.
 - Preserve documented `||domain` rules without an explicit `^`; do not apply a blanket trailing-caret rejection.
 - Disable implicit environment-proxy discovery when no proxy is specified and reject HTTPS-to-HTTP source redirects.

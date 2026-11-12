@@ -21,6 +21,7 @@ FILTER_HEADER = (
     f"! Version: {VERSION_BASE}\n"
     "! Expires: 1 day\n"
     "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
+    "! Content: Listed domains are included as blocking targets only.\n"
 )
 MIN_SOURCE_BYTES = 100_000
 MIN_SOURCE_BLOCKS = 10_000
@@ -318,14 +319,53 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     }, review_rows
 
 
-def render_subscription(blocks: set[str], exceptions: set[str]) -> str:
+def resolve_subscription_last_modified(
+    rules: set[str],
+    previous_manifest: Path | None,
+    now: datetime,
+) -> str:
+    """Keep the date stable for identical rule content; advance it on rule changes."""
+    if previous_manifest and previous_manifest.is_file():
+        previous_list = previous_manifest.parent / "dns-filter.txt"
+        if previous_list.is_file():
+            previous_lines = previous_list.read_text(encoding="utf-8").splitlines()
+            previous_rules = {
+                line.strip()
+                for line in previous_lines
+                if line.strip() and not line.lstrip().startswith("!")
+            }
+            if previous_rules == rules:
+                for line in previous_lines:
+                    match = re.fullmatch(r"! Last modified: (\d{4}-\d{2}-\d{2}) \(UTC\)", line.strip())
+                    if match:
+                        return match.group(1)
+                try:
+                    old_manifest = json.loads(previous_manifest.read_text(encoding="utf-8"))
+                    built_at = datetime.fromisoformat(old_manifest["built_at_utc"])
+                    return built_at.astimezone(timezone.utc).date().isoformat()
+                except (KeyError, TypeError, ValueError):
+                    pass
+    return now.astimezone(timezone.utc).date().isoformat()
+
+
+def render_subscription(
+    blocks: set[str],
+    exceptions: set[str],
+    last_modified: str | None = None,
+) -> str:
     """Render the canonical filter while preserving active exception semantics."""
+    if last_modified is None:
+        last_modified = datetime.now(timezone.utc).date().isoformat()
     if blocks & exceptions:
         raise ValueError("A rule cannot be both a blocking rule and an exception")
     rules = blocks | exceptions
     if not rules:
         raise ValueError("Refusing an empty subscription")
-    return FILTER_HEADER + "\n".join(sorted(rules)) + "\n"
+    metadata = (
+        f"! Last modified: {last_modified} (UTC)\n"
+        f"! Blocked domains: {len(blocks):,}\n\n"
+    )
+    return FILTER_HEADER + metadata + "\n".join(sorted(rules)) + "\n"
 
 
 def build(args) -> Path:
@@ -355,12 +395,14 @@ def build(args) -> Path:
     merged = parsed[keys[0]] | parsed[keys[1]]
     all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
     published_rules = merged | all_exceptions
-    check_drift(source_stats, published_rules, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
+    previous_manifest = Path(args.previous_manifest) if args.previous_manifest else None
+    check_drift(source_stats, published_rules, previous_manifest, args.max_source_change_percent, args.allow_large_change)
+    last_modified = resolve_subscription_last_modified(published_rules, previous_manifest, now)
     common = parsed[keys[0]] & parsed[keys[1]]
     syntax_summary, syntax_review_rows = syntax_audit(merged, parsed)
     if len(published_rules) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(published_rules):,} > {MAX_RULES:,}")
     if not merged: raise RuntimeError("Refusing empty output")
-    main = render_subscription(merged, all_exceptions)
+    main = render_subscription(merged, all_exceptions, last_modified)
     main_bytes = main.encode("utf-8")
     # Validate every published blocking and exception rule without rewriting its syntax.
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
@@ -370,8 +412,8 @@ def build(args) -> Path:
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
-    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
+    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
     try:

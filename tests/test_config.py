@@ -7,6 +7,57 @@ class ConfigTests(unittest.TestCase):
     def test_filter_header_declares_subscription_title(self):
         self.assertTrue(mod.FILTER_HEADER.startswith("! Title: NobleDNS Filter\n"))
         self.assertIn("! Homepage: https://github.com/LucentDNS/NobleDNS\n", mod.FILTER_HEADER)
+        self.assertIn("! Content: Listed domains are included as blocking targets only.\n", mod.FILTER_HEADER)
+
+    def test_subscription_banner_includes_last_modified_and_block_count(self):
+        rendered = mod.render_subscription(
+            {"||example.com^", "||ads.example.net^"},
+            {"@@||safe.example.org^"},
+            "2026-11-12",
+        )
+        self.assertIn("! Last modified: 2026-11-12 (UTC)\n", rendered)
+        self.assertIn("! Blocked domains: 2\n", rendered)
+        self.assertIn("@@||safe.example.org^\n", rendered)
+
+    def test_subscription_last_modified_is_stable_when_rules_are_unchanged(self):
+        import json
+        import tempfile
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "manifest.json").write_text(
+                json.dumps({"built_at_utc": "2026-11-10T12:00:00+00:00"}),
+                encoding="utf-8",
+            )
+            (root / "dns-filter.txt").write_text(
+                "! Last modified: 2026-11-09 (UTC)\n"
+                "||example.com^\n",
+                encoding="utf-8",
+            )
+            result = mod.resolve_subscription_last_modified(
+                {"||example.com^"},
+                root / "manifest.json",
+                datetime(2026, 11, 12, tzinfo=timezone.utc),
+            )
+            self.assertEqual(result, "2026-11-09")
+
+    def test_subscription_last_modified_advances_when_rules_change(self):
+        import tempfile
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "manifest.json").write_text("{}", encoding="utf-8")
+            (root / "dns-filter.txt").write_text(
+                "! Last modified: 2026-11-09 (UTC)\n"
+                "||old.example^\n",
+                encoding="utf-8",
+            )
+            result = mod.resolve_subscription_last_modified(
+                {"||new.example^"},
+                root / "manifest.json",
+                datetime(2026, 11, 12, 8, tzinfo=timezone.utc),
+            )
+            self.assertEqual(result, "2026-11-12")
 
     def test_project_version_is_stable_semver(self):
         import re
