@@ -124,6 +124,19 @@ class RuleLivenessTests(unittest.TestCase):
         status, _ = mod.classify(rows, NOW, 30)
         self.assertEqual(status, "insufficient_nxdomain_evidence")
 
+    def test_operator_name_case_variants_do_not_fake_independent_providers(self):
+        rows = stable_nxdomain_observations()
+        labels = {"cf1": "cloudflare", "gg1": "CloudFlare", "q91": "CLOUDFLARE"}
+        for row in rows:
+            row["resolver_operator"] = labels[row["resolver"]]
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertEqual(metrics["resolver_operators"], ["cloudflare"])
+
     def test_old_nxdomain_from_one_pair_cannot_extend_recent_quorum_span(self):
         rows = stable_nxdomain_observations()
         rows = [
