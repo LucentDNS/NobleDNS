@@ -22,7 +22,7 @@ FILTER_HEADER = (
     "! Expires: 1 day\n"
     "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
     "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).\n"
-    "! Content: Listed domains are included as blocking targets only.\n"
+    "! Content: Includes supported DNS blocking and exception rules; each rule retains its documented matching behavior.\n"
 )
 MIN_SOURCE_BYTES = 100_000
 MIN_SOURCE_BLOCKS = 10_000
