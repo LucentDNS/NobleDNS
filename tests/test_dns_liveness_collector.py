@@ -171,6 +171,9 @@ class DNSLivenessCollectorTests(unittest.TestCase):
             path.write_text("one.example.com\ntwo.example.com\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "exceeds"):
                 mod.load_sample(path, 1)
+            path.write_text("invalid.example.com..\\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid hostname"):
+                mod.load_sample(path, 5)
 
 
 if __name__ == "__main__":
