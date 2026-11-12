@@ -158,8 +158,8 @@ jobs:
 
           assert manifest.get("version") == "1.1.0", "Unexpected manifest version"
           subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
-          assert "! Version: 1.1.0\\n" in subscription, "Subscription version metadata mismatch"
-          assert "! Expires: 1 day\\n" in subscription, "Subscription expiry metadata missing"
+          assert "! Version: 1.1.0\n" in subscription, "Subscription version metadata mismatch"
+          assert "! Expires: 1 day\n" in subscription, "Subscription expiry metadata missing"
           print("Manifest source count, rule ceiling, subscription metadata, and licensing metadata verified.")
           PY
 
