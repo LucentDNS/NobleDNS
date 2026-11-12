@@ -2,7 +2,7 @@
 
 **Lightweight. Conservative. Auditable.**
 
-NobleDNS is a community-maintained DNS blocklist for everyday use. It combines established upstream sources to help block advertising, tracking, telemetry and other unwanted domains, with reproducible builds, preserved rule semantics and transparent maintenance.
+NobleDNS is an independently maintained DNS blocklist for everyday use. It combines established upstream sources to help block advertising, tracking, telemetry and other unwanted domains, with reproducible builds, preserved rule semantics and transparent maintenance.
 
 NobleDNS is publicly maintained and intended for use with compatible DNS filtering clients. Rules are updated through automated builds, validation and ongoing maintenance.
 
@@ -17,6 +17,11 @@ Add this URL as a custom DNS blocklist in a client that supports the rule syntax
 - [View the current rule file](https://github.com/LucentDNS/NobleDNS/blob/main/dist/dns-filter.txt)
 - [View the published build manifest](dist/manifest.json)
 - [View the latest validation report](dist/validation-report.txt)
+- [View official versioned releases](https://github.com/LucentDNS/NobleDNS/releases)
+
+## Test coverage and limitations
+
+Automated regression tests cover the builder's supported parsing and validation behavior. They do not establish real-world blocking effectiveness, a measured false-positive rate, or compatibility with every DNS filtering client. NobleDNS does not currently publish a live-device compatibility matrix or claim that every website and app has been tested. See the [quality and maintenance policy](docs/QUALITY.md) for the current evidence and limitations.
 
 ## Compatibility
 
