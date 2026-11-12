@@ -52,16 +52,21 @@ jobs:
           python -m py_compile update.py tools/hg_awavenue_audit.py
           python -m unittest discover -s tests -p "test_parser.py" -v
 
-      - name: Record the exact current main baseline commit
+      - name: Pin baseline and upstream source commits
         shell: bash
         run: |
           set -euo pipefail
           BASELINE_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          if [ -z "$BASELINE_MAIN_SHA" ]; then
-            echo "::error::Could not resolve origin/main."
-            exit 1
-          fi
-          echo "BASELINE_MAIN_SHA=$BASELINE_MAIN_SHA" >> "$GITHUB_ENV"
+          HG_MAIN_SHA="$(git ls-remote https://github.com/2771936993/HG.git refs/heads/main | awk '{print $1}')"
+          AWAVENUE_MAIN_SHA="$(git ls-remote https://github.com/TG-Twilight/AWAvenue-Ads-Rule.git refs/heads/main | awk '{print $1}')"
+          for name in BASELINE_MAIN_SHA HG_MAIN_SHA AWAVENUE_MAIN_SHA; do
+            value="\${!name}"
+            if ! [[ "$value" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::Could not resolve immutable commit for $name."
+              exit 1
+            fi
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
 
       - name: Download snapshots and run offline comparison
         run: python tools/hg_awavenue_audit.py --out audit-output
