@@ -103,7 +103,7 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
     if not flags & 0x8000:
         raise ValueError("packet is not a DNS response")
     if flags & 0x0200:
-        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": bool(flags & 0x0020)}
+        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": bool(flags & 0x0020)}
     if qdcount != 1:
         raise ValueError("DNS response must contain exactly one question")
     offset = 12
