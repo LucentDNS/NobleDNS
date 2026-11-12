@@ -7,7 +7,7 @@ mod = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(mod)
 
 class ParserTests(unittest.TestCase):
     def parse(self, text):
-        return mod.parse_source(text.encode("utf-8"), "test", min_blocks=1)
+        return mod.parse_source(text.encode("utf-8"), "test", min_blocks=1)[:4]
 
     def test_filter_metadata_header(self):
         self.assertEqual(
@@ -123,6 +123,58 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(blocks, {"||ads.example.com^"})
 
 
+    def test_badfilter_directive_targets_exact_supported_rule(self):
+        blocks, exceptions, rejected, rows, directives = mod.parse_source(
+            b"||linksprf.com^\\n||linksprf.com^$badfilter\\n||linksprf.com\\n",
+            "adguard_dns",
+            min_blocks=1,
+        )
+        self.assertEqual(blocks, {"||linksprf.com^", "||linksprf.com"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["modifier_badfilter"], 0)
+        self.assertEqual(rows, [])
+        self.assertEqual(
+            directives,
+            [("adguard_dns", 2, "||linksprf.com^$badfilter", "||linksprf.com^", "pending")],
+        )
+
+    def test_badfilter_unsupported_target_is_audited_and_excluded(self):
+        blocks, exceptions, rejected, rows, directives = mod.parse_source(
+            b"||keep.example.com^\\nwykop.pl$badfilter\\n",
+            "adguard_dns",
+            min_blocks=1,
+        )
+        self.assertEqual(blocks, {"||keep.example.com^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["modifier_badfilter_unsupported_target"], 1)
+        self.assertEqual(rows[0][3], "wykop.pl$badfilter")
+        self.assertEqual(directives[0][4], "unsupported_target_syntax")
+
+    def test_badfilter_removes_exact_target_from_merged_sources(self):
+        parsed = {
+            "adguard_dns": {"||linksprf.com^", "||linksprf.com", "||keep.example.com^"},
+            "hagezi_normal": {"||linksprf.com^", "||other.example.com^"},
+        }
+        exceptions = {"adguard_dns": set(), "hagezi_normal": set()}
+        directives = [
+            ("adguard_dns", 8331, "||linksprf.com^$badfilter", "||linksprf.com^", "pending")
+        ]
+        audit = mod.apply_badfilters(parsed, exceptions, directives)
+        self.assertEqual(parsed["adguard_dns"], {"||linksprf.com", "||keep.example.com^"})
+        self.assertEqual(parsed["hagezi_normal"], {"||other.example.com^"})
+        self.assertEqual(audit[0][4], "applied")
+        self.assertEqual(audit[0][5], "adguard_dns;hagezi_normal")
+
+    def test_badfilter_missing_target_is_recorded_without_broad_removal(self):
+        parsed = {"adguard_dns": {"||keep.example.com^"}, "hagezi_normal": set()}
+        exceptions = {"adguard_dns": set(), "hagezi_normal": set()}
+        directives = [
+            ("adguard_dns", 1, "||missing.example.test^$badfilter", "||missing.example.test^", "pending")
+        ]
+        audit = mod.apply_badfilters(parsed, exceptions, directives)
+        self.assertEqual(parsed["adguard_dns"], {"||keep.example.com^"})
+        self.assertEqual(audit[0][4], "target_not_found")
+
     def test_leading_dot_rules_preserve_subdomain_only_semantics(self):
         blocks, _, rejected, rows = mod.parse_source(
             b".ads.example.com^\n.bare.example.com\n||ok.example.com^\n",
@@ -149,7 +201,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(len(rules), 28)
         self.assertEqual(len(set(rules)), 28)
 
-        blocks, exceptions, rejected, rows = mod.parse_source(
+        blocks, exceptions, rejected, rows, badfilters = mod.parse_source(
             raw, "adguard_dns", min_blocks=0
         )
         self.assertEqual(len(blocks), 27)
@@ -157,5 +209,6 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(rejected["invalid_domain_length_or_trailing_dot"], 1)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][3], ".1080.x.90.")
+        self.assertEqual(badfilters, [])
 
 if __name__ == "__main__": unittest.main()
