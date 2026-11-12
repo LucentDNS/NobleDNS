@@ -119,7 +119,7 @@ jobs:
           cmp -s "$OUT/dns-filter.txt" "$OUT/NobleDNS.txt"
           test -s "$OUT/manifest.json"
           test -s "$OUT/validation-report.txt"
-          test -s "$OUT/whitelist-review.txt"
+          test -s "$OUT/allowlist-active.txt"
           test -s "$OUT/parser-exclusions.csv"
           test -s "$OUT/LICENSE"
           test -s "$OUT/THIRD-PARTY-NOTICES.md"
@@ -148,6 +148,11 @@ jobs:
           assert subscription == legacy, "Legacy subscription differs from canonical list"
           assert f"! Version: {manifest['version']}" in subscription.splitlines(), "Header version differs from manifest"
           assert "! Expires: 1 day" in subscription.splitlines(), "Filter expiry metadata missing"
+          assert manifest.get("active_exception_rules", 0) == len([line for line in subscription.splitlines() if line.startswith("@@")]), "Active exception count differs from manifest"
+          assert manifest.get("main_subscription_rules") == manifest.get("blocking_rules", 0) + manifest.get("active_exception_rules", 0), "Main subscription rule counts are inconsistent"
+          active_allowlist = Path("build-output/latest/allowlist-active.txt").read_text(encoding="utf-8").splitlines()
+          active_rules = [line for line in active_allowlist if line and not line.startswith("!")]
+          assert set(active_rules) == {line for line in subscription.splitlines() if line.startswith("@@")}, "Active allowlist artifact differs from subscription exceptions"
 
           licensing = manifest.get("licensing", {})
           original_code = licensing.get("original_project_code", {})
@@ -346,7 +351,8 @@ jobs:
           cp build-output/latest/NobleDNS.txt NobleDNS.txt
           cp build-output/latest/manifest.json dist/manifest.json
           cp build-output/latest/validation-report.txt dist/validation-report.txt
-          cp build-output/latest/whitelist-review.txt dist/whitelist-review.txt
+          cp build-output/latest/allowlist-active.txt dist/allowlist-active.txt
+          rm -f dist/whitelist-review.txt
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
           cp build-output/latest/syntax-audit.json dist/syntax-audit.json
           cp build-output/latest/syntax-review.csv dist/syntax-review.csv
@@ -396,7 +402,7 @@ jobs:
           cmp -s dist/dns-filter.txt NobleDNS.txt
           test -s dist/manifest.json
           test -s dist/validation-report.txt
-          test -s dist/whitelist-review.txt
+          test -s dist/allowlist-active.txt
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
           test -s dist/syntax-review.csv
@@ -425,7 +431,7 @@ jobs:
             NobleDNS.txt
             dist/manifest.json
             dist/validation-report.txt
-            dist/whitelist-review.txt
+            dist/allowlist-active.txt
             dist/parser-exclusions.csv
             dist/syntax-audit.json
             dist/syntax-review.csv
@@ -543,7 +549,7 @@ jobs:
             NobleDNS.txt
               dist/manifest.json
               dist/validation-report.txt
-              dist/whitelist-review.txt
+              dist/allowlist-active.txt
               dist/parser-exclusions.csv
               dist/syntax-audit.json
               dist/syntax-review.csv
@@ -581,7 +587,7 @@ jobs:
             NobleDNS.txt \
             dist/manifest.json \
             dist/validation-report.txt \
-            dist/whitelist-review.txt \
+            dist/allowlist-active.txt \
             dist/parser-exclusions.csv \
             dist/syntax-audit.json \
             dist/syntax-review.csv \
