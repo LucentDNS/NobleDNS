@@ -262,9 +262,15 @@ class QualityGateTests(unittest.TestCase):
         for record in self.evidence_corpus["records"]:
             hostname = record["hostname"]
             policy = record["expected_policy"]
-            if policy == "blocked" and not is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks):
+            if policy == "blocked" and not is_blocked(
+                hostname, self.blocks, self.exceptions, self.bare_blocks,
+                self.subdomain_blocks, self.bare_subdomain_blocks
+            ):
                 mismatches.append((hostname, policy, "not blocked"))
-            elif policy == "allowed" and is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks):
+            elif policy == "allowed" and is_blocked(
+                hostname, self.blocks, self.exceptions, self.bare_blocks,
+                self.subdomain_blocks, self.bare_subdomain_blocks
+            ):
                 mismatches.append((hostname, policy, "blocked"))
         self.assertFalse(
             mismatches,
