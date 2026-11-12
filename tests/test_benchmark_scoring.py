@@ -175,7 +175,7 @@ class BenchmarkScorerTests(unittest.TestCase):
                     "hostname": "ads.example.test", "category": "ad", "expected": "block",
                     "evidence_ref": "test-evidence", "evidence_summary": "expired evidence",
                     "confidence": "high", "reviewed_on": "2026-10-01", "expires_on": "2026-11-01",
-                    "independent": "true", "reviewer": "reviewer-a",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-b",
                 })
             rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
             self.assertEqual(rows, [])
