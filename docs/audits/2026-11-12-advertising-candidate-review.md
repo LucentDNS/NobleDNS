@@ -12,7 +12,7 @@ Reviewed the exact source snapshots from the successful 2026-11-12 upstream audi
 | anti-AD (AdGuard Home DNS) | `57d5c8fd80e8cf75a55d4e8d2661502b0c353dbf8920fed83fe80a52b1e36e2f` |
 | AdRules DNS | `97545e5a82bc976705b4f4fef85683ea8653fa8da9cb195b76a57533d1f46457` |
 
-The review queue contains 36 distinct `.cn` / `.com.cn` hostnames with advertising-related lexical signals. The exact original source lines are recorded below so the observations can be reproduced from the snapshots. Every entry is still only a candidate.
+The review queue contains 37 distinct `.cn` / `.com.cn` hostnames with advertising-related lexical signals. The exact original source lines are recorded below so the observations can be reproduced from the snapshots. Every entry is still only a candidate.
 
 ## 2. Evidence grading
 
