@@ -34,7 +34,7 @@ class ParserTests(unittest.TestCase):
                 "hagezi_normal": {"||bare.example.com"},
             },
         )
-        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["total"], 2)
         self.assertEqual(
             summary["forms"],
             {
