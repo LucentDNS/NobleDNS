@@ -143,6 +143,12 @@ jobs:
           assert len(manifest.get("sources", {})) == 2, \
               "Expected exactly two upstream sources"
 
+          subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
+          legacy = Path("build-output/latest/NobleDNS.txt").read_text(encoding="utf-8")
+          assert subscription == legacy, "Legacy subscription differs from canonical list"
+          assert f"! Version: {manifest['version']}" in subscription.splitlines(), "Header version differs from manifest"
+          assert "! Expires: 1 day" in subscription.splitlines(), "Filter expiry metadata missing"
+
           licensing = manifest.get("licensing", {})
           original_code = licensing.get("original_project_code", {})
           upstream_data = licensing.get("upstream_rule_data", [])
@@ -416,6 +422,7 @@ jobs:
 
           ASSETS=(
             dist/dns-filter.txt
+            NobleDNS.txt
             dist/manifest.json
             dist/validation-report.txt
             dist/whitelist-review.txt
@@ -533,6 +540,7 @@ jobs:
 
             ASSETS=(
               dist/dns-filter.txt
+            NobleDNS.txt
               dist/manifest.json
               dist/validation-report.txt
               dist/whitelist-review.txt
@@ -570,6 +578,7 @@ jobs:
 
           gh release create "$VERSION_TAG" \
             dist/dns-filter.txt \
+            NobleDNS.txt \
             dist/manifest.json \
             dist/validation-report.txt \
             dist/whitelist-review.txt \
