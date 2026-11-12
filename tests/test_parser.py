@@ -41,6 +41,8 @@ class ParserTests(unittest.TestCase):
             summary["forms"],
             {
                 "domain_and_subdomains": 1,
+                "domain_and_subdomains_end_anchored": 0,
+                "exact_hostname": 0,
                 "domain_anchor_without_end_boundary": 1,
                 "subdomains_only": 0,
             },
@@ -164,6 +166,28 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(parsed["hagezi_normal"], {"||other.example.com^"})
         self.assertEqual(audit[0][4], "applied")
         self.assertEqual(audit[0][5], "adguard_dns;hagezi_normal")
+
+    def test_documented_end_anchored_block_forms_are_preserved(self):
+        blocks, exceptions, rejected, rows, directives = mod.parse_source(
+            b"||clarity.ms^|\\n|a.klaviyo.com^\\n",
+            "adguard_dns",
+            min_blocks=1,
+        )
+        self.assertEqual(blocks, {"||clarity.ms^|", "|a.klaviyo.com^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["other_anchor_syntax"], 0)
+        self.assertEqual(rows, [])
+        self.assertEqual(directives, [])
+
+    def test_badfilter_target_preserves_end_anchored_block_syntax(self):
+        self.assertEqual(
+            mod.normalize_badfilter_target("||clarity.ms^|"),
+            "||clarity.ms^|",
+        )
+        self.assertEqual(
+            mod.normalize_badfilter_target("|a.klaviyo.com^"),
+            "|a.klaviyo.com^",
+        )
 
     def test_documented_exception_anchor_forms_are_preserved(self):
         blocks, exceptions, rejected, rows, directives = mod.parse_source(
