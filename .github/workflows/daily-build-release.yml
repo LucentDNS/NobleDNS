@@ -161,6 +161,8 @@ jobs:
               "Undocumented leading-dot DNS pattern found in public output"
           )
           assert manifest.get("syntax_audit", {}).get("total") == manifest.get("blocking_rules"), "Syntax audit total differs from blocking rule count"
+          assert manifest.get("syntax_audit", {}).get("important_block_rules") == len([line for line in published_rules if not line.startswith("@@") and line.endswith("$important")]), "Important blocking-rule count differs from subscription"
+          assert manifest.get("active_important_exception_rules", 0) == len([line for line in published_rules if line.startswith("@@") and line.endswith("$important")]), "Important exception-rule count differs from subscription"
           badfilter = manifest.get("badfilter_audit", {})
           badfilter_status_total = sum(
               badfilter.get(key, 0)
