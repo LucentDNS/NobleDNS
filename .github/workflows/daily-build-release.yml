@@ -29,6 +29,7 @@ on:
       - 'THIRD-PARTY-NOTICES.md'
       - 'licenses/**'
       - 'dist/**'
+      - 'NobleDNS.txt'
       - '.gitattributes'
       - '.gitignore'
 
@@ -115,6 +116,8 @@ jobs:
           OUT="build-output/latest"
 
           test -s "$OUT/dns-filter.txt"
+          test -s "$OUT/NobleDNS.txt"
+          test -s "$OUT/project-allowlist.txt"
           test -s "$OUT/manifest.json"
           test -s "$OUT/validation-report.txt"
           test -s "$OUT/whitelist-review.txt"
@@ -124,6 +127,8 @@ jobs:
           test -s "$OUT/licenses/GPL-3.0.txt"
           test -s "$OUT/sources/sources-manifest.json"
 
+          cmp -s "$OUT/dns-filter.txt" "$OUT/NobleDNS.txt"
+          cmp -s config/allowlist.txt "$OUT/project-allowlist.txt"
           cmp -s LICENSE "$OUT/LICENSE"
           cmp -s THIRD-PARTY-NOTICES.md "$OUT/THIRD-PARTY-NOTICES.md"
           cmp -s licenses/GPL-3.0.txt "$OUT/licenses/GPL-3.0.txt"
@@ -135,7 +140,7 @@ jobs:
           manifest_path = Path("build-output/latest/manifest.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-          assert manifest.get("blocking_rules", 0) <= 500_000, \
+          assert manifest.get("blocking_rules", 0) + manifest.get("active_allowlist_rules", 0) <= 500_000, \
               "Blocking rule count exceeds the project ceiling"
 
           assert len(manifest.get("sources", {})) == 2, \
@@ -151,7 +156,11 @@ jobs:
           assert isinstance(upstream_data, list) and len(upstream_data) == 2, \
               "Expected licensing metadata for exactly two upstream sources"
 
-          print("Manifest source count, rule ceiling, and licensing metadata verified.")
+          assert manifest.get("version") == "1.1.0", "Unexpected manifest version"
+          subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
+          assert "! Version: 1.1.0\\n" in subscription, "Subscription version metadata mismatch"
+          assert "! Expires: 1 day\\n" in subscription, "Subscription expiry metadata missing"
+          print("Manifest source count, rule ceiling, subscription metadata, and licensing metadata verified.")
           PY
 
       - name: Compare rules and source fingerprints
@@ -189,7 +198,7 @@ jobs:
               else ""
           )
 
-          audit_paths = ("syntax-audit.json", "syntax-review.csv")
+          audit_paths = ("syntax-audit.json", "syntax-review.csv", "parser-exclusions.csv", "project-allowlist.txt")
           audit_changed = any(
               not (Path("dist") / name).exists()
               or hashlib.sha256((Path("build-output/latest") / name).read_bytes()).hexdigest()
@@ -227,7 +236,9 @@ jobs:
           rules_changed = new_hash != old.get("main_subscription_sha256", "")
           sources_changed = new_sources != old_sources
           file_changed = new_file_hash != old_file_hash
-          publish_update = rules_changed or sources_changed or file_changed or audit_changed
+          legacy_path = Path("NobleDNS.txt")
+          legacy_changed = not legacy_path.exists() or hashlib.sha256(legacy_path.read_bytes()).hexdigest() != new_file_hash
+          publish_update = rules_changed or sources_changed or file_changed or audit_changed or legacy_changed
 
           output = Path(os.environ["GITHUB_OUTPUT"])
           with output.open("a", encoding="utf-8") as f:
@@ -241,6 +252,7 @@ jobs:
           print(f"Rules changed: {rules_changed}")
           print(f"Sources changed: {sources_changed}")
           print(f"Subscription file changed: {file_changed}")
+          print(f"Legacy subscription path changed: {legacy_changed}")
           print(f"Syntax audit changed: {audit_changed}")
           print(f"Publish update required: {publish_update}")
           print(f"New rule SHA256: {new_hash}")
@@ -335,6 +347,8 @@ jobs:
           mkdir -p dist
 
           cp build-output/latest/dns-filter.txt dist/dns-filter.txt
+          cp build-output/latest/NobleDNS.txt NobleDNS.txt
+          cp build-output/latest/project-allowlist.txt dist/project-allowlist.txt
           cp build-output/latest/manifest.json dist/manifest.json
           cp build-output/latest/validation-report.txt dist/validation-report.txt
           cp build-output/latest/whitelist-review.txt dist/whitelist-review.txt
@@ -350,7 +364,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add dist/
+          git add dist/ NobleDNS.txt
 
           if ! git diff --cached --quiet; then
             git commit -m "chore(data): refresh NobleDNS artifacts $(date -u +%Y-%m-%d)"
@@ -383,6 +397,9 @@ jobs:
           set -euo pipefail
 
           test -s dist/dns-filter.txt
+          test -s NobleDNS.txt
+          test -s dist/project-allowlist.txt
+          cmp -s dist/dns-filter.txt NobleDNS.txt
           test -s dist/manifest.json
           test -s dist/validation-report.txt
           test -s dist/whitelist-review.txt
@@ -411,6 +428,8 @@ jobs:
 
           ASSETS=(
             dist/dns-filter.txt
+            NobleDNS.txt
+            dist/project-allowlist.txt
             dist/manifest.json
             dist/validation-report.txt
             dist/whitelist-review.txt
@@ -528,6 +547,8 @@ jobs:
 
             ASSETS=(
               dist/dns-filter.txt
+              NobleDNS.txt
+              dist/project-allowlist.txt
               dist/manifest.json
               dist/validation-report.txt
               dist/whitelist-review.txt
@@ -565,6 +586,8 @@ jobs:
 
           gh release create "$VERSION_TAG" \
             dist/dns-filter.txt \
+            NobleDNS.txt \
+            dist/project-allowlist.txt \
             dist/manifest.json \
             dist/validation-report.txt \
             dist/whitelist-review.txt \
