@@ -7,7 +7,7 @@ class ConfigTests(unittest.TestCase):
     def test_filter_header_declares_subscription_title(self):
         self.assertTrue(mod.FILTER_HEADER.startswith("! Title: NobleDNS Filter\n"))
         self.assertIn("! Homepage: https://github.com/LucentDNS/NobleDNS\n", mod.FILTER_HEADER)
-        self.assertIn("! Content: Listed domains are included as blocking targets only.\n", mod.FILTER_HEADER)
+        self.assertIn("! Content: Includes supported DNS blocking and exception rules; each rule retains its documented matching behavior.\n", mod.FILTER_HEADER)
 
     def test_subscription_banner_includes_last_modified_and_block_count(self):
         rendered = mod.render_subscription(
