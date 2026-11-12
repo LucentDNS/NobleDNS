@@ -39,12 +39,11 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 1. Fresh observations exist for both A and AAAA.
 2. The latest observation for every resolver/operator/vantage/qtype tuple is NXDOMAIN.
 3. At least three distinct resolver operators are represented, and **each qualifying operator must be observed from at least two genuinely distinct vantage points**. Resolver ownership and vantage geography must be independently verified; labels alone are not proof.
-4. At least three resolver/operator/vantage combinations have both A and AAAA results.
-5. At least three resolver/operator/vantage combinations have both A and AAAA results.
-6. **Every resolver/operator/vantage pair in the quorum** has at least two complete UTC-day rounds, each containing NXDOMAIN for both A and AAAA and no conflicting or failed response for either qtype that day. That pair's own first-to-last complete-round span must be at least seven full elapsed days. A historical result from one pair cannot extend the observation window of a newer quorum formed by other pairs.
-7. Every latest NXDOMAIN response includes exactly one relevant SOA authority zone that is an ancestor of the queried hostname, and that zone is consistent across the full resolver/vantage quorum. Missing or inconsistent SOA evidence receives a separate manual-review status, never a stable candidate.
-8. Observations are no older than 30 days by default.
-9. Observation timestamps cannot be in the future. A/AAAA answers must be syntactically valid IP addresses of the queried address family; non-NOERROR responses cannot carry address answers.
+4. At least three resolver/operator/vantage combinations have both A and AAAA results, and every represented pair must have complete A/AAAA coverage.
+5. **Every resolver/operator/vantage pair in the quorum** has at least two complete UTC-day rounds, each containing NXDOMAIN for both A and AAAA and no conflicting or failed response for either qtype that day. That pair's own first-to-last complete-round span must be at least seven full elapsed days. A historical result from one pair cannot extend the observation window of a newer quorum formed by other pairs.
+6. Every latest NXDOMAIN response includes exactly one relevant SOA authority zone that is an ancestor of the queried hostname, and that zone is consistent across the full resolver/vantage quorum. Missing or inconsistent SOA evidence receives a separate manual-review status, never a stable candidate.
+7. Observations are no older than 30 days by default.
+8. Observation timestamps cannot be in the future. A/AAAA answers must be syntactically valid IP addresses of the queried address family; non-NOERROR responses cannot carry address answers.
 
 The threshold is intentionally conservative. It reduces the chance that one resolver outage, one region, one query type, or one short-lived DNS change is mistaken for a dead domain. It does not prove that the domain is malicious, unregistered, abandoned, or safe to unblock.
 
