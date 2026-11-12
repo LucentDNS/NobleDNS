@@ -32,11 +32,11 @@ class BenchmarkScorerTests(unittest.TestCase):
         self.assertEqual(scorer.decide("www.example.test", caret, set())[0], "block")
 
     def test_leading_dot_matches_subdomains_only(self) -> None:
-        blocks = {".example.test^", ".bare.example.test"}
+        blocks = {".example.test^", ".bare.example.net"}
         self.assertEqual(scorer.decide("example.test", blocks, set())[0], "allow")
         self.assertEqual(scorer.decide("www.example.test", blocks, set())[0], "block")
-        self.assertEqual(scorer.decide("bare.example.test", blocks, set())[0], "allow")
-        self.assertEqual(scorer.decide("cdn.bare.example.test", blocks, set())[0], "block")
+        self.assertEqual(scorer.decide("bare.example.net", blocks, set())[0], "allow")
+        self.assertEqual(scorer.decide("cdn.bare.example.net", blocks, set())[0], "block")
 
     def test_rule_loader_accepts_all_supported_forms(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
