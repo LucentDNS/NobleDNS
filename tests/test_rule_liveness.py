@@ -221,5 +221,33 @@ class RuleLivenessTests(unittest.TestCase):
             )
 
 
+    def test_cname_chain_is_not_misclassified_as_dead_domain(self):
+        row = observation(rcode="NXDOMAIN")
+        row["cname_chain"] = ["edge.example.net"]
+        row["dnssec_ad"] = True
+        row["resolver_endpoint"] = "https://dns.google/dns-query"
+        rows = mod.validate_observations(
+            {"schema_version": 1, "observations": [row]}, NOW
+        )
+        status, _ = mod.classify(rows, NOW, 30)
+        self.assertEqual(status, "cname_chain_observed_manual_review")
+
+    def test_invalid_cname_target_is_rejected(self):
+        row = observation()
+        row["cname_chain"] = ["*.example.net"]
+        with self.assertRaisesRegex(ValueError, "invalid CNAME target"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+    def test_dnssec_flag_must_be_boolean(self):
+        row = observation()
+        row["dnssec_ad"] = "true"
+        with self.assertRaisesRegex(ValueError, "dnssec_ad must be a boolean"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
