@@ -14,8 +14,13 @@ class PublicArtifactContractTests(unittest.TestCase):
             workflow,
         )
         self.assertIn("test -s dist/badfilter-audit.csv", workflow)
-        self.assertIn("dist/badfilter-audit.csv", workflow)
-        self.assertIn('"badfilter-audit.csv"', workflow)
+        assets_start = workflow.index("ASSETS=(")
+        assets_end = workflow.index(")", assets_start)
+        self.assertIn("dist/badfilter-audit.csv", workflow[assets_start:assets_end])
+
+        audit_start = workflow.index("audit_paths = (")
+        audit_end = workflow.index(")", audit_start)
+        self.assertIn('"badfilter-audit.csv"', workflow[audit_start:audit_end])
 
 
 if __name__ == "__main__":
