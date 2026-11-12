@@ -302,83 +302,6 @@ def write_csv(path: Path, headers: list[str], rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
-def markdown_source_report(title: str, source_name: str, source_url: str, metadata: dict,
-                           parsed: dict, metrics: dict, license_text: str, extra: str = "") -> str:
-    rejected = "\n".join(
-        f"| {reason} | {count:,} |" for reason, count in parsed["rejected"].items()
-    ) or "| None | 0 |"
-    essential = metrics["essential_fixture_hits"]
-    known = metrics["known_ad_fixture_hits"]
-    return f"""# {title}
-
-> Offline source audit only. No rule from this report is approved for NobleDNS. No production configuration, subscription, or release artifact is modified.
-
-## Snapshot and provenance
-
-- Source: {source_name}
-- URL: {source_url}
-- Downloaded bytes: {parsed['bytes']:,}
-- SHA-256: {parsed['sha256']}
-- Raw non-comment rule lines: {parsed['raw_rule_lines']:,}
-- NobleDNS baseline: {os.environ.get('BASELINE_MAIN_SHA', 'main branch SHA not supplied by workflow')}
-- Audit time (UTC): {datetime.now(timezone.utc).isoformat()}
-- License assessment: {license_text}
-
-## Parser results
-
-| Measure | Count |
-|---|---:|
-| Unique supported blocking domains | {metrics['unique_block_domains']:,} |
-| Explicit hostname-end rules (||domain^) | {metrics['caret_block_domains']:,} |
-| Bare hostname-start rules (||domain) | {metrics['bare_block_domains']:,} |
-| Supported exception domains | {metrics['exception_domains']:,} |
-| Exact overlap with NobleDNS baseline | {metrics['exact_overlap_with_baseline']:,} |
-| Exact unique domains vs baseline | {metrics['exact_unique_vs_baseline']:,} |
-| Unique but already covered by a baseline parent rule | {metrics['unique_but_already_covered_by_baseline_parent']:,} |
-| Unique domains not covered by a baseline parent rule | {metrics['unique_not_covered_by_baseline_parent']:,} |
-| Candidate rules that broaden existing baseline scope | {metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
-| Baseline block domains affected by candidate parent rules | {metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
-| Candidate blocks overlapping baseline exceptions | {metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
-| Candidate exceptions overlapping baseline blocks | {metrics['candidate_exceptions_overlapping_baseline_blocks']:,} |
-
-### Rejected or unsupported input
-
-| Reason | Lines |
-|---|---:|
-{rejected}
-
-## Mainland-use lexical signals
-
-These are hostname-string signals only, not verified classifications or evidence of current endpoint behavior.
-
-{json.dumps(lexical_signals(set(parsed['caret']) | set(parsed['bare'])), ensure_ascii=False, indent=2)}
-
-## Regression fixture cross-check
-
-- Essential-service fixture: {len(essential)} hostnames; {len(essential)}-host corpus is a small sentinel set, not a representative compatibility study.
-- Essential-service collisions: {len(essential)}? **{len(essential)} fixture entries checked; {len(essential)}?** 
-- Actual essential collisions: **{len(essential)} fixture entries affected: {len(essential)}?**
-
-{json.dumps(essential, ensure_ascii=False) if not essential else json.dumps(essential, ensure_ascii=False)}
-
-### Actual essential-service matches
-
-{json.dumps(essential, ensure_ascii=False) if not essential else json.dumps(essential, ensure_ascii=False)}
-
-### Known-ad fixture coverage
-
-{len(known)} of the {len(known)} fixture hostnames are covered. Matching entries:
-
-{json.dumps(known, ensure_ascii=False, indent=2)}
-
-## Review notes
-
-{extra}
-
-No automatic acceptance is recommended. A source-level match, hostname token, or lack of collision with a small fixture does not establish endpoint purpose, safety, or real-world compatibility.
-"""
-
-
 def render_source_report(title: str, source_name: str, source_url: str, parsed: dict,
                          metrics: dict, license_text: str, essential: list[str],
                          known_ads: list[str], extra: str = "") -> str:
@@ -417,7 +340,8 @@ def render_source_report(title: str, source_name: str, source_url: str, parsed: 
 | Unique domains not covered by a baseline parent rule | {metrics['unique_not_covered_by_baseline_parent']:,} |
 | Candidate rules that broaden existing baseline scope | {metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
 | Baseline block domains affected by candidate parent rules | {metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
-| Candidate blocks overlapping baseline exceptions | {metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
+| Candidate blocks overlapping baseline exceptions (all source rules) | {metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
+| New candidate blocks overlapping baseline exceptions | {metrics['new_candidate_blocks_overlapping_baseline_exceptions']:,} |
 | Candidate exceptions overlapping baseline blocks | {metrics['candidate_exceptions_overlapping_baseline_blocks']:,} |
 
 ### Rejected or unsupported input
@@ -469,6 +393,20 @@ def self_test() -> None:
         raise AssertionError("bare-anchor prefix semantics test failed")
     if rule_matches_host("||bare.example.com^", "bare.example.com.evil.test"):
         raise AssertionError("caret hostname boundary test failed")
+
+    baseline = parse_snapshot(
+        "baseline-test",
+        b"||example.com^\n||x.newparent.example.net^\n"
+    )
+    candidate = parse_snapshot(
+        "candidate-test",
+        b"||example.com^\n||newparent.example.net^\n||redundant.example.com^\n"
+    )
+    metrics = source_metrics(candidate, baseline, [], [])
+    if metrics["candidate_rules_broadening_existing_baseline_scope"] != 1:
+        raise AssertionError("scope-expansion metric must exclude exact and already-covered rules")
+    if metrics["baseline_block_domains_affected_by_candidate_parent_rules"] != 1:
+        raise AssertionError("scope-expansion metric must count only newly affected baseline domains")
 
 
 def main() -> int:
@@ -700,7 +638,8 @@ def main() -> int:
 | New domains not already covered by a baseline parent rule | {merged_metrics['unique_not_covered_by_baseline_parent']:,} |
 | Candidate rules that broaden existing baseline scope | {merged_metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
 | Baseline block domains affected by candidate parent rules | {merged_metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
-| Candidate blocks overlapping baseline exceptions | {merged_metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
+| Candidate blocks overlapping baseline exceptions (all source rules) | {merged_metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
+| New candidate blocks overlapping baseline exceptions | {merged_metrics['new_candidate_blocks_overlapping_baseline_exceptions']:,} |
 | Candidate exceptions overlapping baseline blocks | {merged_metrics['candidate_exceptions_overlapping_baseline_blocks']:,} |
 | Projected total if every exact new block rule were appended | {projected_rule_count:,} / {builder.MAX_RULES:,} |
 
