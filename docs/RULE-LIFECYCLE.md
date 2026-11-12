@@ -40,10 +40,11 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 5. At least three resolver/operator/vantage combinations have both A and AAAA results.
 6. The fresh NXDOMAIN observation history spans at least seven full elapsed days.
 7. Observations are no older than 30 days by default.
+8. Observation timestamps cannot be in the future. A/AAAA answers must be syntactically valid IP addresses of the queried address family; non-NOERROR responses cannot carry address answers.
 
 The threshold is intentionally conservative. It reduces the chance that one resolver outage, one region, one query type, or one short-lived DNS change is mistaken for a dead domain. It does not prove that the domain is malicious, unregistered, abandoned, or safe to unblock.
 
-Resolvers and vantage points must be genuinely independent. Do not count multiple endpoints operated by the same provider as independent operators. A single CI runner is not multiple geographic vantage points.
+Resolvers and vantage points must be genuinely independent. Do not count multiple endpoints operated by the same provider as independent operators. A single CI runner is not multiple geographic vantage points. The tool can validate the labels and observation structure, but it cannot cryptographically prove operator ownership or geographic independence; that verification must be documented by the collector/reviewer before evidence is accepted.
 
 ## What must happen before a removal proposal
 
