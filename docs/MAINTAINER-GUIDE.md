@@ -28,7 +28,6 @@ NobleDNS/
 ├── config/
 │   └── sources.json
 ├── docs/
-│   ├── CHANGELOG.md
 │   ├── FEEDBACK.md
 │   ├── MAINTAINER-GUIDE.md
 │   ├── MAINTAINER-GUIDE.zh-CN.md
