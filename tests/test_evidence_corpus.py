@@ -29,6 +29,12 @@ class EvidenceCorpusTests(unittest.TestCase):
     def corpus(self, records=None):
         return {"schema_version": 1, "records": records or []}
 
+    def test_schema_version_rejects_boolean_and_float(self):
+        for version in (True, 1.0):
+            data = self.corpus()
+            data["schema_version"] = version
+            self.assertTrue(any("schema_version must be the integer 1" in e for e in validate_corpus(data, NOW)))
+
     def test_empty_public_corpus_is_valid(self):
         path = Path(__file__).parent / "fixtures" / "evidence-corpus.json"
         self.assertEqual(validate_corpus(json.loads(path.read_text(encoding="utf-8")), NOW), [])
@@ -81,6 +87,22 @@ class EvidenceCorpusTests(unittest.TestCase):
         errors = validate_corpus(self.corpus([record]), NOW)
         self.assertTrue(any("confirmed_ad requires" in e for e in errors))
         self.assertTrue(any("upstream_rule evidence alone" in e for e in errors))
+
+    def test_confirmed_tracker_requires_high_confidence_independent_evidence(self):
+        record = copy.deepcopy(VALID)
+        record.update(classification="confirmed_tracker", confidence="medium")
+        self.assertTrue(any("confirmed privacy-risk records require high-confidence" in e for e in validate_corpus(self.corpus([record]), NOW)))
+        record["confidence"] = "high"
+        record["evidence_type"] = "user_report"
+        self.assertTrue(any("confirmed privacy-risk records require high-confidence" in e for e in validate_corpus(self.corpus([record]), NOW)))
+
+    def test_essential_service_requires_high_confidence_independent_evidence(self):
+        record = copy.deepcopy(VALID)
+        record.update(classification="essential_service", expected_policy="allowed", confidence="low")
+        self.assertTrue(any("essential_service requires high-confidence" in e for e in validate_corpus(self.corpus([record]), NOW)))
+        record["confidence"] = "high"
+        record["evidence_type"] = "synthetic_test"
+        self.assertTrue(any("essential_service requires high-confidence" in e for e in validate_corpus(self.corpus([record]), NOW)))
 
     def test_confirmed_ad_requires_high_confidence(self):
         record = copy.deepcopy(VALID)
