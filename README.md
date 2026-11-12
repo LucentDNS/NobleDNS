@@ -18,16 +18,15 @@ We maintain **one balanced edition**—one subscription, one quality standard, o
 
 “Mainland-oriented” and “low false-positive” describe the project's design priorities. We work toward that goal through conservative rule scope, compatibility-focused review and reproducible correction—not through unsupported numerical promises.
 
-## Current build at a glance
+## Current build statistics
 
-v1.0.3 baseline snapshot, verified **2026-11-12 (UTC)**.
+The validated build manifest is the source of truth for the current rule counts, source fingerprints, build timestamp and parser exclusions. These values can change when approved upstream sources are updated, so they are intentionally not duplicated as fixed numbers in this README.
 
-- **303,625** unique blocking rules, plus **11** active upstream exceptions (**303,636** total subscription rules).
-- **189,716** supported simple blocking rules parsed from AdGuard DNS Filter are retained in the merged set.
-- **113,909** additional HaGeZi-only blocking rules are added relative to the AdGuard DNS Filter baseline.
-- The merged output is the union of the two parsed source sets; unsupported or complex upstream syntax is excluded rather than guessed or rewritten.
+- [Current build manifest](dist/manifest.json)
+- [Latest validation report](dist/validation-report.txt)
+- [Syntax inventory and parser exclusions](dist/syntax-audit.json)
 
-These are build-manifest counts, not a claim that every raw upstream line is supported or that every listed domain has been individually reviewed. See the [manifest](dist/manifest.json) for source fingerprints and exact build metadata.
+The compiled subscription is the union of the supported rules parsed from the two approved sources. Unsupported or complex upstream syntax is excluded rather than guessed or rewritten. Manifest counts describe parsed rules; they do not mean every raw upstream line is supported or every domain has been individually reviewed.
 
 ## Subscribe
 
