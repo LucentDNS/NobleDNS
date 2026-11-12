@@ -4,6 +4,14 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+### Fixed
+- Restore the legacy root-level `NobleDNS.txt` subscription as a byte-identical build artifact and publish it alongside the canonical `dist/dns-filter.txt` list.
+- Add filter version and one-day expiry metadata, with automated checks against the build manifest.
+- Bump the next stable release line to 1.0.1 so the immutable v1.0.0 release remains untouched.
+
+### Changed
+- Clarify that upstream exceptions remain review-only until individually assessed for cross-source precedence and approved by the project.
+
 ### Changed
 - Rework the project homepages to lead with user value, the single balanced edition, mainland-use priorities and practical subscription guidance.
 - Keep detailed verification scope and evidence limitations in the quality documentation rather than foregrounding them as a warning block on the homepage.
