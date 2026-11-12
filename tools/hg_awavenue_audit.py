@@ -479,11 +479,11 @@ def self_test() -> None:
 
     baseline = parse_snapshot(
         "baseline-test",
-        b"||example.com^\n||x.newparent.example.net^\n"
+        b"||example.com^\n||x.newparent.example.net^\n||bare.example.com^\n"
     )
     candidate = parse_snapshot(
         "candidate-test",
-        b"||example.com^\n||newparent.example.net^\n||redundant.example.com^\n"
+        b"||example.com^\n||newparent.example.net^\n||redundant.example.com^\n||bare.example.com\n"
     )
     metrics = source_metrics(candidate, baseline, [], [])
     if metrics["candidate_rules_broadening_existing_baseline_scope"] != 2:
@@ -626,8 +626,12 @@ def main() -> int:
         "merged_increment": {
             "exact_new_rules_vs_baseline": merged_rule_exact_unique,
             "new_unique_domains_vs_baseline": merged_domain_exact_unique,
+            "effective_new_rules_vs_baseline": merged_metrics["effective_new_rules_vs_baseline"],
+            "effective_new_domains_vs_baseline": merged_metrics["effective_new_domains_vs_baseline"],
             "new_domains_not_covered_by_baseline_parent": merged_metrics["unique_not_covered_by_baseline_parent"],
             "candidate_rules_broadening_existing_baseline_scope": merged_metrics["candidate_rules_broadening_existing_baseline_scope"],
+            "baseline_block_domains_affected_by_candidate_parent_rules": merged_metrics["baseline_block_domains_affected_by_candidate_parent_rules"],
+            "new_candidate_blocks_overlapping_baseline_exceptions": merged_metrics["new_candidate_blocks_overlapping_baseline_exceptions"],
             "essential_fixture_hits": merged_metrics["essential_fixture_hits"],
             "known_ad_fixture_hits": merged_metrics["known_ad_fixture_hits"],
             "projected_subscription_rule_count_if_all_exact_new_rules_added": projected_rule_count,
@@ -779,7 +783,6 @@ No production source configuration, public rules, manifest, subscription, or rel
     effective_incremental_rows = []
     for source_key in ("hg1", "awavenue_full", "awavenue_only_ads"):
         source = parsed[source_key]
-        source_metrics_row = metrics[source_key]
         for rule in sorted(source["blocks"]):
             domain = rule_domain(rule)
             match = RULE_RE.fullmatch(rule)
