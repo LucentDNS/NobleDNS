@@ -13,7 +13,7 @@ NobleDNS 的维护目标是轻量、稳定、可审计，并持续维护规则�
 1. 不为了增加规则数量而盲目增加上游。
 2. 不擅自改变现有规则语义。
 3. 不将无法确认语义的复杂规则转换成简单规则。
-4. 不将上游例外规则直接加入主拦截订阅。
+4. 仅允许解析器支持、通过域名校验的简单上游例外规则进入主订阅；复杂或不支持的例外规则必须排除。
 5. 不绕过异常检测、规则数量上限和输出校验。
 6. 所有重要变更必须经过本地验证或 GitHub Actions 验证。
 7. 不在没有证据的情况下宣称规则已经达到生产级质量。
@@ -115,9 +115,7 @@ py -3.12 .\update.py --out .\build-output --previous-manifest .\dist\manifest.js
 ```
 
 
-如果网络需要代理，可以使用：
-
-仅使用受信任的本机或可信网络代理。`--proxy` 应传入明确的 HTTP/HTTPS 代理地址；源站仍通过 HTTPS 下载。不要将带账号密码的代理 URI 写入命令历史、维护日志、提交内容或 CI 日志。GitHub Actions 不应依赖维护者个人电脑上的代理。
+如果网络需要代理，可以显式指定可信的 HTTP/HTTPS 代理端点。代理地址不能包含账号密码、路径、查询参数或片段。未指定 `--proxy` 时，构建器不会读取系统代理环境变量；源站必须保持 HTTPS，HTTPS 到 HTTP 的重定向会被拒绝。GitHub Actions 不应依赖维护者个人电脑上的代理。
 
 ```powershell
 py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previous-manifest .\dist\manifest.json
@@ -162,7 +160,7 @@ git diff --check
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）也必须通过回归测试，不得只依赖临时人工测试。前置点规则在 AdGuard DNS 规则语法中具有子域名专用语义，不得改写为 `||domain^`，以免扩大到 apex 域名。
+所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
 
 ### 4.5 审查规则变化
 
@@ -175,7 +173,7 @@ git diff --check
 - 上游来源变化。
 - 两个来源之间的重叠变化。
 - 复杂语法排除变化。
-- 前置点规则（`.domain^`、`.domain`）的保留与排除变化。
+- 前置点规则（`.domain^`、`.domain`）的排除数量变化。
 - 例外规则变化及其是否进入 `allowlist-active.txt`。
 - 确认 `allowlist-active.txt` 中每条规则都出现在主订阅中，并核对 manifest 的 `active_exception_rules`。
 

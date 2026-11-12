@@ -21,6 +21,42 @@ class ConfigTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 mod.validate_proxy_url(value)
 
+
+    def test_fetch_disables_ambient_proxy_when_no_proxy_is_supplied(self):
+        from unittest.mock import patch
+
+        data = b"||example.com^\n" * 10000
+
+        class Response:
+            status = 200
+            headers = {"Content-Length": str(len(data))}
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def geturl(self): return "https://source.example/filter.txt"
+            def read(self, limit): return data
+
+        with patch("urllib.request.build_opener") as build_opener:
+            build_opener.return_value.open.return_value = Response()
+            result = mod.fetch("https://source.example/filter.txt", None)
+        self.assertEqual(result, data)
+        handler = build_opener.call_args.args[0]
+        self.assertEqual(handler.proxies, {})
+
+    def test_fetch_rejects_https_to_http_redirect(self):
+        from unittest.mock import patch
+
+        class Response:
+            status = 200
+            headers = {}
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def geturl(self): return "http://source.example/filter.txt"
+
+        with patch("urllib.request.build_opener") as build_opener, patch.object(mod.time, "sleep"):
+            build_opener.return_value.open.return_value = Response()
+            with self.assertRaisesRegex(RuntimeError, "Download failed after 5 attempts"):
+                mod.fetch("https://source.example/filter.txt", None)
+
     def test_exactly_two_approved_sources(self):
         cfg = mod.load_config()
         self.assertEqual([x["key"] for x in cfg["sources"]], ["adguard_dns", "hagezi_normal"])

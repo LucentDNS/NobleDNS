@@ -26,30 +26,26 @@ class ParserTests(unittest.TestCase):
         rules = {
             "||ads.example.com^",
             "||bare.example.com",
-            ".sub.example.com^",
-            ".bare.example.com",
         }
         summary, review = mod.syntax_audit(
             rules,
             {
-                "adguard_dns": {".sub.example.com^", "||ads.example.com^"},
-                "hagezi_normal": {"||bare.example.com", ".bare.example.com"},
+                "adguard_dns": {"||ads.example.com^"},
+                "hagezi_normal": {"||bare.example.com"},
             },
         )
-        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["total"], 2)
         self.assertEqual(
             summary["forms"],
             {
                 "domain_and_subdomains": 1,
                 "domain_anchor_without_end_boundary": 1,
-                "subdomains_only_with_end_boundary": 1,
-                "subdomains_only": 1,
             },
         )
         self.assertEqual(summary["review_required"], 1)
         self.assertEqual(len(review), 1)
         self.assertEqual(review[0][0], "||bare.example.com")
-        self.assertIn("does not block the apex", summary["semantics"]["subdomains_only"])
+        self.assertIn("hostname-start anchor", summary["semantics"]["domain_anchor_without_end_boundary"])
 
     def test_caret_rule(self):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
@@ -123,86 +119,32 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(blocks, {"||ads.example.com^"})
 
 
-    def test_leading_dot_caret_preserved(self):
-        blocks, _, rejected, _ = self.parse(".ads.example.com^\n")
-        self.assertEqual(blocks, {".ads.example.com^"})
-        self.assertEqual(sum(rejected.values()), 0)
-
-    def test_leading_dot_bare_preserved(self):
-        blocks, _, rejected, _ = self.parse(".ads.example.com\n")
-        self.assertEqual(blocks, {".ads.example.com"})
-        self.assertEqual(sum(rejected.values()), 0)
-
-    def test_leading_dot_rules_mixed(self):
-        blocks, _, rejected, _ = self.parse(
-            ".a.example.com^\n"
-            ".b.example.com\n"
-            "||c.example.com^\n"
-        )
-        self.assertEqual(
-            blocks,
-            {
-                ".a.example.com^",
-                ".b.example.com",
-                "||c.example.com^",
-            },
-        )
-        self.assertEqual(sum(rejected.values()), 0)
-
-    def test_leading_dot_trailing_dot_rejected(self):
-        blocks, _, rejected, rows = self.parse(
-            ".1080.x.90.\n"
-            "||ok.example.com^\n"
+    def test_leading_dot_rules_are_rejected(self):
+        blocks, _, rejected, rows = mod.parse_source(
+            b".ads.example.com^\n.bare.example.com\n||ok.example.com^\n",
+            "test",
+            min_blocks=1,
         )
         self.assertEqual(blocks, {"||ok.example.com^"})
-        self.assertEqual(
-            rejected["invalid_domain_length_or_trailing_dot"], 1
-        )
-        self.assertTrue(
-            any(row[3] == ".1080.x.90." for row in rows)
-        )
+        self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 2)
+        self.assertEqual([row[3] for row in rows], [".ads.example.com^", ".bare.example.com"])
 
-    def test_leading_dot_wildcard_rejected(self):
-        blocks, _, rejected, _ = self.parse(
-            ".*.example.com^\n"
-            "||ok.example.com^\n"
-        )
-        self.assertEqual(blocks, {"||ok.example.com^"})
-        self.assertEqual(rejected["wildcard_syntax"], 1)
+    def test_syntax_audit_rejects_leading_dot_forms(self):
+        with self.assertRaisesRegex(ValueError, "Rule missing from syntax audit"):
+            mod.syntax_audit({".ads.example.com^"}, {})
 
-    def test_real_upstream_leading_dot_fixture(self):
+    def test_real_upstream_leading_dot_fixture_is_fully_excluded(self):
         fixture = Path(__file__).parent / "fixtures" / "leading-dot-rules.txt"
         raw = fixture.read_bytes()
         rules = raw.decode("utf-8").splitlines()
-
         self.assertEqual(len(rules), 28)
         self.assertEqual(len(set(rules)), 28)
 
-        caret = [rule for rule in rules if rule.endswith("^")]
-        bare = [
-            rule for rule in rules
-            if not rule.endswith("^") and not rule.endswith(".")
-        ]
-        trailing = [rule for rule in rules if rule.endswith(".")]
-
-        self.assertEqual(len(caret), 23)
-        self.assertEqual(len(bare), 4)
-        self.assertEqual(len(trailing), 1)
-        self.assertEqual(trailing, [".1080.x.90."])
-
         blocks, exceptions, rejected, rows = mod.parse_source(
-            raw, "adguard_dns", min_blocks=1
+            raw, "adguard_dns", min_blocks=0
         )
-
-        expected = {rule for rule in rules if not rule.endswith(".")}
-
-        self.assertEqual(blocks, expected)
-        self.assertEqual(len(blocks), 27)
+        self.assertEqual(blocks, set())
         self.assertEqual(exceptions, set())
-        self.assertEqual(
-            dict(rejected),
-            {"invalid_domain_length_or_trailing_dot": 1},
-        )
-        self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0][3], ".1080.x.90.")
+        self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 28)
+        self.assertEqual(len(rows), 28)
 if __name__ == "__main__": unittest.main()
