@@ -71,31 +71,34 @@ Tencent's official documentation publishes the DNSPod DoH/DoT endpoints, a 20 QP
 
 The example deliberately does not count security-filtering resolvers as neutral evidence. 360 Safe DNS's own product page describes threat-intelligence-backed security features, so its response policy needs separate verification before it could be admitted to a dead-domain quorum. We also do not hard-code a generic AliDNS hostname: current Alibaba HTTPDNS documentation describes account-configured DoH endpoints, so a usable public endpoint must be verified before inclusion.
 
-Example PowerShell invocation:
+Example PowerShell invocation (run once per day from each location; the timestamp prevents overwriting earlier observations):
 
 ```powershell
+$stamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
 py -3.12 .\tools\collect_dns_liveness.py `
-  --sample .\private-audit\review-sample.txt `
+  --sample .\docs\audits\2026-11-12-liveness-pilot-sample.txt `
   --resolvers .\tools\dns-liveness-resolvers.example.json `
-  --vantage "operator-assigned-location-label" `
-  --output .\private-audit\observations.json
+  --vantage "site-a" `
+  --output ".\private-audit\observations-site-a-$stamp.json"
 ```
 
-Run the same reviewed sample from each location on multiple dates spanning at least seven full days. After collecting, merge the separate JSON files without changing their observation rows:
+At the second genuinely different location, use the same sample and resolver configuration, change `--vantage` to `site-b`, and use the corresponding `observations-site-b-$stamp.json` output name. Repeat on dates spanning at least seven full days. **Do not reuse a fixed output filename:** the collector writes a new document and will overwrite an existing file at that path.
+
+After collecting all daily files, merge them without altering individual observations. This PowerShell example writes UTF-8 without a BOM so Python's JSON reader can consume it:
 
 ```powershell
-$files = @(
-  ".\private-audit\observations-site-a.json",
-  ".\private-audit\observations-site-b.json"
-)
+$files = Get-ChildItem -LiteralPath .\private-audit -Filter "observations-*.json" -File |
+  Sort-Object Name
 $all = foreach ($file in $files) {
-  $doc = Get-Content -Raw -Encoding UTF8 $file | ConvertFrom-Json
-  if ($doc.schema_version -ne 1) { throw "Unsupported observation schema: $file" }
+  $doc = Get-Content -Raw -Encoding UTF8 $file.FullName | ConvertFrom-Json
+  if ($doc.schema_version -ne 1) { throw "Unsupported observation schema: $($file.Name)" }
   $doc.observations
 }
-[ordered]@{ schema_version = 1; observations = @($all) } |
-  ConvertTo-Json -Depth 12 |
-  Set-Content -Encoding UTF8 ".\private-audit\observations-merged.json"
+$merged = [ordered]@{ schema_version = 1; observations = @($all) }
+$json = $merged | ConvertTo-Json -Depth 12
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+$out = Join-Path (Get-Location) "private-audit\observations-merged.json"
+[System.IO.File]::WriteAllText($out, $json + [Environment]::NewLine, $utf8NoBom)
 ```
 
 The collector has hard bounds: at least 3 unique resolver operators, at most 10 configured resolvers, at most 50 hostnames per run (default 20), 2–20 second timeout, and 0.2–5 second delay between requests. It queries only A and AAAA and uses DNS-over-HTTPS/TLS wire format. It records response codes, address answers, CNAME targets, negative SOA authority zones, resolver endpoint and the DNSSEC AD bit. No retries or bulk subscription scans are performed. The DoH client bypasses ambient HTTP proxy settings so a configured proxy cannot silently impersonate the selected resolver; DoT uses a direct TLS socket with certificate validation.
