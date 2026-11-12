@@ -260,10 +260,10 @@ def write_csv(path: Path, header, rows):
 def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     """Classify supported output forms without changing their matching semantics."""
     forms = {
-        "anchored_domain_with_separator": re.compile(r"^\\|\\|[^\\^/$|]+\\^$"),
-        "anchored_domain_without_separator": re.compile(r"^\\|\\|[^\\^/$|]+$"),
-        "leading_dot_with_separator": re.compile(r"^\\.[^\\^/$|]+\\^$"),
-        "leading_dot_without_separator": re.compile(r"^\\.[^\\^/$|]+$"),
+        "anchored_domain_with_separator": re.compile(r"^\|\|[^\^/$|]+\^$"),
+        "anchored_domain_without_separator": re.compile(r"^\|\|[^\^/$|]+$"),
+        "leading_dot_with_separator": re.compile(r"^\.[^\^/$|]+\^$"),
+        "leading_dot_without_separator": re.compile(r"^\.[^\^/$|]+$"),
     }
     counts = {name: 0 for name in forms}
     review_rows = []
@@ -279,6 +279,8 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
             sources = [key for key, source_set in source_rules.items() if rule in source_set]
             review_rows.append((rule, form, ";".join(sources)))
     return {"total": len(rules), "forms": counts, "examples": examples}, review_rows
+
+
 def build(args) -> Path:
     validate_licensing_files()
     cfg = load_config(Path(args.config))
