@@ -28,6 +28,11 @@ Create controlled records for:
 - `child.bare.nobledns.test`
 - `bare.nobledns.test.evil.test`
 - `notbare.nobledns.test`
+- `exception-parent.nobledns.test`
+- `allow.exception-parent.nobledns.test`
+- `deep.allow.exception-parent.nobledns.test`
+- `allowed.nobledns.test`
+- `child.allowed.nobledns.test`
 - `subonly.nobledns.test`
 - `child.subonly.nobledns.test`
 
@@ -40,8 +45,13 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ```text
 ||apex.nobledns.test^
 ||bare.nobledns.test
+||exception-parent.nobledns.test^
+@@||allow.exception-parent.nobledns.test^
+@@||allowed.nobledns.test^
 .subonly.nobledns.test^
 ```
+
+The exception cases deliberately use only the project's currently supported simple exception form, `@@||domain^`. Do not add modifiers such as `$important`; the production parser excludes them, and AdGuard documents that `$important` can override ordinary exception rules. See the [AdGuard DNS filtering syntax reference](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
 
 Do not add these synthetic rules to the public subscription.
 
@@ -56,12 +66,19 @@ Do not add these synthetic rules to the public subscription.
 | `||bare.nobledns.test` | `child.bare.nobledns.test` | Record observed result |
 | `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Must not be assumed safe; record observed result |
 | `||bare.nobledns.test` | `notbare.nobledns.test` | Must not be blocked by a hostname-start anchor |
+| `||exception-parent.nobledns.test^` | apex | Block |
+| `||exception-parent.nobledns.test^` | `allow.exception-parent.nobledns.test` | Block rule is overridden by the narrower exception |
+| `@@||allow.exception-parent.nobledns.test^` | `deep.allow.exception-parent.nobledns.test` | Allow |
+| `@@||allowed.nobledns.test^` | apex | Allow |
+| `@@||allowed.nobledns.test^` | `child.allowed.nobledns.test` | Allow |
 | `.subonly.nobledns.test^` | apex | Allow |
 | `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
 
 For each query, record the DNS response, client filtering log, authoritative-server log and whether the result matches the documented semantics. A timeout or missing authoritative response is an invalid test, not a successful block.
 
 The bare-anchor cases are intentionally observation-driven: the rule is preserved from upstream, but its lack of an explicit end separator makes client-specific matching behavior important. Do not rewrite it based on a single client result.
+
+The exception cases verify the documented basic exception form against both an exact hostname and its descendants. They do not verify precedence involving modifiers, because modified exceptions are not part of the published NobleDNS syntax.
 
 ## Execution procedure
 
