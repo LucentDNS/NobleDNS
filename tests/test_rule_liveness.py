@@ -361,7 +361,7 @@ class RuleLivenessTests(unittest.TestCase):
             with self.subTest(endpoint=endpoint):
                 row = observation()
                 row["resolver_endpoint"] = endpoint
-                with self.assertRaisesRegex(ValueError, "safe HTTPS DoH or pathless TLS DoT"):
+                with self.assertRaisesRegex(ValueError, "resolver_endpoint"):
                     mod.validate_observations(
                         {"schema_version": 1, "observations": [row]}, NOW
                     )
@@ -369,7 +369,7 @@ class RuleLivenessTests(unittest.TestCase):
     def test_resolver_endpoint_must_be_safe_tls_url(self):
         row = observation()
         row["resolver_endpoint"] = "https://user:pass@dns.example.test/dns-query"
-        with self.assertRaisesRegex(ValueError, "safe HTTPS or TLS endpoint"):
+        with self.assertRaisesRegex(ValueError, "safe HTTPS DoH or pathless TLS DoT endpoint"):
             mod.validate_observations(
                 {"schema_version": 1, "observations": [row]}, NOW
             )
