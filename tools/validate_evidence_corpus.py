@@ -7,8 +7,9 @@ import json
 import re
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -70,6 +71,30 @@ def _parse_utc(value: Any, field: str, errors: list[str]) -> datetime | None:
     return parsed
 
 
+def _valid_evidence_reference(value: str) -> bool:
+    if any(ord(char) < 32 for char in value):
+        return False
+    if value.startswith("https://"):
+        try:
+            parsed = urlsplit(value)
+            return bool(
+                parsed.scheme == "https"
+                and parsed.hostname
+                and parsed.username is None
+                and parsed.password is None
+                and not parsed.query
+            )
+        except ValueError:
+            return False
+    path = PurePosixPath(value)
+    return bool(
+        not path.is_absolute()
+        and ".." not in path.parts
+        and path.parts
+        and path.parts[0] in {"docs", "tests", "audit-artifacts"}
+    )
+
+
 def validate_record(record: Any, index: int, now: datetime) -> list[str]:
     prefix = f"records[{index}]"
     errors: list[str] = []
@@ -106,6 +131,13 @@ def validate_record(record: Any, index: int, now: datetime) -> list[str]:
         value = record[field]
         if not isinstance(value, str) or not value.strip():
             errors.append(f"{prefix}.{field} must be a non-empty string")
+    evidence_reference = record["evidence_reference"]
+    if isinstance(evidence_reference, str) and evidence_reference.strip():
+        if not _valid_evidence_reference(evidence_reference):
+            errors.append(
+                f"{prefix}.evidence_reference must be an HTTPS URL without credentials/query "
+                "or a safe repository-relative docs/, tests/, or audit-artifacts/ path"
+            )
 
     refs = record["source_rule_refs"]
     if not isinstance(refs, list) or any(not isinstance(x, str) or not x.strip() for x in refs):
@@ -129,10 +161,16 @@ def validate_record(record: Any, index: int, now: datetime) -> list[str]:
     expires = None
     if "expires_at_utc" in record:
         expires = _parse_utc(record["expires_at_utc"], f"{prefix}.expires_at_utc", errors)
+    if observed and observed > now:
+        errors.append(f"{prefix}.observed_at_utc cannot be in the future")
+    if reviewed and reviewed > now:
+        errors.append(f"{prefix}.reviewed_at_utc cannot be in the future")
     if observed and reviewed and reviewed < observed:
         errors.append(f"{prefix}.reviewed_at_utc must not precede observed_at_utc")
     if reviewed and due and due < reviewed:
         errors.append(f"{prefix}.review_due_utc must not precede reviewed_at_utc")
+    if reviewed and expires and expires <= reviewed:
+        errors.append(f"{prefix}.expires_at_utc must be later than reviewed_at_utc")
     if due and due < now:
         errors.append(f"{prefix} review is overdue; revalidate before using this record")
     if expires and expires <= now:
