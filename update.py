@@ -31,6 +31,7 @@ TIMEOUT = 120
 BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
+LEADING_DOT_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
@@ -304,10 +305,12 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     forms = {
         "domain_and_subdomains": re.compile(r"^\|\|[^\^/$|]+\^$"),
         "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^\^/$|]+$"),
+        "subdomains_only": re.compile(r"^\.[^\^/$|]+\^?$"),
     }
     semantics = {
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
         "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",
+        "subdomains_only": "Blocks subdomains of the specified domain, but not the apex domain; preserved using AdGuard's documented leading-dot DNS syntax.",
     }
     counts = {name: 0 for name in forms}
     examples = {name: [] for name in forms}
