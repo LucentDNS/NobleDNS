@@ -4,15 +4,17 @@
 
 ## Reproducibility
 
-- Baseline commit: 7cdf2d36e9333d244e3f236ec964e9b268cf1141
+- Baseline commit: 4a34cc73e5b90880aa968d23537fec3b615d03a3
 - Baseline URL: https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt
-- Baseline SHA-256: 527d913bb6e385c3dace940a49c462b91b03b5c8845b7c313be36314a88d8fda
-- Baseline blocking rules: 303,625
+- Baseline SHA-256: c333003bb59f393bf0364e97a4b3704ded2c489c878af9e5f434dc39da71b397
+- Baseline manifest SHA-256: 7a7290736b71fd36846dc0a7393c33510ff68799a3a5744d2f335c91b65de274
+- Baseline manifest integrity: PASS (manifest version 1.0.3, status PUBLIC, built 2026-11-12T08:33:02.389220+00:00)
+- Baseline blocking rules: 303,686
 - Baseline active exceptions: 11
 - Rule cap: 500,000
 - HG snapshot SHA-256: feba1cec35500510b8f8590fa49e5c0312c6e5c4e86af2bf6b65eea3ff48e12e
 - AWAvenue full snapshot SHA-256: fdf930d67659f6f1405c81e67c1fb7797145c54296c5ba0398729aa4d846808c
-- Audit time UTC: 2026-11-12T08:24:21.395923+00:00
+- Audit time UTC: 2026-11-12T09:03:55.289167+00:00
 
 ## Cross-source overlap
 
@@ -32,12 +34,16 @@
 |---|---:|
 | Exact new rules vs baseline | 11,649 |
 | New unique domains vs baseline | 11,647 |
-| New domains not already covered by a baseline parent rule | 11,055 |
-| Candidate rules that broaden existing baseline scope | 1,088 |
-| Baseline block domains affected by candidate parent rules | 9,984 |
-| Candidate blocks overlapping baseline exceptions | 2 |
+| Effective new rules after baseline coverage | 11,058 |
+| Effective new domains after baseline coverage | 11,057 |
+| New domains not already covered by a baseline parent rule | 11,056 |
+| Candidate rules that broaden existing baseline scope | 89 |
+| New bare-anchor rules with unbounded matching | 35 |
+| Baseline block domains newly covered by candidate parent rules | 8,737 |
+| Candidate blocks overlapping baseline exceptions (all source rules) | 2 |
+| New candidate blocks overlapping baseline exceptions | 1 |
 | Candidate exceptions overlapping baseline blocks | 0 |
-| Projected total if every exact new block rule were appended | 315,285 / 500,000 |
+| Projected total if every exact new block rule were appended | 315,346 / 500,000 |
 
 The projected count is arithmetic only. It does not establish that the candidate rules are appropriate, safe, or accepted.
 
@@ -50,13 +56,23 @@ The projected count is arithmetic only. It does not establish that the candidate
     "hostname": "bank.pingan.com",
     "matching_rules": [
       "||pingan.com^"
-    ]
+    ],
+    "source_lines": {
+      "||pingan.com^": [
+        "hg1:9499"
+      ]
+    }
   },
   {
     "hostname": "pinduoduo.com",
     "matching_rules": [
       "||pinduoduo.com^"
-    ]
+    ],
+    "source_lines": {
+      "||pinduoduo.com^": [
+        "hg1:9497"
+      ]
+    }
   }
 ]
 
@@ -67,49 +83,90 @@ The projected count is arithmetic only. It does not establish that the candidate
     "hostname": "doubleclick.net",
     "matching_rules": [
       "||doubleclick.net^"
-    ]
+    ],
+    "source_lines": {
+      "||doubleclick.net^": [
+        "hg1:5476"
+      ]
+    }
   },
   {
     "hostname": "googleadservices.com",
     "matching_rules": [
       "||googleadservices.com^"
-    ]
+    ],
+    "source_lines": {
+      "||googleadservices.com^": [
+        "awavenue_full:426"
+      ]
+    }
   },
   {
     "hostname": "adservice.google.com",
     "matching_rules": [
       "||adservice.google.com^"
-    ]
+    ],
+    "source_lines": {
+      "||adservice.google.com^": [
+        "awavenue_full:141"
+      ]
+    }
   },
   {
     "hostname": "moatads.com",
     "matching_rules": [
       "||moatads.com^"
-    ]
+    ],
+    "source_lines": {
+      "||moatads.com^": [
+        "awavenue_full:599"
+      ]
+    }
   },
   {
     "hostname": "adcolony.com",
     "matching_rules": [
       "||adcolony.com^"
-    ]
+    ],
+    "source_lines": {
+      "||adcolony.com^": [
+        "awavenue_full:73"
+      ]
+    }
   },
   {
     "hostname": "vungle.com",
     "matching_rules": [
       "||vungle.com^"
-    ]
+    ],
+    "source_lines": {
+      "||vungle.com^": [
+        "awavenue_full:923"
+      ]
+    }
   },
   {
     "hostname": "applovin.com",
     "matching_rules": [
       "||applovin.com^"
-    ]
+    ],
+    "source_lines": {
+      "||applovin.com^": [
+        "awavenue_full:275"
+      ]
+    }
   },
   {
     "hostname": "unityads.unity3d.com",
     "matching_rules": [
       "||unityads.unity3d.com^"
-    ]
+    ],
+    "source_lines": {
+      "||unityads.unity3d.com^": [
+        "awavenue_full:892",
+        "awavenue_full:980"
+      ]
+    }
   }
 ]
 
@@ -121,6 +178,13 @@ The projected count is arithmetic only. It does not establish that the candidate
 - HG2 does not provide a matching exception for the HG parent blocks pinduoduo.com and pingan.com.
 
 Using HG2 as an allowlist is not a neutral operation: exceptions can neutralize matching baseline blocking rules. Do not merge it into the NobleDNS main subscription without a separate, reviewed exception policy.
+
+## License review
+
+- NobleDNS project: GPL-3.0 (LICENSE SHA-256 3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986)
+- AWAvenue: GPL-3.0 (LICENSE SHA-256 589ed823e9a84c56feb95ac58e7cf384626b9cbf4fda2a907bc36e103de1bad2)
+- HG: no public LICENSE file was found in the repository root, and this audit has no retained written permission covering public redistribution. Do not copy rules into the public project unless explicit maintainer permission with scope and conditions is obtained and retained.
+- NobleDNS and AWAvenue both use GPL-3.0, so their license family is aligned at a high level. Preserve upstream attribution and all applicable GPL notices/terms.
 
 ## Source-specific decision
 
