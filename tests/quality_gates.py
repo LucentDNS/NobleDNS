@@ -4,7 +4,12 @@ from __future__ import annotations
 import os
 import re
 import unittest
+import importlib.util
 from pathlib import Path
+
+SPEC = importlib.util.spec_from_file_location("nobledns_quality_update", Path(__file__).resolve().parents[1] / "update.py")
+mod = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(mod)
 
 ROOT = Path(__file__).resolve().parents[1]
 FILTER = Path(os.environ.get(
@@ -51,7 +56,8 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
         if is_exception and not has_caret:
             invalid.append(line)
             continue
-        if domain.count(".") < 1 or domain.startswith(".") or domain.endswith("."):
+        valid, _reason = mod.valid_domain(domain)
+        if not valid:
             invalid.append(line)
             continue
 
