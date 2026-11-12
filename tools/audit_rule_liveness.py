@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 import update as builder
 
 SCHEMA_VERSION = 1
+MAX_A_AAAA_ROUND_GAP_SECONDS = 15 * 60
 RCODES = {"NOERROR", "NXDOMAIN", "SERVFAIL", "REFUSED", "FORMERR", "TIMEOUT", "OTHER"}
 REQUIRED = {
     "hostname", "observed_at_utc", "resolver", "resolver_operator",
@@ -142,14 +143,20 @@ def validate_observations(document: object, now: datetime | None = None) -> list
             parsed = urlsplit(reference)
             if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
                 raise ValueError("sinkhole_evidence_reference must be a safe HTTPS URL")
+        vantage_key = row["vantage"].strip().casefold()
         identity = (
-            hostname, row["resolver"], row["resolver_operator"], row["vantage"],
+            hostname, row["resolver"], operator_key, vantage_key,
             row["qtype"], row["observed_at_utc"],
         )
         if identity in seen:
             raise ValueError(f"duplicate observation: {identity}")
         seen.add(identity)
-        validated.append({**row, "_time": observed})
+        validated.append({
+            **row,
+            "resolver_operator": operator_key,
+            "vantage": vantage_key,
+            "_time": observed,
+        })
     return validated
 
 
@@ -249,22 +256,41 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
             # from pair A with a recent quorum from pairs B/C to manufacture
             # a long observation window.
             rounds_by_pair = defaultdict(
-                lambda: defaultdict(lambda: defaultdict(set))
+                lambda: defaultdict(lambda: defaultdict(list))
             )
             for row in fresh:
                 pair = (
-                    row["resolver"], row["resolver_operator"].strip().lower(),
+                    row["resolver"], row["resolver_operator"].strip().casefold(),
                     row["vantage"],
                 )
                 day = row["_time"].date().isoformat()
-                rounds_by_pair[pair][day][row["qtype"]].add(row["rcode"])
+                rounds_by_pair[pair][day][row["qtype"]].append(row)
             pair_spans = {}
             for pair, daily_results in rounds_by_pair.items():
-                complete_days = sorted(
-                    day for day, qtypes in daily_results.items()
-                    if set(qtypes) == {"A", "AAAA"}
-                    and all(rcodes == {"NXDOMAIN"} for rcodes in qtypes.values())
-                )
+                complete_days = []
+                for day, qtypes in daily_results.items():
+                    if set(qtypes) != {"A", "AAAA"}:
+                        continue
+                    if any(
+                        observation["rcode"] != "NXDOMAIN"
+                        for qtype_rows in qtypes.values()
+                        for observation in qtype_rows
+                    ):
+                        continue
+                    # A and AAAA must form one near-simultaneous daily round.
+                    # Two unrelated NXDOMAIN answers hours apart are not a
+                    # complete round, even if they fall on the same UTC date.
+                    a_times = [observation["_time"] for observation in qtypes["A"]]
+                    aaaa_times = [observation["_time"] for observation in qtypes["AAAA"]]
+                    paired = any(
+                        abs((a_time - aaaa_time).total_seconds())
+                        <= MAX_A_AAAA_ROUND_GAP_SECONDS
+                        for a_time in a_times
+                        for aaaa_time in aaaa_times
+                    )
+                    if paired:
+                        complete_days.append(day)
+                complete_days.sort()
                 if len(complete_days) >= 2:
                     first = datetime.fromisoformat(complete_days[0]).replace(tzinfo=timezone.utc)
                     last = datetime.fromisoformat(complete_days[-1]).replace(tzinfo=timezone.utc)
@@ -314,6 +340,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 "complete_resolver_vantage_pairs": len(complete_pairs),
                 "operators_with_multi_vantage_coverage": len(cross_vantage_operators),
                 "pairs_with_seven_day_complete_history": len(temporal_pairs),
+                "max_a_aaaa_round_gap_minutes": MAX_A_AAAA_ROUND_GAP_SECONDS // 60,
                 "minimum_pair_observation_span_days": round(min(pair_spans.values(), default=0.0), 2),
                 "observation_span_days": round(span, 2),
             }
