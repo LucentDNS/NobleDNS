@@ -115,8 +115,9 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
     if question_name != hostname or question_class != 1 or question_type != QTYPE[qtype]:
         raise ValueError("DNS response question does not match request")
 
-    addresses: list[str] = []
+    answer_records: list[tuple[str, int, str]] = []
     cnames: list[str] = []
+    addresses: list[str] = []
     authority_soa_zones: list[str] = []
     total_records = ancount + nscount + arcount
     if total_records > 4096:
@@ -132,11 +133,11 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
             raise ValueError("truncated DNS resource data")
         # Only answer-section A/AAAA and CNAME records are evidence for this sample.
         if index < ancount and rrclass == 1:
-            if rrtype == QTYPE[qtype]:
-                expected_len = 4 if qtype == "A" else 16
+            if rrtype in {1, 28}:
+                expected_len = 4 if rrtype == 1 else 16
                 if rdlength != expected_len:
                     raise ValueError("address record has invalid length")
-                addresses.append(str(ipaddress.ip_address(packet[offset:end])))
+                answer_records.append((owner, rrtype, str(ipaddress.ip_address(packet[offset:end]))))
             elif rrtype == 5:
                 cname, consumed = decode_name(packet, offset)
                 if consumed != end:
@@ -144,7 +145,7 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
                 valid, reason = builder.valid_domain(cname)
                 if not valid:
                     raise ValueError(f"invalid CNAME target: {reason}")
-                cnames.append(cname)
+                answer_records.append((owner, 5, cname))
         elif ancount <= index < ancount + nscount and rrclass == 1 and rrtype == 6:
             mname, soa_offset = decode_name(packet, offset)
             rname, soa_offset = decode_name(packet, soa_offset)
@@ -156,6 +157,23 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
             if hostname == owner or hostname.endswith("." + owner):
                 authority_soa_zones.append(owner)
         offset = end
+
+    # Only follow CNAMEs reachable from the queried owner; unrelated records
+    # in the answer section must never be attributed to the requested hostname.
+    reachable = {hostname}
+    for _ in range(len(answer_records) + 1):
+        changed = False
+        for owner, rrtype, value in answer_records:
+            if rrtype == 5 and owner in reachable and value not in reachable:
+                reachable.add(value)
+                cnames.append(value)
+                changed = True
+        if not changed:
+            break
+    addresses = [
+        value for owner, rrtype, value in answer_records
+        if rrtype == QTYPE[qtype] and owner in reachable
+    ]
 
     rcode_num = flags & 0x000F
     return {
