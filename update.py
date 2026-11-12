@@ -37,6 +37,7 @@ EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
 LEADING_DOT_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 BADFILTER_RE = re.compile(r"^(?P<rule>.+)\$badfilter$", re.I)
+IMPORTANT_RE = re.compile(r"^(?P<rule>.+)\$important$", re.I)
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
@@ -208,6 +209,7 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         line = raw.strip().lstrip("\ufeff")
         if not line or line.startswith(("!", "#", "[", "//")):
             continue
+        original_line = line
         badfilter_match = BADFILTER_RE.fullmatch(line)
         if badfilter_match:
             target_raw = badfilter_match.group("rule")
@@ -226,21 +228,26 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             rows.append((source_key, line_no, reason, line))
             badfilters.append((source_key, line_no, line, "", "unsupported_modifier_combination"))
             continue
+        important_match = IMPORTANT_RE.fullmatch(line)
+        important = bool(important_match)
+        if important:
+            line = important_match.group("rule")
+        important_suffix = "$important" if important else ""
         if line.startswith("."):
             leading_dot = LEADING_DOT_RE.fullmatch(line)
             if not leading_dot:
                 reason = "unsupported_leading_dot_dns_syntax"
                 rejected[reason] += 1
-                rows.append((source_key, line_no, reason, line))
+                rows.append((source_key, line_no, reason, original_line))
                 continue
             ok, result = valid_domain(leading_dot.group("domain"))
             if ok:
                 # AdGuard DNS semantics: a leading dot matches subdomains only,
                 # not the apex domain. Preserve the source's optional caret.
-                blocks.add("." + result + ("^" if leading_dot.group("caret") else ""))
+                blocks.add("." + result + ("^" if leading_dot.group("caret") else "") + important_suffix)
             else:
                 rejected[result] += 1
-                rows.append((source_key, line_no, result, line))
+                rows.append((source_key, line_no, result, original_line))
             continue
         kind, match, bare, exception_form, block_form = "block", BLOCK_RE.fullmatch(line), False, None, None
         if not match:
@@ -276,22 +283,22 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             if ok:
                 if kind == "exception":
                     if exception_form == "domain_and_subdomains_end":
-                        exceptions.add(f"@@||{result}^|")
+                        exceptions.add(f"@@||{result}^|" + important_suffix)
                     elif exception_form == "exact_hostname":
-                        exceptions.add(f"@@|{result}^|")
+                        exceptions.add(f"@@|{result}^|" + important_suffix)
                     else:
-                        exceptions.add(f"@@||{result}^")
+                        exceptions.add(f"@@||{result}^" + important_suffix)
                 elif block_form == "domain_and_subdomains_end":
-                    blocks.add(f"||{result}^|")
+                    blocks.add(f"||{result}^|" + important_suffix)
                 elif block_form == "exact_hostname":
-                    blocks.add(f"|{result}^" + ("|" if match.group("end") else ""))
+                    blocks.add(f"|{result}^" + ("|" if match.group("end") else "") + important_suffix)
                 else:
-                    blocks.add(f"||{result}" + ("" if bare else "^"))
+                    blocks.add(f"||{result}" + ("" if bare else "^") + important_suffix)
             else:
-                rejected[result] += 1; rows.append((source_key, line_no, result, line))
+                rejected[result] += 1; rows.append((source_key, line_no, result, original_line))
             continue
-        reason = classify_non_simple(line)
-        rejected[reason] += 1; rows.append((source_key, line_no, reason, line))
+        reason = "modifier_important_unsupported_target" if important else classify_non_simple(line)
+        rejected[reason] += 1; rows.append((source_key, line_no, reason, original_line))
     if len(blocks) < min_blocks:
         raise ValueError(f"{source_key}: parsed {len(blocks):,} block rules; minimum is {min_blocks:,}")
     return blocks, exceptions, rejected, rows, badfilters
