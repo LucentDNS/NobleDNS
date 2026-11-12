@@ -36,6 +36,9 @@ Create controlled records for:
 - `child.allowed.nobledns.test`
 - `subonly.nobledns.test`
 - `child.subonly.nobledns.test`
+- `subonly-bare.nobledns.test`
+- `child.subonly-bare.nobledns.test`
+- `child.subonly-bare.nobledns.test.evil.test`
 
 The authoritative server should return a known test address for every name in both zones. This separates filtering behavior from upstream resolution failures.
 
@@ -51,9 +54,12 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ||child.allowed.nobledns.test^
 @@||allowed.nobledns.test^
 .subonly.nobledns.test^
+.subonly-bare.nobledns.test
 ```
 
 The exception cases deliberately use only the project's currently supported simple exception form, `@@||domain^`. Do not add modifiers such as `$important`; the production parser excludes them, and AdGuard documents that `$important` can override ordinary exception rules. See the [AdGuard DNS filtering syntax reference](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
+
+The two leading-dot rules are compatibility probes only, not production syntax. An archived 2023 AdGuard Android/AdGuard Home article documents `.example.org` as subdomains-only, while the current DNS-specific reference no longer lists that pattern. Test both caret and non-caret variants on the exact supported client versions before considering any parser change. See the [archived AdGuard KB](https://github.com/AdguardTeam/AdguardKnowledgeBase/blob/master/01.general/19.dns-filtering-syntax/docs.en.md).
 
 Do not add these synthetic rules to the public subscription.
 
@@ -77,6 +83,9 @@ Do not add these synthetic rules to the public subscription.
 | `@@||allowed.nobledns.test^` | `child.allowed.nobledns.test` | Allow; the parent exception overrides the child block |
 | `.subonly.nobledns.test^` | apex | Allow |
 | `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
+| `.subonly-bare.nobledns.test` | apex | Allow |
+| `.subonly-bare.nobledns.test` | `child.subonly-bare.nobledns.test` | Block if legacy leading-dot behavior remains supported |
+| `.subonly-bare.nobledns.test` | `child.subonly-bare.nobledns.test.evil.test` | Record observed result; no explicit hostname-end boundary |
 
 For each query, record the DNS response, client filtering log, authoritative-server log and whether the result matches the documented semantics. A timeout or missing authoritative response is an invalid test, not a successful block.
 
