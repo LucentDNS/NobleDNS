@@ -21,7 +21,7 @@ SCHEMA_VERSION = 1
 RCODES = {"NOERROR", "NXDOMAIN", "SERVFAIL", "REFUSED", "FORMERR", "TIMEOUT", "OTHER"}
 REQUIRED = {
     "hostname", "observed_at_utc", "resolver", "resolver_operator",
-    "vantage", "qtype", "rcode", "answers",
+    "resolver_endpoint", "vantage", "qtype", "rcode", "answers",
 }
 OPTIONAL = {"sinkhole_evidence_reference", "resolver_endpoint", "cname_chain", "dnssec_ad"}
 RULE_RE = re.compile(r"^(?:\|\|([^\\^/$|]+)(?:\^)?|@@\|\|([^\\^/$|]+)\^)$")
@@ -83,18 +83,17 @@ def validate_observations(document: object, now: datetime | None = None) -> list
             expected_version = 4 if row["qtype"] == "A" else 6
             if address.version != expected_version:
                 raise ValueError(f"observation[{index}] answer family does not match qtype {row['qtype']}")
-        if "resolver_endpoint" in row:
-            endpoint = row["resolver_endpoint"]
-            if not isinstance(endpoint, str):
-                raise ValueError("resolver_endpoint must be a string")
-            parsed_endpoint = urlsplit(endpoint)
-            if (
-                parsed_endpoint.scheme not in {"https", "tls"}
-                or not parsed_endpoint.hostname
-                or parsed_endpoint.username or parsed_endpoint.password
-                or parsed_endpoint.query or parsed_endpoint.fragment
-            ):
-                raise ValueError("resolver_endpoint must be a safe HTTPS or TLS endpoint")
+        endpoint = row["resolver_endpoint"]
+        if not isinstance(endpoint, str):
+            raise ValueError("resolver_endpoint must be a string")
+        parsed_endpoint = urlsplit(endpoint)
+        if (
+            parsed_endpoint.scheme not in {"https", "tls"}
+            or not parsed_endpoint.hostname
+            or parsed_endpoint.username or parsed_endpoint.password
+            or parsed_endpoint.query or parsed_endpoint.fragment
+        ):
+            raise ValueError("resolver_endpoint must be a safe HTTPS or TLS endpoint")
         if "cname_chain" in row:
             chain = row["cname_chain"]
             if not isinstance(chain, list) or any(not isinstance(x, str) for x in chain):
@@ -304,7 +303,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Offline NobleDNS rule-liveness audit (no automatic removals)")
     parser.add_argument("--rules", required=True, type=Path, help="Generated dns-filter.txt")
     parser.add_argument("--observations", required=True, type=Path, help="Versioned DNS observation JSON")
-    parser.add_argument("--source-dir", type=Path, help="Verified source snapshots directory")
+    parser.add_argument("--source-dir", required=True, type=Path, help="Verified source snapshots directory")
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--max-age-days", type=int, default=30)
     args = parser.parse_args()
