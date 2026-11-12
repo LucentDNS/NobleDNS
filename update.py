@@ -13,6 +13,14 @@ CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
 VERSION_BASE = "1.0.0-rc3"
 MAX_RULES = 500_000
+FILTER_HEADER = (
+    "! Title: NobleDNS DNS Filter\\n"
+    "! Description: Lightweight DNS filtering for advertising, tracking and telemetry.\\n"
+    "! Homepage: https://github.com/LucentDNS/NobleDNS\\n"
+    "! Sources: AdGuard DNS Filter + HaGeZi Multi Normal\\n"
+    "! Block-only subscription; source exceptions are excluded and provided for review.\\n"
+    "! Complex syntax not proven equivalent is excluded; see parser-exclusions.csv.\\n"
+)
 MIN_SOURCE_BYTES = 100_000
 MIN_SOURCE_BLOCKS = 10_000
 MAX_SOURCE_BYTES = 50 * 1024 * 1024
