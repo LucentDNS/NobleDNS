@@ -153,6 +153,8 @@ jobs:
           syntax_forms = manifest.get("syntax_audit", {}).get("forms", {})
           assert set(syntax_forms) == {
               "domain_and_subdomains",
+              "domain_and_subdomains_end_anchored",
+              "exact_hostname",
               "domain_anchor_without_end_boundary",
               "subdomains_only",
           }, "Unexpected public DNS syntax form"
