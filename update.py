@@ -351,9 +351,11 @@ def resolve_subscription_last_modified(
 def render_subscription(
     blocks: set[str],
     exceptions: set[str],
-    last_modified: str,
+    last_modified: str | None = None,
 ) -> str:
     """Render the canonical filter while preserving active exception semantics."""
+    if last_modified is None:
+        last_modified = datetime.now(timezone.utc).date().isoformat()
     if blocks & exceptions:
         raise ValueError("A rule cannot be both a blocking rule and an exception")
     rules = blocks | exceptions
