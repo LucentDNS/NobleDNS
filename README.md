@@ -2,11 +2,9 @@
 
 **Lightweight. Conservative. Auditable.**
 
-NobleDNS is a community DNS blocklist built for everyday use. It combines a focused set of established upstream sources to provide effective protection against advertising, tracking, telemetry and other unwanted network requests, while prioritizing low false positives, preserved rule semantics, reproducible builds and transparent quality reporting.
+NobleDNS is a community-maintained DNS blocklist for everyday use. It combines established upstream sources to help block advertising, tracking, telemetry and other unwanted domains, with reproducible builds, preserved rule semantics and transparent maintenance.
 
-> **Current release: RC3 candidate.**
->
-> NobleDNS is designed for use with compatible DNS filtering clients. Its rules are built and validated through automated checks and regression tests, with ongoing maintenance focused on effective blocking, compatibility and minimizing false positives.
+NobleDNS is publicly maintained and intended for use with compatible DNS filtering clients. Rules are updated through automated builds, validation and ongoing maintenance.
 
 ## Subscribe
 
@@ -34,7 +32,7 @@ If you encounter a specific false positive or missed block, please report the af
 - Keeps the main subscription block-only; upstream exceptions are published separately for review.
 - Preserves supported rule syntax instead of guessing at semantic conversions.
 - Rejects malformed input, unexpected source drift, invalid or duplicate output, and builds above the 500,000-rule ceiling.
-- Publishes candidate artifacts only after automated validation succeeds.
+- Publishes the current rule set and its validation reports after automated checks succeed.
 
 ## Upstream sources
 
@@ -53,7 +51,7 @@ Rule count alone is not a measure of filtering quality. See:
 - [Current published manifest](dist/manifest.json)
 - [Validation report](dist/validation-report.txt)
 - [DNS syntax inventory](dist/syntax-audit.json)
-- [Syntax review candidates](dist/syntax-review.csv)
+- [Syntax compatibility review](dist/syntax-review.csv)
 - [Parser exclusions](dist/parser-exclusions.csv)
 - [Third-party notices](THIRD-PARTY-NOTICES.md)
 
