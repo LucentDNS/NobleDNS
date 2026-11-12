@@ -241,19 +241,22 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
             # resolver/operator/vantage pair. Do not combine one old result
             # from pair A with a recent quorum from pairs B/C to manufacture
             # a long observation window.
-            rounds_by_pair = defaultdict(lambda: defaultdict(set))
+            rounds_by_pair = defaultdict(
+                lambda: defaultdict(lambda: defaultdict(set))
+            )
             for row in fresh:
-                if row["rcode"] == "NXDOMAIN":
-                    pair = (
-                        row["resolver"], row["resolver_operator"].lower(),
-                        row["vantage"],
-                    )
-                    rounds_by_pair[pair][row["_time"].date().isoformat()].add(row["qtype"])
+                pair = (
+                    row["resolver"], row["resolver_operator"].strip().lower(),
+                    row["vantage"],
+                )
+                day = row["_time"].date().isoformat()
+                rounds_by_pair[pair][day][row["qtype"]].add(row["rcode"])
             pair_spans = {}
-            for pair, daily_qtypes in rounds_by_pair.items():
+            for pair, daily_results in rounds_by_pair.items():
                 complete_days = sorted(
-                    day for day, qtypes in daily_qtypes.items()
-                    if qtypes == {"A", "AAAA"}
+                    day for day, qtypes in daily_results.items()
+                    if set(qtypes) == {"A", "AAAA"}
+                    and all(rcodes == {"NXDOMAIN"} for rcodes in qtypes.values())
                 )
                 if len(complete_days) >= 2:
                     first = datetime.fromisoformat(complete_days[0]).replace(tzinfo=timezone.utc)
