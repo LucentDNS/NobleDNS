@@ -377,9 +377,15 @@ def build(args) -> Path:
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
     source_merged = parsed[keys[0]] | parsed[keys[1]]
-    check_drift(source_stats, source_merged, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
     common = parsed[keys[0]] & parsed[keys[1]]
     merged, active_allowlist_rules = apply_allowlist(source_merged, allowlist_domains)
+    check_drift(
+        source_stats,
+        merged | active_allowlist_rules,
+        Path(args.previous_manifest) if args.previous_manifest else None,
+        args.max_source_change_percent,
+        args.allow_large_change,
+    )
     if len(merged) + len(active_allowlist_rules) > MAX_RULES:
         raise RuntimeError(
             f"Total active rule cap exceeded: {len(merged) + len(active_allowlist_rules):,} > {MAX_RULES:,}"
