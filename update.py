@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.2"
+VERSION_BASE = "1.0.3"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
@@ -29,8 +29,6 @@ TIMEOUT = 120
 BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
-LEADING_DOT_CARET_RE = re.compile(r"^\.([^\^/$|]+)\^$")
-LEADING_DOT_BARE_RE = re.compile(r"^\.([^\^/$|]+)$")
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
@@ -147,6 +145,7 @@ def classify_non_simple(line: str) -> str:
     if "*" in line: return "wildcard_syntax"
     if line.startswith("@@"): return "other_exception_syntax"
     if "/" in line and not line.startswith("//"): return "regex_or_path_syntax"
+    if line.startswith("."): return "unsupported_leading_dot_dns_syntax"
     if line.startswith("|") or line.endswith("|"): return "other_anchor_syntax"
     if line.startswith("||") and line.endswith("."): return "other_anchor_syntax"
     if line.startswith("||"): return "other_domain_or_ip_syntax"
@@ -163,24 +162,20 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         line = raw.strip().lstrip("\ufeff")
         if not line or line.startswith(("!", "#", "[", "//")):
             continue
+        if line.startswith("."):
+            reason = "unsupported_leading_dot_dns_syntax"
+            rejected[reason] += 1
+            rows.append((source_key, line_no, reason, line))
+            continue
         kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
-        leading_dot = False
         if not match:
-            m = LEADING_DOT_CARET_RE.fullmatch(line)
-            if m:
-                match, leading_dot = m, True
+            m = BARE_RE.fullmatch(line)
+            if m and not m.group(1).endswith("."):
+                match, bare = m, True
             else:
-                m = LEADING_DOT_BARE_RE.fullmatch(line)
-                if m:
-                    match, bare, leading_dot = m, True, True
-                else:
-                    m = BARE_RE.fullmatch(line)
-                    if m and not m.group(1).endswith("."):
-                        match, bare = m, True
-                    else:
-                        match = EXCEPTION_RE.fullmatch(line)
-                        if match:
-                            kind = "exception"
+                match = EXCEPTION_RE.fullmatch(line)
+                if match:
+                    kind = "exception"
         if match:
             candidate = match.group(1)
             if "*" in candidate:
@@ -190,8 +185,6 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             if ok:
                 if kind == "exception":
                     exceptions.add(f"@@||{result}^")
-                elif leading_dot:
-                    blocks.add("." + result + ("" if bare else "^"))
                 else:
                     blocks.add(f"||{result}" + ("" if bare else "^"))
             else:
@@ -226,7 +219,8 @@ def validate_proxy_url(proxy: str | None) -> str | None:
 
 def fetch(url: str, proxy: str | None) -> bytes:
     proxy = validate_proxy_url(proxy)
-    handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy})] if proxy else []
+    # Use only an explicitly supplied proxy; do not silently inherit ambient proxy settings.
+    handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy} if proxy else {})]
     opener = urllib.request.build_opener(*handlers)
     last = None
     for attempt in range(1, 6):
@@ -234,6 +228,8 @@ def fetch(url: str, proxy: str | None) -> bytes:
             req = urllib.request.Request(url, headers={"User-Agent": "NobleDNS-Updater/1.0", "Accept": "text/plain,*/*;q=0.8", "Cache-Control": "no-cache"})
             with opener.open(req, timeout=TIMEOUT) as resp:
                 if getattr(resp, "status", 200) != 200: raise ValueError(f"HTTP status {resp.status}")
+                if urlsplit(resp.geturl()).scheme.lower() != "https":
+                    raise ValueError("Source redirected away from HTTPS; refusing downgrade")
                 expected = resp.headers.get("Content-Length")
                 data = resp.read(MAX_SOURCE_BYTES + 1)
             if len(data) > MAX_SOURCE_BYTES: raise ValueError("source exceeds 50 MiB safety limit")
@@ -286,14 +282,10 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     forms = {
         "domain_and_subdomains": re.compile(r"^\|\|[^\^/$|]+\^$"),
         "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^\^/$|]+$"),
-        "subdomains_only_with_end_boundary": re.compile(r"^\.[^\^/$|]+\^$"),
-        "subdomains_only": re.compile(r"^\.[^\^/$|]+$"),
     }
     semantics = {
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
-        "domain_anchor_without_end_boundary": "Hostname-start anchor without explicit end boundary; retain source form and review client matching semantics.",
-        "subdomains_only_with_end_boundary": "Blocks subdomains only; does not block the apex domain.",
-        "subdomains_only": "Blocks subdomains only; does not block the apex domain.",
+        "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",
     }
     counts = {name: 0 for name in forms}
     examples = {name: [] for name in forms}
@@ -365,11 +357,11 @@ def build(args) -> Path:
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
     if len(lines) != len(published_rules) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
     for line in lines:
-        m = EXCEPTION_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line) or LEADING_DOT_CARET_RE.fullmatch(line) or LEADING_DOT_BARE_RE.fullmatch(line)
+        m = EXCEPTION_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line)
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression", "source_drift_gate_percent": args.max_source_change_percent}}
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
