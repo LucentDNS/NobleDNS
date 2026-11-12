@@ -231,12 +231,12 @@ jobs:
 
           output = Path(os.environ["GITHUB_OUTPUT"])
           with output.open("a", encoding="utf-8") as f:
-              f.write(f"rules_changed={str(rules_changed).lower()}\\n")
-              f.write(f"sources_changed={str(sources_changed).lower()}\\n")
-              f.write(f"publish_update={str(publish_update).lower()}\\n")
-              f.write(f"file_changed={str(file_changed).lower()}\\n")
-              f.write(f"new_hash={new_hash}\\n")
-              f.write(f"release_hash={release_hash}\\n")
+              f.write(f"rules_changed={str(rules_changed).lower()}\n")
+              f.write(f"sources_changed={str(sources_changed).lower()}\n")
+              f.write(f"publish_update={str(publish_update).lower()}\n")
+              f.write(f"file_changed={str(file_changed).lower()}\n")
+              f.write(f"new_hash={new_hash}\n")
+              f.write(f"release_hash={release_hash}\n")
 
           print(f"Rules changed: {rules_changed}")
           print(f"Sources changed: {sources_changed}")
