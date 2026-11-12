@@ -16,14 +16,10 @@ Do not routinely use `--allow-large-change`. First compare the new upstream snap
 
 Use GitHub Releases to identify the previous known-good subscription and revert the `dist/` update commit if the latest release causes confirmed regressions. Do not delete prior tags/releases until the issue is resolved.
 
-## First GitHub setup
+## Repository setup
 
-1. Create an empty GitHub repository named `NobleDNS`.
-2. Upload/push the contents of this project folder to the default branch (usually `main`).
-3. In Settings > Actions > General, allow GitHub Actions to have read and write permissions for repository contents.
-4. Run the workflow manually once and inspect the complete Actions log and prerelease artifacts.
-5. Add a repository description and topics; choose a license only after deciding reuse terms.
+This repository is already configured for the public build and release workflow. Keep the workflow's permissions limited to repository contents, and do not add unrelated automation or credentials.
 
-The first run has no published baseline, so the 15% drift check is not applied. Review the first candidate release carefully. Subsequent runs compare per-source counts and the actual rule-set additions/removals against the last published manifest. The workflow also retains a 30-day build-audit artifact containing exact source snapshots and compiler reports. For an unusually large upstream change, inspect it first, then manually dispatch the workflow with `allow_large_change` enabled.
+The first run has no published baseline, so the 15% drift check is not applied. Review the first public release carefully. Subsequent runs compare per-source counts and the actual rule-set additions/removals against the last published manifest. The workflow also retains a 30-day build-audit artifact containing exact source snapshots and compiler reports. For an unusually large upstream change, inspect it first, then manually dispatch the workflow with `allow_large_change` enabled.
 
 If the default branch has branch protection that blocks direct pushes from GitHub Actions, configure an allowed release-bot path or adjust the workflow to open a pull request. The workflow must not be granted broader permissions than required.
