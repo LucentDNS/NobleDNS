@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0-rc3-20261112-005109-UTC",
+  "version": "1.0.0-rc3-20261112-015615-UTC",
   "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED",
   "release_channel": "candidate",
-  "built_at_utc": "2026-11-12T00:51:09.429301+00:00",
+  "built_at_utc": "2026-11-12T01:56:15.785819+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -74,7 +74,7 @@
   },
   "exception_rules_separate": 11,
   "max_rules": 500000,
-  "main_subscription_sha256": "80cad6fca6ff3a57cf4ad064f92974d788241a1c4b897c38f447712b6305d6a2",
+  "main_subscription_sha256": "0b08b0adfaf117288adffcb22c82fee9300e5373e91a264a5a14e5f41bc60e11",
   "policy": {
     "main_list": "block-only",
     "exceptions": "separate review artifact; not active in main list",

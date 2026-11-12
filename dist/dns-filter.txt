@@ -1,7 +1,7 @@
-! NobleDNS DNS Filter
-! Sources: AdGuard DNS Filter + HaGeZi Multi Normal
-! Block-only subscription; source exceptions are excluded and provided for review.
-! Complex syntax not proven equivalent is excluded; see parser-exclusions.csv.
+! Title: NobleDNS Filter
+! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.
+! Homepage: https://github.com/LucentDNS/NobleDNS
+! Sources: AdGuard DNS Filter, HaGeZi Multi Normal
 .1.1.1.l80.js^
 .3.n.2.1.l50.js
 .3.n.2.2.l30.js
