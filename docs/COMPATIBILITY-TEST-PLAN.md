@@ -54,14 +54,14 @@ Do not add these synthetic rules to the public subscription.
 | `||apex.nobledns.test^` | `deep.www.apex.nobledns.test` | Block |
 | `||bare.nobledns.test` | apex | Record observed result |
 | `||bare.nobledns.test` | `child.bare.nobledns.test` | Record observed result |
-| `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Must not be assumed safe; record observed result |
+| `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Expected to match: the hostname starts with the anchored pattern and no `^` end separator is present; verify in client |
 | `||bare.nobledns.test` | `notbare.nobledns.test` | Must not be blocked by a hostname-start anchor |
 | `.subonly.nobledns.test^` | apex | Allow |
 | `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
 
 For each query, record the DNS response, client filtering log, authoritative-server log and whether the result matches the documented semantics. A timeout or missing authoritative response is an invalid test, not a successful block.
 
-The bare-anchor cases are intentionally observation-driven: the rule is preserved from upstream, but its lack of an explicit end separator makes client-specific matching behavior important. Do not rewrite it based on a single client result.
+The bare-anchor cases are included to verify the documented distinction between hostname-start anchoring and the `^` hostname-end separator. In particular, a hostname continuing after the literal pattern is expected to match when `^` is absent. Record actual client results and do not rewrite upstream rules based on a single client result.
 
 ## Execution procedure
 
