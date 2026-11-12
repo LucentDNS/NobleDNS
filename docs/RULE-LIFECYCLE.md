@@ -22,6 +22,7 @@ It verifies source snapshot SHA-256 values and records which approved source(s) 
 | `mixed_or_split_horizon` | Fresh positive and NXDOMAIN observations coexist | Investigate resolver, geography, CDN and split-horizon differences |
 | `stable_nxdomain_candidate_manual_review` | Strict multi-resolver, multi-vantage, multi-day NXDOMAIN threshold met, with a relevant SOA authority record on every latest response | Manual review only; never auto-delete |
 | `nxdomain_without_authority_soa_manual_review` | NXDOMAIN quorum appears met, but at least one latest response lacks a relevant SOA authority record | Investigate possible resolver-side synthesis/filtering; not a stable dead-domain finding |
+| `nxdomain_authority_zone_disagreement_manual_review` | Latest NXDOMAIN responses contain multiple or inconsistent SOA zones | Investigate delegation, split-horizon behavior or resolver-side synthesis; not a stable dead-domain finding |
 | `insufficient_nxdomain_evidence` | NXDOMAIN observed but quorum/time coverage is insufficient | Gather more observations |
 | `nodata_or_no_address` | NOERROR without A/AAAA address data | Not equivalent to NXDOMAIN; investigate record type and CNAME behavior |
 | `sinkhole_observed_manual_review` | An observation carries a separately sourced sinkhole evidence URL | Retain pending security/context review; sinkhole is not dead |
@@ -41,7 +42,7 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 4. At least two distinct vantage points are represented.
 5. At least three resolver/operator/vantage combinations have both A and AAAA results.
 6. The fresh NXDOMAIN observation history spans at least seven full elapsed days.
-7. Every latest NXDOMAIN response includes a relevant SOA authority zone that is an ancestor of the queried hostname. Missing SOA evidence is a separate manual-review status, never a stable candidate.
+7. Every latest NXDOMAIN response includes exactly one relevant SOA authority zone that is an ancestor of the queried hostname, and that zone is consistent across the full resolver/vantage quorum. Missing or inconsistent SOA evidence receives a separate manual-review status, never a stable candidate.
 8. Observations are no older than 30 days by default.
 9. Observation timestamps cannot be in the future. A/AAAA answers must be syntactically valid IP addresses of the queried address family; non-NOERROR responses cannot carry address answers.
 
