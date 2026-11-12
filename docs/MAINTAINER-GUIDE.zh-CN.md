@@ -138,7 +138,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 | `validation-report.txt` | 构建验证报告 |
 | `parser-exclusions.csv` | 被排除规则及原因 |
 | `badfilter-audit.csv` | 已处理的 `$badfilter` 指令、精确目标、处理结果和受影响来源 |
-| `allowlist-active.txt` | 已纳入主订阅的简单上游例外规则 |
+| `allowlist-active.txt` | 已纳入主订阅的受支持上游例外规则 |
 | `sources/sources-manifest.json` | 上游快照及 SHA256 |
 
 特别关注：
