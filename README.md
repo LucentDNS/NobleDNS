@@ -32,13 +32,14 @@ Add this URL as a custom DNS blocklist in a compatible filtering client. Keep th
 - [Open the legacy-compatible mirror](https://github.com/LucentDNS/NobleDNS/blob/main/NobleDNS.txt)
 - [Build manifest](dist/manifest.json)
 - [Latest validation report](dist/validation-report.txt)
+- [Active upstream exceptions](dist/allowlist-active.txt)
 - [Versioned releases](https://github.com/LucentDNS/NobleDNS/releases)
 
 ## Filtering scope
 
 NobleDNS provides DNS-level blocking for advertising, tracking, telemetry and other unwanted domains represented by its configured sources. DNS filtering is one layer of protection; it cannot remove every ad, especially first-party ads, ads served from shared domains or content embedded directly in apps and media.
 
-The main subscription contains block rules only. Upstream exceptions are reviewed separately and are not automatically converted into allow rules.
+The main subscription contains blocking rules and the simple, explicitly supported exception rules supplied by the upstream filters. These exceptions preserve upstream compatibility intent and are included only when they pass the same syntax and domain validation. Complex or unsupported exception syntax remains excluded and recorded in the parser-exclusion report.
 
 ## Sources and maintenance
 
