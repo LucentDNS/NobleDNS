@@ -395,7 +395,9 @@ def write_outputs(report: dict, output_dir: Path) -> None:
         "hostname", "status", "in_current_subscription", "matched_rules",
         "source_keys", "observation_count", "fresh_observations",
         "resolver_operators", "vantages", "complete_resolver_vantage_pairs",
-        "nxdomain_observations_with_soa", "authority_soa_zones", "observation_span_days", "action",
+        "operators_with_multi_vantage_coverage", "pairs_with_seven_day_complete_history",
+        "minimum_pair_observation_span_days", "nxdomain_observations_with_soa",
+        "authority_soa_zones", "observation_span_days", "action",
     ]
     with (output_dir / "candidates.csv").open("w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
