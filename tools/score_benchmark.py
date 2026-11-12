@@ -209,7 +209,7 @@ def main() -> int:
         args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(f"Scored {len(rows)} reviewed records; report: {args.output}")
         for category, values in result["by_category"].items():
-            print(f"{category}: TP={values['tp']} FP={values['fp']} TN={values['tn']} FN={values['fn']} precision={values['precision']} recall={values['recall']}")
+            print(f"{category}: TP={values['tp']} FP={values['fp']} TN={values['tn']} FN={values['fn']} block_recall={values['block_recall']} false_block_rate={values['false_block_rate']}")
         print("LIMITATION: offline hostname-rule simulation only; not a live DNS/client or application test.")
         return 0
     except (OSError, ValueError) as exc:
