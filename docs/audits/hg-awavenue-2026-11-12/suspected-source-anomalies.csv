@@ -1,0 +1,15 @@
+﻿source,type,rule,source_lines,domain_fragment_before_navigation_host,note
+hg1,possible_navigation_host_concatenation,||5zdw5d.yiqichuanbo.comhgzs.uunat.com,['hg1:2463'],5zdw5d.yiqichuanbo.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||beacon-ad.ztgame.comhgzs.uunat.com,['hg1:4371'],beacon-ad.ztgame.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||dnda9dg2qc7yvx01.ojfxn.cnhgzs.uunat.com,['hg1:5444'],dnda9dg2qc7yvx01.ojfxn.cn,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||drtyuiu23ytr.hjwku.comhgzs.uunat.com,['hg1:5546'],drtyuiu23ytr.hjwku.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||fp-it.fengkongcloud.comhgzs.uunat.com,['hg1:6067'],fp-it.fengkongcloud.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||fund.xueqiu.comhgzs.uunat.com,['hg1:6104'],fund.xueqiu.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||imeclient.openspeech.cnhgzs.uunat.com,['hg1:7113'],imeclient.openspeech.cn,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||nvrme1368.comhgzs.uunat.com,['hg1:9005'],nvrme1368.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||onlyv4.kuaishoupay.comhgzs.uunat.com,['hg1:9138'],onlyv4.kuaishoupay.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||protrafficinspector.comhgzs.uunat.com,['hg1:9629'],protrafficinspector.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||qgwen640.comhgzs.uunat.com,['hg1:9771'],qgwen640.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||xbvmffa640.viphgzs.uunat.com,['hg1:12374'],xbvmffa640.vip,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||xsertyuioiuyyt.zx.eywisg.comhgzs.uunat.com,['hg1:12534'],xsertyuioiuyyt.zx.eywisg.com,Heuristic flag only; do not split or repair without upstream confirmation.
+hg1,possible_navigation_host_concatenation,||zy123a4b5abc-un.comfylink.comhgzs.uunat.com,['hg1:13155'],zy123a4b5abc-un.comfylink.com,Heuristic flag only; do not split or repair without upstream confirmation.

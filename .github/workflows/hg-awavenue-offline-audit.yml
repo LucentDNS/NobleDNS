@@ -1,0 +1,143 @@
+name: NobleDNS HG and AWAvenue offline audit
+
+on:
+  push:
+    branches:
+      - audit/hg-awavenue-offline-2026-11-12
+    paths:
+      - "tools/hg_awavenue_audit.py"
+      - ".github/workflows/hg-awavenue-offline-audit.yml"
+      - "update.py"
+      - "tests/fixtures/essential-domains.txt"
+      - "tests/fixtures/known-ads.txt"
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+    paths:
+      - "tools/hg_awavenue_audit.py"
+      - ".github/workflows/hg-awavenue-offline-audit.yml"
+      - "update.py"
+      - "tests/fixtures/essential-domains.txt"
+      - "tests/fixtures/known-ads.txt"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+# Push and pull_request events both fired for every same-repository PR update.
+# This branch is the only permitted target, so one push-triggered audit is enough.
+concurrency:
+  group: nobledns-hg-awavenue-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    if: github.ref == 'refs/heads/audit/hg-awavenue-offline-2026-11-12' || (github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'audit/hg-awavenue-offline-2026-11-12')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout isolated audit branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - name: Confirm audit-only workflow scope
+        run: echo "This workflow only writes cached-parent offline audit reports to the isolated audit branch."
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned project dependencies
+        run: python -m pip install --requirement requirements.txt
+
+      - name: Validate builder and audit script syntax
+        run: |
+          python -m py_compile update.py tools/hg_awavenue_audit.py
+          python -m unittest discover -s tests -p "test_parser.py" -v
+
+      - name: Pin baseline and upstream source commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASELINE_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          HG_MAIN_SHA="$(git ls-remote https://github.com/2771936993/HG.git refs/heads/main | awk '{print $1}')"
+          AWAVENUE_MAIN_SHA="$(git ls-remote https://github.com/TG-Twilight/AWAvenue-Ads-Rule.git refs/heads/main | awk '{print $1}')"
+          for value in "$BASELINE_MAIN_SHA" "$HG_MAIN_SHA" "$AWAVENUE_MAIN_SHA"; do
+            if ! [[ "$value" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::Could not resolve an immutable source commit."
+              exit 1
+            fi
+          done
+          printf 'BASELINE_MAIN_SHA=%s\nHG_MAIN_SHA=%s\nAWAVENUE_MAIN_SHA=%s\n' \
+            "$BASELINE_MAIN_SHA" "$HG_MAIN_SHA" "$AWAVENUE_MAIN_SHA" >> "$GITHUB_ENV"
+
+      - name: Download previously captured source snapshots
+        uses: actions/download-artifact@v4
+        with:
+          name: nobledns-hg-awavenue-offline-audit
+          run-id: 43184256306
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: audit-input
+
+      - name: Run hash-verified offline source and merge audit
+        run: python tools/hg_awavenue_audit.py --out audit-output --snapshot-dir audit-input/source-snapshots
+
+      - name: Verify upstream refs remained stable during snapshot download
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASELINE_MAIN_SHA"
+          test "$(git ls-remote https://github.com/2771936993/HG.git refs/heads/main | awk '{print $1}')" = "$HG_MAIN_SHA"
+          test "$(git ls-remote https://github.com/TG-Twilight/AWAvenue-Ads-Rule.git refs/heads/main | awk '{print $1}')" = "$AWAVENUE_MAIN_SHA"
+
+      - name: Preserve exact source snapshots and machine-readable reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nobledns-hg-awavenue-offline-audit
+          path: audit-output/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish audit reports to this isolated branch only
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET="docs/audits/hg-awavenue-2026-11-12"
+          TARGET_BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Reconcile concurrent audit runs safely. The generated audit-output
+          # directory is untracked and survives branch checkout/reset.
+          for attempt in 1 2 3; do
+            git fetch origin "$TARGET_BRANCH"
+            git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+            mkdir -p "$TARGET"
+            cp audit-output/reports/01-HG-source-audit.md "$TARGET/"
+            cp audit-output/reports/02-AWAvenue-source-audit.md "$TARGET/"
+            cp audit-output/reports/03-merged-increment-audit.md "$TARGET/"
+            cp audit-output/audit.json "$TARGET/"
+            cp audit-output/candidate-domain-inventory.csv "$TARGET/"
+            cp audit-output/unsupported-source-lines.csv "$TARGET/"
+            cp audit-output/effective-incremental-rules.csv "$TARGET/"
+            cp audit-output/suspected-source-anomalies.csv "$TARGET/"
+            git add "$TARGET"
+            if git diff --cached --quiet; then
+              echo "Audit reports are unchanged; no commit is needed."
+              exit 0
+            fi
+            git commit -m "audit: publish HG and AWAvenue offline reports"
+            if git push origin "HEAD:refs/heads/${TARGET_BRANCH}"; then
+              exit 0
+            fi
+            echo "::warning::Audit branch moved during push attempt ${attempt}; retrying against its latest tip."
+          done
+          echo "::error::Could not publish audit reports after three branch reconciliation attempts."
+          exit 1
