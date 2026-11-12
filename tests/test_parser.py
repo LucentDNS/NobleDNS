@@ -172,11 +172,11 @@ class ParserTests(unittest.TestCase):
 
     def test_documented_end_anchored_block_forms_are_preserved(self):
         blocks, exceptions, rejected, rows, directives = mod.parse_source(
-            b"||clarity.ms^|\n|a.klaviyo.com^\n",
+            b"||clarity.ms^|\n|a.klaviyo.com^\n|b.klaviyo.com^|\n",
             "adguard_dns",
             min_blocks=1,
         )
-        self.assertEqual(blocks, {"||clarity.ms^|", "|a.klaviyo.com^"})
+        self.assertEqual(blocks, {"||clarity.ms^|", "|a.klaviyo.com^", "|b.klaviyo.com^|"})
         self.assertEqual(exceptions, set())
         self.assertEqual(rejected["other_anchor_syntax"], 0)
         self.assertEqual(rows, [])
@@ -190,6 +190,10 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(
             mod.normalize_badfilter_target("|a.klaviyo.com^"),
             "|a.klaviyo.com^",
+        )
+        self.assertEqual(
+            mod.normalize_badfilter_target("|b.klaviyo.com^|"),
+            "|b.klaviyo.com^|",
         )
 
     def test_documented_exception_anchor_forms_are_preserved(self):
