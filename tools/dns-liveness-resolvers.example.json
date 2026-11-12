@@ -4,17 +4,20 @@
     {
       "id": "cloudflare-doh",
       "operator": "Cloudflare",
+      "transport": "doh",
       "endpoint": "https://cloudflare-dns.com/dns-query"
     },
     {
       "id": "google-public-dns",
       "operator": "Google",
+      "transport": "doh",
       "endpoint": "https://dns.google/dns-query"
     },
     {
-      "id": "quad9-unfiltered",
+      "id": "quad9-unfiltered-dot",
       "operator": "Quad9",
-      "endpoint": "https://dns10.quad9.net/dns-query"
+      "transport": "dot",
+      "endpoint": "tls://dns10.quad9.net:853"
     }
   ]
 }
