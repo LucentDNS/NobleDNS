@@ -26,6 +26,7 @@ permissions:
   actions: read
   contents: read
 
+# Read-only source auditing is separated from the push-only report publisher below.
 concurrency:
   group: nobledns-hg-awavenue-audit-${{ github.ref }}
   cancel-in-progress: false
