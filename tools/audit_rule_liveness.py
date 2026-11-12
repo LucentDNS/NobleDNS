@@ -224,8 +224,17 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 and len(complete_pairs) == len(pairs)
             )
             soa_complete = all(row.get("authority_soa_zones") for row in current)
+            soa_zone_sets = {
+                tuple(sorted(row.get("authority_soa_zones", []))) for row in current
+            }
+            soa_consistent = (
+                all(len(row.get("authority_soa_zones", [])) == 1 for row in current)
+                and len(soa_zone_sets) == 1
+            )
             if quorum and not soa_complete:
                 status = "nxdomain_without_authority_soa_manual_review"
+            elif quorum and not soa_consistent:
+                status = "nxdomain_authority_zone_disagreement_manual_review"
             elif quorum:
                 status = "stable_nxdomain_candidate_manual_review"
             else:
@@ -275,6 +284,7 @@ def audit(rules: dict[str, set[str]], observations: list[dict], provenance: dict
                 if status in {
                     "stable_nxdomain_candidate_manual_review",
                     "nxdomain_without_authority_soa_manual_review",
+                    "nxdomain_authority_zone_disagreement_manual_review",
                 } and hostname in rules
                 else "no_change"
             ),
