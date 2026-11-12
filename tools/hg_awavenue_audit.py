@@ -23,6 +23,8 @@ import update as builder
 BASELINE_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt"
 MANIFEST_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/manifest.json"
 AWA_CHANGELOG_URL = "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/assets/README_Update.md"
+NOBLE_LICENSE_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/LICENSE"
+AWA_LICENSE_URL = "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/LICENSE"
 SOURCES = {
     "hg1": {
         "name": "HG main blocking list (hg1.txt)",
@@ -160,6 +162,14 @@ def suffixes(hostname: str) -> set[str]:
     return {".".join(labels[index:]) for index in range(len(labels))}
 
 
+def bare_domain_matches(rule_domain: str, hostname: str) -> bool:
+    return (
+        hostname == rule_domain
+        or hostname.startswith(rule_domain)
+        or ("." + rule_domain) in hostname
+    )
+
+
 def rule_matches_host(rule: str, hostname: str) -> bool:
     match = RULE_RE.fullmatch(rule)
     if not match:
@@ -168,7 +178,7 @@ def rule_matches_host(rule: str, hostname: str) -> bool:
     if match.group("caret"):
         return hostname == domain or hostname.endswith("." + domain)
     # AdGuard hostname-start anchors without ^ have no hostname-end boundary.
-    return hostname == domain or hostname.startswith(domain) or ("." + domain) in hostname
+    return bare_domain_matches(domain, hostname)
 
 
 def relation_pairs(left: set[str], right: set[str]) -> list[tuple[str, str]]:
@@ -199,8 +209,8 @@ def baseline_parent_matches(candidate_rule: str, baseline: dict) -> list[str]:
         return []
     domain = match.group("domain")
     matches = set(suffixes(domain)) & set(baseline["caret"])
-    for parent, rule in baseline["bare"].items():
-        if rule_matches_host(rule, domain):
+    for parent in baseline["bare"]:
+        if bare_domain_matches(parent, domain):
             matches.add(parent)
     return sorted(matches)
 
@@ -237,11 +247,23 @@ def rule_overlap_pairs(left_rules: set[str], right_rules: set[str]) -> list[tupl
     return sorted(pairs)
 
 def fixture_hits(source: dict, hostnames: list[str]) -> list[dict]:
-    rules = source["blocks"]
     line_map = source.get("line_map", {})
+    parsed_rules = []
+    for rule in source["blocks"]:
+        match = RULE_RE.fullmatch(rule)
+        if match:
+            parsed_rules.append((rule, match.group("domain"), bool(match.group("caret"))))
     hits = []
     for hostname in hostnames:
-        matches = sorted(rule for rule in rules if rule_matches_host(rule, hostname))
+        matches = []
+        for rule, domain, caret in parsed_rules:
+            matched = (
+                hostname == domain or hostname.endswith("." + domain)
+                if caret else bare_domain_matches(domain, hostname)
+            )
+            if matched:
+                matches.append(rule)
+        matches.sort()
         if matches:
             hits.append({
                 "hostname": hostname,
@@ -307,8 +329,8 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         if parent_suffixes & baseline_caret_domains:
             continue
         if any(
-            parent != baseline_domain and rule_matches_host(rule, baseline_domain)
-            for parent, rule in baseline["bare"].items()
+            parent != baseline_domain and bare_domain_matches(parent, baseline_domain)
+            for parent in baseline["bare"]
         ):
             continue
         effective_baseline_domains.add(baseline_domain)
@@ -324,7 +346,7 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
                 matching_rule = source["caret"][suffix]
                 broadens[matching_rule].add(baseline_domain)
         for candidate_rule in new_bare_rules:
-            if rule_matches_host(candidate_rule, baseline_domain):
+            if bare_domain_matches(rule_domain(candidate_rule), baseline_domain):
                 broadens[candidate_rule].add(baseline_domain)
 
     affected_baseline_domains = set()
@@ -530,6 +552,14 @@ def main() -> int:
 
     changelog_data = fetch_snapshot(AWA_CHANGELOG_URL)
     (snapshots / "awavenue-changelog.md").write_bytes(changelog_data)
+    noble_license_data = fetch_snapshot(NOBLE_LICENSE_URL)
+    awa_license_data = fetch_snapshot(AWA_LICENSE_URL)
+    (snapshots / "nobledns-LICENSE").write_bytes(noble_license_data)
+    (snapshots / "awavenue-LICENSE").write_bytes(awa_license_data)
+    noble_license_sha256 = sha256(noble_license_data)
+    awa_license_sha256 = sha256(awa_license_data)
+    noble_license_id = "GPL-3.0" if b"GNU GENERAL PUBLIC LICENSE" in noble_license_data and b"Version 3" in noble_license_data[:500] else "unidentified"
+    awa_license_id = "GPL-3.0" if b"GNU GENERAL PUBLIC LICENSE" in awa_license_data and b"Version 3" in awa_license_data[:500] else "unidentified"
     changelog_lines = changelog_data.decode("utf-8-sig").splitlines()
     changelog_evidence = []
     for index, line in enumerate(changelog_lines):
@@ -643,6 +673,12 @@ def main() -> int:
             } for key in SOURCES
         },
         "source_anomalies": hg_watermark_anomalies,
+        "licensing": {
+            "nobledns_project_license": {"identifier": noble_license_id, "sha256": noble_license_sha256},
+            "awavenue_license": {"identifier": awa_license_id, "sha256": awa_license_sha256},
+            "hg_license": "No public LICENSE file found in HG repository root; written redistribution permission still required.",
+            "assessment": "NobleDNS and AWAvenue both identify GPL-3.0; same license family is compatible at a high level when notices and terms are preserved. HG has no public license file.",
+        },
         "awa_changelog": {
             "url": AWA_CHANGELOG_URL,
             "sha256": sha256(changelog_data),
@@ -723,7 +759,9 @@ def main() -> int:
         "The 35 retained bare-anchor rules need client-specific matching review. "
         f"{len(hg_watermark_anomalies)} bare-anchor entries contain hgzs.uunat.com concatenated directly "
         "to the preceding domain fragment; this resembles navigation-host contamination, but the audit does "
-        "not split or repair them. The source also contains large numbers of IP-literal, wildcard, single-label "
+        "not split or repair them. Examples with source line references: "
+        f"{'; '.join(item['rule'] + ' (' + ','.join(item['source_lines']) + ')' for item in hg_watermark_anomalies[:3])}. "
+        "The source also contains large numbers of IP-literal, wildcard, single-label "
         "and malformed/unsupported entries, all excluded by the NobleDNS parser. The public repository did "
         "not expose a LICENSE file at its root."
     )
@@ -829,6 +867,13 @@ The projected count is arithmetic only. It does not establish that the candidate
 - HG2 does not provide a matching exception for the HG parent blocks pinduoduo.com and pingan.com.
 
 Using HG2 as an allowlist is not a neutral operation: exceptions can neutralize matching baseline blocking rules. Do not merge it into the NobleDNS main subscription without a separate, reviewed exception policy.
+
+## License review
+
+- NobleDNS project: {noble_license_id} (LICENSE SHA-256 {noble_license_sha256})
+- AWAvenue: {awa_license_id} (LICENSE SHA-256 {awa_license_sha256})
+- HG: no public LICENSE file was found in the repository root. The user previously reported direct permission from the maintainer, but the scope of public redistribution and licensing must be documented before copying rules into the public project.
+- NobleDNS and AWAvenue both use GPL-3.0, so their license family is aligned at a high level. Preserve upstream attribution and all applicable GPL notices/terms.
 
 ## Source-specific decision
 
