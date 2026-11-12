@@ -34,6 +34,11 @@ Create controlled records for:
 - `www.exception.nobledns.test`
 - `exact.nobledns.test`
 - `www.exact.nobledns.test`
+- `endanchor.nobledns.test`
+- `www.endanchor.nobledns.test`
+- `endanchor.nobledns.test.evil.test`
+- `exactblock.nobledns.test`
+- `www.exactblock.nobledns.test`
 
 The authoritative server should return a known test address for every name in both zones. This separates filtering behavior from upstream resolution failures.
 
@@ -49,6 +54,8 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 @@||exception.nobledns.test^|
 ||exact.nobledns.test^
 @@|exact.nobledns.test^|
+||endanchor.nobledns.test^|
+|exactblock.nobledns.test^
 ```
 
 Do not add these synthetic rules to the public subscription.
@@ -70,10 +77,14 @@ Do not add these synthetic rules to the public subscription.
 | `@@||exception.nobledns.test^|` | `www.exception.nobledns.test` | Allow |
 | `@@|exact.nobledns.test^|` | apex | Allow |
 | `@@|exact.nobledns.test^|` | `www.exact.nobledns.test` | Block; the single leading `|` and trailing `|` restrict the exception to the exact hostname |
+| `||endanchor.nobledns.test^|` | apex and subdomain | Block |
+| `||endanchor.nobledns.test^|` | `endanchor.nobledns.test.evil.test` | Allow; the trailing `|` requires the hostname to end at the pattern |
+| `|exactblock.nobledns.test^` | apex | Block |
+| `|exactblock.nobledns.test^` | `www.exactblock.nobledns.test` | Allow; the single leading `|` and `^` restrict the block to the exact hostname |
 
 For each query, record the DNS response, client filtering log, authoritative-server log and whether the result matches the documented semantics. A timeout or missing authoritative response is an invalid test, not a successful block.
 
-The bare-anchor and end-anchored exception cases verify the documented distinction between hostname-start anchoring, the `^` hostname-end separator, and the single-pipe start/end anchors. AdGuard documents these forms in its [DNS filtering syntax reference](https://adguard-dns.io/kb/general/dns-filtering-syntax/). In particular, a hostname continuing after the literal pattern is expected to match when `^` is absent. Record actual client results and do not rewrite upstream rules based on a single client result.
+The bare-anchor and end-anchored exception cases verify the documented distinction between hostname-start anchoring, the `^` hostname-end separator, the single-pipe start/end anchors, and exact-host block scope. AdGuard documents these forms in its [DNS filtering syntax reference](https://adguard-dns.io/kb/general/dns-filtering-syntax/). In particular, a hostname continuing after the literal pattern is expected to match when `^` is absent. Record actual client results and do not rewrite upstream rules based on a single client result.
 
 ## Execution procedure
 
