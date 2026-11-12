@@ -30,7 +30,7 @@ SOURCES = {
         "name": "HG main blocking list (hg1.txt)",
         "url": "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt",
         "role": "candidate_block",
-        "license": "No public LICENSE file was found at the repository root during this audit. The user previously reported direct permission from the maintainer; the scope of public redistribution and license compatibility still needs a retained written record.",
+        "license": "No public LICENSE file was found at the repository root during this audit. No retained written permission covering public redistribution is recorded in this audit. Do not redistribute unless explicit permission with scope and conditions is obtained and retained.",
         "repository": "https://github.com/2771936993/HG",
     },
     "hg2": {
@@ -957,7 +957,7 @@ Using HG2 as an allowlist is not a neutral operation: exceptions can neutralize 
 
 - NobleDNS project: {noble_license_id} (LICENSE SHA-256 {noble_license_sha256})
 - AWAvenue: {awa_license_id} (LICENSE SHA-256 {awa_license_sha256})
-- HG: no public LICENSE file was found in the repository root. The user previously reported direct permission from the maintainer, but the scope of public redistribution and licensing must be documented before copying rules into the public project.
+- HG: no public LICENSE file was found in the repository root, and this audit has no retained written permission covering public redistribution. Do not copy rules into the public project unless explicit maintainer permission with scope and conditions is obtained and retained.
 - NobleDNS and AWAvenue both use GPL-3.0, so their license family is aligned at a high level. Preserve upstream attribution and all applicable GPL notices/terms.
 
 ## Source-specific decision
