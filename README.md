@@ -18,6 +18,17 @@ We maintain **one balanced edition**—one subscription, one quality standard, o
 
 “Mainland-oriented” and “low false-positive” describe the project's design priorities. We work toward that goal through conservative rule scope, compatibility-focused review and reproducible correction—not through unsupported numerical promises.
 
+## Current build at a glance
+
+Latest verified build: **2026-11-12 (UTC)**.
+
+- **303,625** unique blocking rules, plus **11** active upstream exceptions (**303,636** total subscription rules).
+- **189,716** supported simple blocking rules parsed from AdGuard DNS Filter are retained in the merged set.
+- **113,909** additional HaGeZi-only blocking rules are added relative to the AdGuard DNS Filter baseline.
+- The merged output is the union of the two parsed source sets; unsupported or complex upstream syntax is excluded rather than guessed or rewritten.
+
+These are build-manifest counts, not a claim that every raw upstream line is supported or that every listed domain has been individually reviewed. See the [manifest](dist/manifest.json) for source fingerprints and exact build metadata.
+
 ## Subscribe
 
 **NobleDNS Balanced Edition — the only public subscription**
@@ -39,7 +50,7 @@ Add this URL as a custom DNS blocklist in a compatible filtering client. Keep th
 
 NobleDNS provides DNS-level blocking for advertising, tracking, telemetry and other unwanted domains represented by its configured sources. DNS filtering is one layer of protection; it cannot remove every ad, especially first-party ads, ads served from shared domains or content embedded directly in apps and media.
 
-The main subscription contains blocking rules and the simple, explicitly supported exception rules supplied by the upstream filters. These exceptions preserve upstream compatibility intent and are included only when they pass the same syntax and domain validation. Complex or unsupported exception syntax remains excluded and recorded in the parser-exclusion report.
+The main subscription contains blocking rules and the simple, explicitly supported exception rules supplied by the upstream filters. Any domain appearing in the compiled subscription is included **as a DNS blocking target only**; its presence does not mean NobleDNS hosts, publishes, endorses, operates or distributes the associated website or its content. These exceptions preserve upstream compatibility intent and are included only when they pass the same syntax and domain validation. Complex or unsupported exception syntax remains excluded and recorded in the parser-exclusion report.
 
 ## Sources and maintenance
 
