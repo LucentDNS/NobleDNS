@@ -170,7 +170,7 @@ class RuleLivenessTests(unittest.TestCase):
             self.assertEqual(provenance["ads.example.com"], {"adguard_dns"})
 
     def test_nxdomain_cannot_contain_answers(self):
-        with self.assertRaisesRegex(ValueError, "cannot have answers"):
+        with self.assertRaisesRegex(ValueError, "cannot have address answers"):
             mod.validate_observations({
                 "schema_version": 1,
                 "observations": [observation(answers=["203.0.113.1"])],
