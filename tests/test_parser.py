@@ -165,6 +165,48 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(audit[0][4], "applied")
         self.assertEqual(audit[0][5], "adguard_dns;hagezi_normal")
 
+    def test_documented_exception_anchor_forms_are_preserved(self):
+        blocks, exceptions, rejected, rows, directives = mod.parse_source(
+            b"||base.example.com^\\n"
+            b"@@||service.example.com^|\\n"
+            b"@@|exact.example.com^|\\n"
+            b"@@||simple.example.com^\\n",
+            "adguard_dns",
+            min_blocks=1,
+        )
+        self.assertEqual(blocks, {"||base.example.com^"})
+        self.assertEqual(
+            exceptions,
+            {
+                "@@||service.example.com^|",
+                "@@|exact.example.com^|",
+                "@@||simple.example.com^",
+            },
+        )
+        self.assertEqual(rejected["other_exception_syntax"], 0)
+        self.assertEqual(rows, [])
+        self.assertEqual(directives, [])
+
+    def test_badfilter_target_preserves_end_anchored_exception_syntax(self):
+        self.assertEqual(
+            mod.normalize_badfilter_target("@@||service.example.com^|"),
+            "@@||service.example.com^|",
+        )
+        self.assertEqual(
+            mod.normalize_badfilter_target("@@|exact.example.com^|"),
+            "@@|exact.example.com^|",
+        )
+
+    def test_badfilter_disables_end_anchored_exception(self):
+        parsed = {"adguard_dns": set()}
+        exceptions = {"adguard_dns": {"@@|exact.example.com^|"}}
+        directives = [
+            ("adguard_dns", 7, "@@|exact.example.com^|$badfilter", "@@|exact.example.com^|", "pending")
+        ]
+        audit = mod.apply_badfilters(parsed, exceptions, directives)
+        self.assertEqual(exceptions["adguard_dns"], set())
+        self.assertEqual(audit[0][4], "applied")
+
     def test_badfilter_can_disable_an_exact_exception_rule(self):
         parsed = {"adguard_dns": set(), "hagezi_normal": set()}
         exceptions = {
