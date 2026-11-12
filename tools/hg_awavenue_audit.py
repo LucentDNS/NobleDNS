@@ -173,6 +173,57 @@ def relation_pairs(left: set[str], right: set[str]) -> list[tuple[str, str]]:
     return sorted(pairs)
 
 
+def rule_domain(rule: str) -> str:
+    match = RULE_RE.fullmatch(rule)
+    if not match:
+        raise ValueError(f"unsupported parsed rule: {rule}")
+    return match.group("domain")
+
+
+def baseline_parent_matches(candidate_rule: str, baseline: dict) -> list[str]:
+    """Rules that fully cover a candidate caret-bounded rule's hostname scope."""
+    match = RULE_RE.fullmatch(candidate_rule)
+    if not match or not match.group("caret"):
+        return []
+    domain = match.group("domain")
+    matches = set(suffixes(domain)) & set(baseline["caret"])
+    for parent, rule in baseline["bare"].items():
+        if rule_matches_host(rule, domain):
+            matches.add(parent)
+    return sorted(matches)
+
+
+def rule_overlap_pairs(left_rules: set[str], right_rules: set[str]) -> list[tuple[str, str]]:
+    """Find hierarchical overlaps, including prefix collisions involving bare anchors."""
+    left_by_domain = defaultdict(list)
+    right_by_domain = defaultdict(list)
+    for rule in left_rules:
+        left_by_domain[rule_domain(rule)].append(rule)
+    for rule in right_rules:
+        right_by_domain[rule_domain(rule)].append(rule)
+
+    pairs = set()
+    for left_domain, right_domain in relation_pairs(set(left_by_domain), set(right_by_domain)):
+        for left_rule in left_by_domain[left_domain]:
+            for right_rule in right_by_domain[right_domain]:
+                pairs.add((left_rule, right_rule))
+
+    left_bare = [rule for rule in left_rules if not RULE_RE.fullmatch(rule).group("caret")]
+    right_bare = [rule for rule in right_rules if not RULE_RE.fullmatch(rule).group("caret")]
+    for bare_rule in left_bare:
+        bare_domain = rule_domain(bare_rule)
+        for other_rule in right_rules:
+            other_domain = rule_domain(other_rule)
+            if rule_matches_host(bare_rule, other_domain) or rule_matches_host(other_rule, bare_domain):
+                pairs.add((bare_rule, other_rule))
+    for bare_rule in right_bare:
+        bare_domain = rule_domain(bare_rule)
+        for other_rule in left_rules:
+            other_domain = rule_domain(other_rule)
+            if rule_matches_host(bare_rule, other_domain) or rule_matches_host(other_rule, bare_domain):
+                pairs.add((other_rule, bare_rule))
+    return sorted(pairs)
+
 def fixture_hits(source: dict, hostnames: list[str]) -> list[dict]:
     rules = source["blocks"]
     line_map = source.get("line_map", {})
@@ -197,36 +248,55 @@ def read_fixture(path: Path) -> list[str]:
 
 
 def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads: list[str]) -> dict:
-    block_domains = set(source["caret"]) | set(source["bare"])
+    candidate_rules = set(source["blocks"])
+    baseline_rules = set(baseline["blocks"])
+    candidate_domains = set(source["caret"]) | set(source["bare"])
     baseline_domains = set(baseline["caret"]) | set(baseline["bare"])
-    baseline_caret = set(baseline["caret"])
-    baseline_bare = set(baseline["bare"])
-    exact_overlap = block_domains & baseline_domains
+    exact_domain_overlap = candidate_domains & baseline_domains
+    exact_rule_overlap = candidate_rules & baseline_rules
 
-    parent_covered = {}
-    for domain in sorted(block_domains - exact_overlap):
-        suffix_matches = sorted(suffixes(domain) & baseline_caret)
-        bare_matches = sorted(
-            rule for rule in baseline_bare
-            if domain == rule or domain.startswith(rule) or ("." + rule) in domain
-        )
-        if suffix_matches or bare_matches:
-            parent_covered[domain] = sorted(set(suffix_matches + bare_matches))
+    parent_covered_rules = {}
+    effective_new_rules = set()
+    for rule in candidate_rules - exact_rule_overlap:
+        match = RULE_RE.fullmatch(rule)
+        if match.group("caret"):
+            parents = baseline_parent_matches(rule, baseline)
+            if parents:
+                parent_covered_rules[rule] = parents
+                continue
+        # Bare anchors have no hostname-end boundary. A caret-bounded rule at
+        # the same domain does not cover their prefix-collision scope.
+        effective_new_rules.add(rule)
 
-    # Only genuinely new candidate domains can broaden the published baseline.
-    effective_new_domains = block_domains - baseline_domains - set(parent_covered)
-    new_candidate_caret = set(source["caret"]) & effective_new_domains
-    new_candidate_bare = set(source["bare"]) & effective_new_domains
+    effective_new_domains = {rule_domain(rule) for rule in effective_new_rules}
+    parent_covered_domains = {
+        rule_domain(rule) for rule in parent_covered_rules
+        if rule_domain(rule) not in baseline_domains
+        and rule_domain(rule) not in effective_new_domains
+    }
+    exact_unique_domains = candidate_domains - baseline_domains
+    unique_not_parent_covered = exact_unique_domains - parent_covered_domains
 
-    # Ignore baseline child rules that are already covered by another baseline parent.
+    new_caret_domains = {
+        rule_domain(rule) for rule in effective_new_rules
+        if RULE_RE.fullmatch(rule).group("caret")
+    }
+    new_bare_rules = [
+        rule for rule in effective_new_rules
+        if not RULE_RE.fullmatch(rule).group("caret")
+    ]
+
+    # A new parent rule broadens the baseline only if no existing baseline
+    # parent rule already covered the affected baseline hostname.
     effective_baseline_domains = set()
+    baseline_caret_domains = set(baseline["caret"])
     for baseline_domain in baseline_domains:
         parent_suffixes = suffixes(baseline_domain) - {baseline_domain}
-        if parent_suffixes & baseline_caret:
+        if parent_suffixes & baseline_caret_domains:
             continue
         if any(
-            rule != baseline_domain and rule_matches_host(baseline["bare"][rule], baseline_domain)
-            for rule in baseline_bare
+            parent != baseline_domain and rule_matches_host(rule, baseline_domain)
+            for parent, rule in baseline["bare"].items()
         ):
             continue
         effective_baseline_domains.add(baseline_domain)
@@ -234,32 +304,40 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
     broadens = defaultdict(set)
     for baseline_domain in effective_baseline_domains:
         for suffix in suffixes(baseline_domain):
-            if suffix in new_candidate_caret:
-                broadens[suffix].add(baseline_domain)
-        for candidate_domain in new_candidate_bare:
-            if rule_matches_host(source["bare"][candidate_domain], baseline_domain):
-                broadens[candidate_domain].add(baseline_domain)
+            if suffix in new_caret_domains:
+                matching_rule = source["caret"][suffix]
+                broadens[matching_rule].add(baseline_domain)
+        for candidate_rule in new_bare_rules:
+            if rule_matches_host(candidate_rule, baseline_domain):
+                broadens[candidate_rule].add(baseline_domain)
 
     affected_baseline_domains = set()
     for values in broadens.values():
         affected_baseline_domains.update(values)
 
-    block_exception_conflicts = relation_pairs(block_domains, set(baseline["exception_domains"]))
-    new_block_exception_conflicts = relation_pairs(
-        effective_new_domains, set(baseline["exception_domains"])
+    block_exception_conflicts = rule_overlap_pairs(
+        candidate_rules, set(baseline["exceptions"])
     )
-    exception_block_conflicts = relation_pairs(
-        set(source["exception_domains"]), baseline_domains
+    new_block_exception_conflicts = rule_overlap_pairs(
+        effective_new_rules, set(baseline["exceptions"])
+    )
+    exception_block_conflicts = rule_overlap_pairs(
+        set(source["exceptions"]), baseline_rules
     )
     return {
-        "unique_block_domains": len(block_domains),
-        "caret_block_domains": len(source["caret"]),
-        "bare_block_domains": len(source["bare"]),
+        "unique_block_rules": len(candidate_rules),
+        "unique_block_domains": len(candidate_domains),
+        "caret_block_rules": len(source["caret"]),
+        "bare_block_rules": len(source["bare"]),
+        "domains_with_both_caret_and_bare_rules": len(set(source["caret"]) & set(source["bare"])),
         "exception_domains": len(source["exception_domains"]),
-        "exact_overlap_with_baseline": len(exact_overlap),
-        "exact_unique_vs_baseline": len(block_domains - baseline_domains),
-        "unique_but_already_covered_by_baseline_parent": len(parent_covered),
-        "unique_not_covered_by_baseline_parent": len(effective_new_domains),
+        "exact_rule_overlap_with_baseline": len(exact_rule_overlap),
+        "exact_domain_overlap_with_baseline": len(exact_domain_overlap),
+        "exact_unique_domains_vs_baseline": len(exact_unique_domains),
+        "effective_new_rules_vs_baseline": len(effective_new_rules),
+        "effective_new_domains_vs_baseline": len(effective_new_domains),
+        "unique_but_already_covered_by_baseline_parent": len(parent_covered_domains),
+        "unique_not_covered_by_baseline_parent": len(unique_not_parent_covered),
         "candidate_rules_broadening_existing_baseline_scope": len(broadens),
         "baseline_block_domains_affected_by_candidate_parent_rules": len(affected_baseline_domains),
         "candidate_blocks_overlapping_baseline_exceptions": len(block_exception_conflicts),
@@ -268,12 +346,12 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         "essential_fixture_hits": fixture_hits(source, essential),
         "known_ad_fixture_hits": fixture_hits(source, known_ads),
         "parent_covered_examples": [
-            {"candidate": domain, "baseline_cover": matches}
-            for domain, matches in list(parent_covered.items())[:30]
+            {"candidate_rule": rule, "baseline_cover": parents}
+            for rule, parents in list(parent_covered_rules.items())[:30]
         ],
         "broadening_examples": [
-            {"candidate_parent_rule": domain, "baseline_domains": sorted(values)[:10]}
-            for domain, values in list(sorted(broadens.items()))[:30]
+            {"candidate_rule": rule, "baseline_domains": sorted(values)[:10]}
+            for rule, values in list(sorted(broadens.items()))[:30]
         ],
         "block_exception_conflict_examples": block_exception_conflicts[:30],
         "new_block_exception_conflict_examples": new_block_exception_conflicts[:30],
@@ -330,12 +408,17 @@ def render_source_report(title: str, source_name: str, source_url: str, parsed: 
 
 | Measure | Count |
 |---|---:|
+| Unique supported blocking rules | {metrics['unique_block_rules']:,} |
 | Unique supported blocking domains | {metrics['unique_block_domains']:,} |
-| Explicit hostname-end rules (||domain^) | {metrics['caret_block_domains']:,} |
-| Bare hostname-start rules (||domain) | {metrics['bare_block_domains']:,} |
+| Explicit hostname-end rules (||domain^) | {metrics['caret_block_rules']:,} |
+| Bare hostname-start rules (||domain) | {metrics['bare_block_rules']:,} |
+| Domains represented by both rule forms | {metrics['domains_with_both_caret_and_bare_rules']:,} |
 | Supported exception domains | {metrics['exception_domains']:,} |
-| Exact overlap with NobleDNS baseline | {metrics['exact_overlap_with_baseline']:,} |
-| Exact unique domains vs baseline | {metrics['exact_unique_vs_baseline']:,} |
+| Exact rule overlap with NobleDNS baseline | {metrics['exact_rule_overlap_with_baseline']:,} |
+| Exact domain overlap with NobleDNS baseline | {metrics['exact_domain_overlap_with_baseline']:,} |
+| Exact unique domains vs baseline | {metrics['exact_unique_domains_vs_baseline']:,} |
+| Effective new rules after baseline coverage | {metrics['effective_new_rules_vs_baseline']:,} |
+| Effective new domains after baseline coverage | {metrics['effective_new_domains_vs_baseline']:,} |
 | Unique but already covered by a baseline parent rule | {metrics['unique_but_already_covered_by_baseline_parent']:,} |
 | Unique domains not covered by a baseline parent rule | {metrics['unique_not_covered_by_baseline_parent']:,} |
 | Candidate rules that broaden existing baseline scope | {metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
@@ -403,9 +486,9 @@ def self_test() -> None:
         b"||example.com^\n||newparent.example.net^\n||redundant.example.com^\n"
     )
     metrics = source_metrics(candidate, baseline, [], [])
-    if metrics["candidate_rules_broadening_existing_baseline_scope"] != 1:
-        raise AssertionError("scope-expansion metric must exclude exact and already-covered rules")
-    if metrics["baseline_block_domains_affected_by_candidate_parent_rules"] != 1:
+    if metrics["candidate_rules_broadening_existing_baseline_scope"] != 2:
+        raise AssertionError("scope-expansion metric must count a new bare-anchor scope and a new parent rule")
+    if metrics["baseline_block_domains_affected_by_candidate_parent_rules"] != 2:
         raise AssertionError("scope-expansion metric must count only newly affected baseline domains")
 
 
@@ -454,8 +537,12 @@ def main() -> int:
     hg2_allow_domains = set(parsed["hg2"]["exception_domains"])
     baseline_block_domains = set(baseline["caret"]) | set(baseline["bare"])
     hg1_block_domains = set(parsed["hg1"]["caret"]) | set(parsed["hg1"]["bare"])
-    hg2_vs_baseline = relation_pairs(hg2_allow_domains, baseline_block_domains)
-    hg2_vs_hg1 = relation_pairs(hg2_allow_domains, hg1_block_domains)
+    hg2_vs_baseline = rule_overlap_pairs(
+        set(parsed["hg2"]["exceptions"]), set(baseline["blocks"])
+    )
+    hg2_vs_hg1 = rule_overlap_pairs(
+        set(parsed["hg2"]["exceptions"]), set(parsed["hg1"]["blocks"])
+    )
 
     hg_domains = hg1_block_domains
     awa_domains = set(parsed["awavenue_full"]["caret"]) | set(parsed["awavenue_full"]["bare"])
@@ -635,6 +722,8 @@ def main() -> int:
 |---|---:|
 | Exact new rules vs baseline | {merged_rule_exact_unique:,} |
 | New unique domains vs baseline | {merged_domain_exact_unique:,} |
+| Effective new rules after baseline coverage | {merged_metrics['effective_new_rules_vs_baseline']:,} |
+| Effective new domains after baseline coverage | {merged_metrics['effective_new_domains_vs_baseline']:,} |
 | New domains not already covered by a baseline parent rule | {merged_metrics['unique_not_covered_by_baseline_parent']:,} |
 | Candidate rules that broaden existing baseline scope | {merged_metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
 | Baseline block domains affected by candidate parent rules | {merged_metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
@@ -687,26 +776,40 @@ No production source configuration, public rules, manifest, subscription, or rel
     (reports / "03-merged-increment-audit.md").write_text(merged_text, encoding="utf-8")
 
     candidate_rows = []
+    effective_incremental_rows = []
     for source_key in ("hg1", "awavenue_full", "awavenue_only_ads"):
         source = parsed[source_key]
-        source_domains = set(source["caret"]) | set(source["bare"])
-        for domain in sorted(source_domains):
-            candidate_rows.append({
+        source_metrics_row = metrics[source_key]
+        for rule in sorted(source["blocks"]):
+            domain = rule_domain(rule)
+            match = RULE_RE.fullmatch(rule)
+            parent_matches = baseline_parent_matches(rule, baseline)
+            exact_rule_match = rule in baseline["blocks"]
+            exact_domain_match = domain in baseline_block_domains
+            effective_incremental = not exact_rule_match and not parent_matches
+            row = {
                 "source": source_key,
                 "domain": domain,
-                "rule": source["caret"].get(domain) or source["bare"].get(domain),
-                "is_bare_anchor": str(domain in source["bare"]).lower(),
-                "exact_baseline_match": str(domain in baseline_block_domains).lower(),
-                "source_lines": ";".join(source["line_map"].get(
-                    source["caret"].get(domain) or source["bare"].get(domain), []
-                )),
-                "essential_fixture_match": str(any(rule_matches_host(
-                    source["caret"].get(domain) or source["bare"].get(domain), host
-                ) for host in essential)).lower(),
-            })
-    write_csv(out / "candidate-domain-inventory.csv",
-              ["source", "domain", "rule", "is_bare_anchor", "exact_baseline_match", "source_lines", "essential_fixture_match"],
-              candidate_rows)
+                "rule": rule,
+                "rule_form": "bare_anchor" if not match.group("caret") else "caret_bounded",
+                "exact_baseline_rule_match": str(exact_rule_match).lower(),
+                "exact_baseline_domain_match": str(exact_domain_match).lower(),
+                "baseline_parent_covered": str(bool(parent_matches)).lower(),
+                "baseline_parent_rules": ";".join(parent_matches),
+                "effective_incremental_rule": str(effective_incremental).lower(),
+                "source_lines": ";".join(source["line_map"].get(rule, [])),
+                "essential_fixture_match": str(any(rule_matches_host(rule, host) for host in essential)).lower(),
+            }
+            candidate_rows.append(row)
+            if effective_incremental:
+                effective_incremental_rows.append(row)
+    inventory_headers = [
+        "source", "domain", "rule", "rule_form", "exact_baseline_rule_match",
+        "exact_baseline_domain_match", "baseline_parent_covered", "baseline_parent_rules",
+        "effective_incremental_rule", "source_lines", "essential_fixture_match",
+    ]
+    write_csv(out / "candidate-domain-inventory.csv", inventory_headers, candidate_rows)
+    write_csv(out / "effective-incremental-rules.csv", inventory_headers, effective_incremental_rows)
 
     excluded_rows = []
     for key, source in parsed.items():
