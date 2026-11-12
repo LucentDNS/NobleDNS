@@ -176,6 +176,9 @@ class RuleLivenessTests(unittest.TestCase):
         for row in rows:
             if row["vantage"] == "cn-lanzhou":
                 row["vantage"] = " US-WEST "
+                row["observed_at_utc"] = row["observed_at_utc"].replace(
+                    "T12:00:00Z", "T12:00:01Z"
+                )
         validated = mod.validate_observations({
             "schema_version": 1,
             "observations": rows,
