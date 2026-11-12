@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT))
 import update as builder
 
 BASELINE_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt"
+MANIFEST_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/manifest.json"
 SOURCES = {
     "hg1": {
         "name": "HG main blocking list (hg1.txt)",
@@ -111,12 +112,29 @@ def parse_snapshot(key: str, data: bytes) -> dict:
         if not match or not match.group("exception") or not match.group("caret"):
             raise ValueError(f"unexpected parsed exception rule: {rule}")
         exception_parts[match.group("domain")] = rule
+
+    line_map = defaultdict(list)
+    for line_number, raw in enumerate(data.decode("utf-8-sig").splitlines(), 1):
+        line = raw.strip().lstrip("\ufeff")
+        match = RULE_RE.fullmatch(line)
+        if not match:
+            continue
+        domain = match.group("domain").lower()
+        canonical = (
+            ("@@" if match.group("exception") else "")
+            + "||" + domain
+            + ("^" if match.group("caret") else "")
+        )
+        if canonical in blocks or canonical in exceptions:
+            line_map[canonical].append(f"{key}:{line_number}")
+
     return {
         "blocks": blocks,
         "bare": bare_parts,
         "caret": block_parts,
         "exceptions": exceptions,
         "exception_domains": exception_parts,
+        "line_map": dict(line_map),
         "rejected": dict(sorted(rejected.items())),
         "excluded_rows": rows,
         "raw_rule_lines": sum(1 for line in data.decode("utf-8-sig").splitlines()
@@ -124,7 +142,6 @@ def parse_snapshot(key: str, data: bytes) -> dict:
         "sha256": sha256(data),
         "bytes": len(data),
     }
-
 
 def suffixes(hostname: str) -> set[str]:
     labels = hostname.split(".")
@@ -156,12 +173,18 @@ def relation_pairs(left: set[str], right: set[str]) -> list[tuple[str, str]]:
     return sorted(pairs)
 
 
-def fixture_hits(rules: set[str], hostnames: list[str]) -> list[dict]:
+def fixture_hits(source: dict, hostnames: list[str]) -> list[dict]:
+    rules = source["blocks"]
+    line_map = source.get("line_map", {})
     hits = []
     for hostname in hostnames:
         matches = sorted(rule for rule in rules if rule_matches_host(rule, hostname))
         if matches:
-            hits.append({"hostname": hostname, "matching_rules": matches})
+            hits.append({
+                "hostname": hostname,
+                "matching_rules": matches,
+                "source_lines": {rule: line_map.get(rule, []) for rule in matches},
+            })
     return hits
 
 
@@ -190,20 +213,41 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         if suffix_matches or bare_matches:
             parent_covered[domain] = sorted(set(suffix_matches + bare_matches))
 
-    # Find candidate rules that would broaden the scope of existing baseline rules.
-    broadens = defaultdict(set)
-    candidate_caret = set(source["caret"])
-    candidate_bare = set(source["bare"])
+    # Only genuinely new candidate domains can broaden the published baseline.
+    effective_new_domains = block_domains - baseline_domains - set(parent_covered)
+    new_candidate_caret = set(source["caret"]) & effective_new_domains
+    new_candidate_bare = set(source["bare"]) & effective_new_domains
+
+    # Ignore baseline child rules that are already covered by another baseline parent.
+    effective_baseline_domains = set()
     for baseline_domain in baseline_domains:
+        parent_suffixes = suffixes(baseline_domain) - {baseline_domain}
+        if parent_suffixes & baseline_caret:
+            continue
+        if any(
+            rule != baseline_domain and rule_matches_host(baseline["bare"][rule], baseline_domain)
+            for rule in baseline_bare
+        ):
+            continue
+        effective_baseline_domains.add(baseline_domain)
+
+    broadens = defaultdict(set)
+    for baseline_domain in effective_baseline_domains:
         for suffix in suffixes(baseline_domain):
-            if suffix in candidate_caret:
+            if suffix in new_candidate_caret:
                 broadens[suffix].add(baseline_domain)
-        for candidate_domain in candidate_bare:
-            if (baseline_domain == candidate_domain or baseline_domain.startswith(candidate_domain)
-                    or ("." + candidate_domain) in baseline_domain):
+        for candidate_domain in new_candidate_bare:
+            if rule_matches_host(source["bare"][candidate_domain], baseline_domain):
                 broadens[candidate_domain].add(baseline_domain)
 
+    affected_baseline_domains = set()
+    for values in broadens.values():
+        affected_baseline_domains.update(values)
+
     block_exception_conflicts = relation_pairs(block_domains, set(baseline["exception_domains"]))
+    new_block_exception_conflicts = relation_pairs(
+        effective_new_domains, set(baseline["exception_domains"])
+    )
     exception_block_conflicts = relation_pairs(
         set(source["exception_domains"]), baseline_domains
     )
@@ -215,13 +259,14 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         "exact_overlap_with_baseline": len(exact_overlap),
         "exact_unique_vs_baseline": len(block_domains - baseline_domains),
         "unique_but_already_covered_by_baseline_parent": len(parent_covered),
-        "unique_not_covered_by_baseline_parent": len(block_domains - baseline_domains - set(parent_covered)),
+        "unique_not_covered_by_baseline_parent": len(effective_new_domains),
         "candidate_rules_broadening_existing_baseline_scope": len(broadens),
-        "baseline_block_domains_affected_by_candidate_parent_rules": sum(len(v) for v in broadens.values()),
+        "baseline_block_domains_affected_by_candidate_parent_rules": len(affected_baseline_domains),
         "candidate_blocks_overlapping_baseline_exceptions": len(block_exception_conflicts),
+        "new_candidate_blocks_overlapping_baseline_exceptions": len(new_block_exception_conflicts),
         "candidate_exceptions_overlapping_baseline_blocks": len(exception_block_conflicts),
-        "essential_fixture_hits": fixture_hits(source["blocks"], essential),
-        "known_ad_fixture_hits": fixture_hits(source["blocks"], known_ads),
+        "essential_fixture_hits": fixture_hits(source, essential),
+        "known_ad_fixture_hits": fixture_hits(source, known_ads),
         "parent_covered_examples": [
             {"candidate": domain, "baseline_cover": matches}
             for domain, matches in list(parent_covered.items())[:30]
@@ -231,9 +276,9 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
             for domain, values in list(sorted(broadens.items()))[:30]
         ],
         "block_exception_conflict_examples": block_exception_conflicts[:30],
+        "new_block_exception_conflict_examples": new_block_exception_conflicts[:30],
         "exception_block_conflict_examples": exception_block_conflicts[:30],
     }
-
 
 def lexical_signals(domains: set[str]) -> dict:
     return {
@@ -450,6 +495,15 @@ def main() -> int:
     if not baseline["blocks"]:
         raise RuntimeError("NobleDNS baseline parsed no blocking rules; refusing an incomplete comparison")
 
+    manifest_data = fetch_snapshot(MANIFEST_URL)
+    (snapshots / "nobledns-main-manifest.json").write_bytes(manifest_data)
+    baseline_manifest = json.loads(manifest_data.decode("utf-8-sig"))
+    manifest_rule_count = len(baseline["blocks"]) + len(baseline["exceptions"])
+    if baseline_manifest.get("main_subscription_sha256") != baseline["sha256"]:
+        raise RuntimeError("Downloaded baseline SHA-256 does not match dist/manifest.json")
+    if baseline_manifest.get("main_subscription_rules") != manifest_rule_count:
+        raise RuntimeError("Downloaded baseline rule count does not match dist/manifest.json")
+
     essential = read_fixture(ROOT / "tests" / "fixtures" / "essential-domains.txt")
     known_ads = read_fixture(ROOT / "tests" / "fixtures" / "known-ads.txt")
     if not essential or not known_ads:
@@ -470,12 +524,17 @@ def main() -> int:
     only_ads_domains = set(parsed["awavenue_only_ads"]["caret"]) | set(parsed["awavenue_only_ads"]["bare"])
     merged_domains = hg_domains | awa_domains
     merged_rules = parsed["hg1"]["blocks"] | parsed["awavenue_full"]["blocks"]
+    merged_line_map = defaultdict(list)
+    for source_key in ("hg1", "awavenue_full"):
+        for rule, lines in parsed[source_key]["line_map"].items():
+            merged_line_map[rule].extend(lines)
     merged_view = {
         "caret": {**parsed["hg1"]["caret"], **parsed["awavenue_full"]["caret"]},
         "bare": {**parsed["hg1"]["bare"], **parsed["awavenue_full"]["bare"]},
         "blocks": merged_rules,
         "exceptions": set(),
         "exception_domains": {},
+        "line_map": dict(merged_line_map),
     }
     merged_metrics = source_metrics(merged_view, baseline, essential, known_ads)
     exact_rule_overlap = len(parsed["hg1"]["blocks"] & parsed["awavenue_full"]["blocks"])
@@ -491,6 +550,11 @@ def main() -> int:
         "baseline_main_commit": os.environ.get("BASELINE_MAIN_SHA"),
         "baseline_url": BASELINE_URL,
         "baseline_sha256": baseline["sha256"],
+        "baseline_manifest_sha256": sha256(manifest_data),
+        "baseline_version": baseline_manifest.get("version"),
+        "baseline_status": baseline_manifest.get("status"),
+        "baseline_built_at_utc": baseline_manifest.get("built_at_utc"),
+        "baseline_manifest_integrity": "PASS",
         "baseline_bytes": baseline["bytes"],
         "baseline_block_rules": len(baseline["blocks"]),
         "baseline_exception_rules": len(baseline["exceptions"]),
@@ -606,6 +670,8 @@ def main() -> int:
 - Baseline commit: {report['baseline_main_commit'] or 'not supplied'}
 - Baseline URL: {BASELINE_URL}
 - Baseline SHA-256: {baseline['sha256']}
+- Baseline manifest SHA-256: {sha256(manifest_data)}
+- Baseline manifest integrity: PASS (manifest version {baseline_manifest.get('version')}, status {baseline_manifest.get('status')}, built {baseline_manifest.get('built_at_utc')})
 - Baseline blocking rules: {len(baseline['blocks']):,}
 - Baseline active exceptions: {len(baseline['exceptions']):,}
 - Rule cap: {builder.MAX_RULES:,}
@@ -692,12 +758,15 @@ No production source configuration, public rules, manifest, subscription, or rel
                 "rule": source["caret"].get(domain) or source["bare"].get(domain),
                 "is_bare_anchor": str(domain in source["bare"]).lower(),
                 "exact_baseline_match": str(domain in baseline_block_domains).lower(),
+                "source_lines": ";".join(source["line_map"].get(
+                    source["caret"].get(domain) or source["bare"].get(domain), []
+                )),
                 "essential_fixture_match": str(any(rule_matches_host(
                     source["caret"].get(domain) or source["bare"].get(domain), host
                 ) for host in essential)).lower(),
             })
     write_csv(out / "candidate-domain-inventory.csv",
-              ["source", "domain", "rule", "is_bare_anchor", "exact_baseline_match", "essential_fixture_match"],
+              ["source", "domain", "rule", "is_bare_anchor", "exact_baseline_match", "source_lines", "essential_fixture_match"],
               candidate_rows)
 
     excluded_rows = []
