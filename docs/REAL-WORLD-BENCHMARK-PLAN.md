@@ -37,7 +37,7 @@ Never compare different resolver providers, client versions, cache states or net
 
 ## 3. Ground-truth corpus
 
-The current `tests/fixtures/evidence-corpus.json` is intentionally empty. Do not fill it with synthetic domains, unreviewed upstream entries or names inferred from their labels.
+The reviewed corpus has not yet been populated. A header-only template is provided at `tests/fixtures/reviewed-benchmark-corpus.template.csv`. Do not fill it with synthetic domains, unreviewed upstream entries or names inferred from their labels.
 
 Build a versioned corpus with independently reviewed records:
 
@@ -59,7 +59,7 @@ Requirements:
 - Keep a blind holdout subset unavailable to the person tuning rules until an evaluation round is frozen.
 - Never commit private traffic logs, identifiers, credentials or user-specific browsing histories.
 
-The existing evidence-corpus validator is a starting point, not a substitute for expert review. Extend its schema only through separately tested changes.
+The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects stale or non-high-confidence records, and refuses to score unsupported rule syntax. Its `independent=true` field is a reviewer attestation, not cryptographic proof; evidence must be checked by a second reviewer. The scorer models the project's supported hostname-suffix rule subset only. It is not a substitute for a real client or DNS query, and comparator lists must be converted to a semantically equivalent supported subset with all exclusions disclosed before a fair score can be claimed.
 
 ## 4. Metrics
 
@@ -151,7 +151,7 @@ Do not invent numerical pass thresholds before collecting a baseline. Establish 
 
 At the time this plan is added:
 - The automated regression corpus contains 72 essential-service hostnames and 20 known advertising-infrastructure hostnames; these are regression sentinels, not a representative independent benchmark.
-- The evidence-backed corpus is empty.
+- The reviewed evidence corpus is not yet populated; only a header-only CSV template and an offline scorer exist.
 - The real DNS client compatibility matrix remains NOT TESTED unless supported by linked, reproducible run evidence.
 - No comprehensive mainland application/site task matrix has been completed.
 - No comparative efficacy or performance score has been established.
@@ -163,4 +163,4 @@ Therefore NobleDNS must not yet be marketed as fully field-tested, proven low-fa
 
 Every scored report should contain: executive summary and limitations; immutable list/corpus identities (version, commit, SHA-256); environment and exact client/resolver versions; corpus composition, evidence quality and sampling method; per-category TP, FP, FN, precision and recall; critical service task outcomes and severity; DNS latency, timeout, throughput, CPU and memory distributions; differences versus every comparator with confidence intervals where applicable; raw sanitized artifacts and reproduction steps; reviewer sign-off, unresolved questions and next test date.
 
-This plan is a test protocol only. It does not change the public rule set, add candidate sources or authorize publication of benchmark claims.
+The scorer's supported-rule parser and confusion-matrix calculations are covered by unit tests; its output must always be labeled as offline simulation. The corpus template contains no pre-approved hostnames.\n\nThis plan is a test protocol only. It does not change the public rule set, add candidate sources or authorize publication of benchmark claims.
