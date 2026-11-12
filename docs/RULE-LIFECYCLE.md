@@ -24,6 +24,7 @@ It verifies source snapshot SHA-256 values and records which approved source(s) 
 | `insufficient_nxdomain_evidence` | NXDOMAIN observed but quorum/time coverage is insufficient | Gather more observations |
 | `nodata_or_no_address` | NOERROR without A/AAAA address data | Not equivalent to NXDOMAIN; investigate record type and CNAME behavior |
 | `sinkhole_observed_manual_review` | An observation carries a separately sourced sinkhole evidence URL | Retain pending security/context review; sinkhole is not dead |
+| `cname_chain_observed_manual_review` | A CNAME target was observed without a final A/AAAA answer | Investigate the alias chain and target; do not call the queried hostname dead |
 | `inconclusive_dns_error` | SERVFAIL, REFUSED, FORMERR, TIMEOUT or other DNS errors | Do not classify as dead |
 | `stale_or_missing_observations` | No observations inside the configured freshness window | No liveness conclusion |
 
@@ -45,6 +46,32 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 The threshold is intentionally conservative. It reduces the chance that one resolver outage, one region, one query type, or one short-lived DNS change is mistaken for a dead domain. It does not prove that the domain is malicious, unregistered, abandoned, or safe to unblock.
 
 Resolvers and vantage points must be genuinely independent. Do not count multiple endpoints operated by the same provider as independent operators. A single CI runner is not multiple geographic vantage points. The tool can validate the labels and observation structure, but it cannot cryptographically prove operator ownership or geographic independence; that verification must be documented by the collector/reviewer before evidence is accepted.
+
+## Controlled observation collection
+
+The companion `tools/collect_dns_liveness.py` performs the network queries; the audit tool above remains offline. The collector accepts only an explicit newline-separated sample file and a resolver configuration. It never reads or probes the complete subscription automatically.
+
+The example resolver configuration uses three independent operators:
+
+- Cloudflare DoH: `https://cloudflare-dns.com/dns-query`
+- Google Public DNS DoH: `https://dns.google/dns-query`
+- Quad9 unfiltered DoT: `tls://dns10.quad9.net:853` (the 9.9.9.10 service family does not apply threat blocking)
+
+Cloudflare and Google document RFC 8484 wire-format DoH; Quad9 documents the unfiltered DoT service and endpoint. References: [Cloudflare DoH wire format](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/make-api-requests/dns-wireformat/), [Google Public DNS DoH](https://developers.google.com/speed/public-dns/docs/doh), [Quad9 service addresses](https://docs.quad9.net/services/).
+
+Example PowerShell invocation:
+
+```powershell
+py -3.12 .\tools\collect_dns_liveness.py `
+  --sample .\private-audit\review-sample.txt `
+  --resolvers .\tools\dns-liveness-resolvers.example.json `
+  --vantage "operator-assigned-location-label" `
+  --output .\private-audit\observations.json
+```
+
+The collector has hard bounds: at least 3 unique resolver operators, at most 10 configured resolvers, at most 100 hostnames per run (default 50), 2–20 second timeout, and 0.2–5 second delay between requests. It queries only A and AAAA and uses DNS-over-HTTPS/TLS wire format. It records response codes, address answers, CNAME targets, resolver endpoint and the DNSSEC AD bit. No retries or bulk subscription scans are performed.
+
+Run the same small sample from at least two genuinely different network locations, changing the `--vantage` label. A label is self-reported: the collector cannot prove the machine's geography, resolver ownership, or independence. Verify those facts separately and document the evidence. Public resolvers see the queried hostnames and the collector's network source address; do not include private hostnames or private traffic logs. Keep raw observations private until reviewed and sanitized.
 
 ## What must happen before a removal proposal
 
