@@ -4,7 +4,7 @@
 
 NobleDNS is an independently maintained DNS blocklist designed for everyday use, with mainland China network compatibility as a primary design consideration. It maintains **one public balanced edition** rather than separate aggressive, strict, or regional variants.
 
-The project prioritizes conservative blocking, service compatibility, transparent source selection, and reproducible maintenance. Its aim is to reduce advertising and tracking at the DNS layer without needlessly disrupting legitimate websites, apps, and essential online services.
+The project prioritizes conservative source selection, compatibility review, and reproducible maintenance. The current compiler combines supported blocking rules from the configured upstream snapshots; it does not mean every individual upstream entry has been manually verified against mainland services. Its aim is to reduce advertising and tracking at the DNS layer without needlessly disrupting legitimate websites, apps, and essential online services.
 
 **中文说明：[README.zh-CN.md](README.zh-CN.md)** · **Edition policy: [docs/EDITION-POLICY.md](docs/EDITION-POLICY.md)**
 
@@ -48,7 +48,7 @@ Exactly two sources are currently configured in [config/sources.json](config/sou
 1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt)
 2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt)
 
-These are established general-purpose upstream lists; they are **not mainland-China-specific lists**. NobleDNS applies its own source controls, syntax constraints, validation and maintenance policy. It does not claim affiliation with or endorsement by either upstream.
+These are established general-purpose upstream lists; they are **not mainland-China-specific lists**. NobleDNS applies source-level controls, syntax constraints and build validation, but does not manually re-classify every upstream rule. It does not claim affiliation with or endorsement by either upstream.
 
 ## Test coverage and limitations
 
