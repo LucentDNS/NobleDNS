@@ -295,7 +295,7 @@ jobs:
           name: nobledns-build-audit-${{ github.run_number }}
           path: build-output/latest
 
-      - name: Verify candidate release channel
+      - name: Verify public release channel
         shell: bash
         run: |
           set -euo pipefail
@@ -343,7 +343,6 @@ jobs:
           cp build-output/latest/syntax-review.csv dist/syntax-review.csv
 
       - name: Commit updated public artifacts
-        if: needs.build-test.outputs.publish_update == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -486,7 +485,7 @@ jobs:
                 exit 1
               fi
             else
-              echo "All eight Release assets match local files."
+              echo "All configured Release assets match local files."
             fi
 
             # Recover a draft left behind by an interrupted release creation.
