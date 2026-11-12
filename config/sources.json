@@ -1,6 +1,6 @@
 {
   "project": "NobleDNS",
-  "release_channel": "candidate",
+  "release_channel": "public",
   "max_rules": 500000,
   "sources": [
     {
