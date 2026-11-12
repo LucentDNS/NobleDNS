@@ -57,7 +57,9 @@ This notice is an attribution and licensing guide. It does not
 replace the upstream license texts or grant rights beyond those
 licenses.
 
-## 5. Disclaimer
+## 5. Content designation and disclaimer
+
+Any domain appearing in a compiled NobleDNS subscription is included as a DNS blocking target only. Its presence does not mean NobleDNS hosts, publishes, operates, endorses or distributes the associated website or its content.
 
 AdGuard and HaGeZi are independent upstream projects.
 NobleDNS is not affiliated with or endorsed by either project.
