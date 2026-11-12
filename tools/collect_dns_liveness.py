@@ -311,7 +311,9 @@ def load_sample(path: Path, max_hostnames: int) -> list[str]:
     result: list[str] = []
     seen: set[str] = set()
     for line_number, raw in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
-        host = raw.strip().lower().rstrip(".")
+        host = raw.strip().lower()
+        if host.endswith("."):
+            host = host[:-1]
         if not host or host.startswith(("#", "!")):
             continue
         valid, reason = builder.valid_domain(host)
