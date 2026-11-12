@@ -160,7 +160,7 @@ git diff --check
 
 Note: these commands do not check untracked files by default. For new documentation, also check UTF-8 encoding, the final newline, and trailing whitespace separately.
 
-All tests must pass. The real-upstream leading-dot rule fixture (`tests/fixtures/leading-dot-rules.txt`) must verify that all 28 records are excluded as `unsupported_leading_dot_dns_syntax`. The DNS-specific AdGuard syntax reference does not define `.domain^` or `.domain` as hostname-pattern operators. Do not claim subdomain-only semantics or publish these entries unless authoritative DNS-specific documentation or controlled target-client evidence establishes their behavior.
+All tests must pass. The real-upstream leading-dot rule fixture (`tests/fixtures/leading-dot-rules.txt`) must verify that all 28 records are excluded as `unsupported_leading_dot_dns_syntax`. The current DNS-specific AdGuard syntax reference no longer lists `.domain^` or `.domain`, although an archived official AdGuard for Android / AdGuard Home KB page did describe `.example.org` as subdomain-only. Until controlled tests pass on the exact supported client versions, exclude all 28 fixture entries and do not claim current client compatibility. Never rewrite them as `||domain^`.
 
 #### Adding a Regression Case
 
