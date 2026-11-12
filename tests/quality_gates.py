@@ -101,6 +101,14 @@ class QualityGateTests(unittest.TestCase):
         )
         self.assertFalse(is_blocked("doubleclick.net", set(), set()))
 
+    def test_exception_count_stays_small(self) -> None:
+        """Exceptions are allow-rules; a sudden surge means the list is leaking."""
+        self.assertLessEqual(
+            len(self.exceptions),
+            50,
+            f"{len(self.exceptions)} exceptions active — review upstream before publishing",
+        )
+
     def test_fixture_sizes_are_explicit_and_stable(self) -> None:
         self.assertEqual(len(self.essential), 72)
         self.assertEqual(len(set(self.essential)), 72)
