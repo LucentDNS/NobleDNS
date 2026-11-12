@@ -49,6 +49,39 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertEqual(errors, [])
             self.assertEqual(len(rows), 1)
 
+
+    def test_category_policy_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "corpus.csv"
+            with path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=scorer.FIELDS)
+                writer.writeheader()
+                writer.writerow({
+                    "hostname": "ads.example.test", "category": "ad", "expected": "allow",
+                    "evidence_ref": "test-evidence", "evidence_summary": "reviewed evidence",
+                    "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
+                    "independent": "true", "reviewer": "reviewer-a",
+                })
+            rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
+            self.assertEqual(rows, [])
+            self.assertTrue(any("requires expected=block" in error for error in errors))
+
+    def test_essential_category_requires_allow(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "corpus.csv"
+            with path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=scorer.FIELDS)
+                writer.writeheader()
+                writer.writerow({
+                    "hostname": "service.example.test", "category": "essential", "expected": "block",
+                    "evidence_ref": "test-evidence", "evidence_summary": "reviewed evidence",
+                    "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
+                    "independent": "true", "reviewer": "reviewer-a",
+                })
+            rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
+            self.assertEqual(rows, [])
+            self.assertTrue(any("requires expected=allow" in error for error in errors))
+
     def test_stale_evidence_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "corpus.csv"
