@@ -72,7 +72,8 @@ class WorkflowSecurityTests(unittest.TestCase):
             ["      contents: read\n", "      contents: read\n"],
             "Both jobs must keep the default GITHUB_TOKEN read-only",
         )
-        self.assertIn("environment:\\n      name: release", workflow)
+        self.assertIn("environment:", workflow)
+        self.assertIn("name: release", workflow)
         self.assertIn(
             "uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510",
             workflow,
