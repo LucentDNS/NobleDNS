@@ -52,7 +52,7 @@ NobleDNS/
 └── update.py
 ```
 
-根目录的 `CHANGELOG.md` 是持续维护的项目变更日志；`docs/CHANGELOG.md` 保留 RC3 历史记录。
+根目录的 `CHANGELOG.md` 是持续维护的项目变更日志。
 
 以上为项目核心结构示意，省略了本地临时备份文件、缓存目录和其他非发布文件。临时备份不属于项目发布内容，不应加入 Git 提交。
 
