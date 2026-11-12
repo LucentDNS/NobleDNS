@@ -120,6 +120,11 @@ class DNSLivenessCollectorTests(unittest.TestCase):
         self.assertEqual(parsed["rcode"], "NXDOMAIN")
         self.assertEqual(parsed["authority_soa_zones"], ["example.com"])
 
+    def test_reject_trailing_bytes_after_dns_message(self):
+        packet = response(host="ads.example.com", qtype="A", answer="192.0.2.10")
+        with self.assertRaisesRegex(ValueError, "trailing bytes"):
+            mod.parse_response(packet + b"\\x00", 0x1234, "A", "ads.example.com")
+
     def test_reject_response_for_wrong_hostname(self):
         with self.assertRaisesRegex(ValueError, "question does not match"):
             mod.parse_response(response(host="other.example.com"), 0x1234, "A", "ads.example.com")
