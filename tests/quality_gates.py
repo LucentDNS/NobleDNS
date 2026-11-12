@@ -176,8 +176,9 @@ class QualityGateTests(unittest.TestCase):
             self.invalid,
             f"{len(self.invalid)} unsupported/malformed rule(s); first 10: {self.invalid[:10]}",
         )
-        self.assertGreater(len(self.blocks), 200_000)
-        self.assertLessEqual(len(self.blocks) + len(self.exceptions), 500_000)
+        total_block_rules = len(self.blocks) + len(self.bare_blocks)
+        self.assertGreater(total_block_rules, 200_000)
+        self.assertLessEqual(total_block_rules + len(self.exceptions), 500_000)
 
     def test_no_essential_hostname_is_effectively_blocked(self) -> None:
         affected = [
