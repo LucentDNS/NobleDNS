@@ -169,7 +169,7 @@ class ParserTests(unittest.TestCase):
 
     def test_documented_end_anchored_block_forms_are_preserved(self):
         blocks, exceptions, rejected, rows, directives = mod.parse_source(
-            b"||clarity.ms^|\\n|a.klaviyo.com^\\n",
+            b"||clarity.ms^|\n|a.klaviyo.com^\n",
             "adguard_dns",
             min_blocks=1,
         )
