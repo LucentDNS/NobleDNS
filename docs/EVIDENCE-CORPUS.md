@@ -36,7 +36,7 @@ Optional `expires_at_utc` is an ISO-8601 UTC timestamp. It is mandatory for thre
 - `unresolved` records must use `observe_only`; they cannot become pass/fail blocklist sentinels.
 - `confirmed_ad`, `confirmed_tracker`, and `unwanted_telemetry` require high-confidence controlled traffic capture, vendor documentation, or independent research. An upstream list match, user report, or synthetic test is not sufficient to establish a confirmed classification.
 - `threat` requires high-confidence `threat_intelligence`, an expiry timestamp, and revalidation before expiry.
-`essential_service` records must expect `allowed` and require high-confidence controlled traffic capture, vendor documentation, or independent research.
+- `essential_service` records must expect `allowed` and require high-confidence controlled traffic capture, vendor documentation, or independent research.
 - `schema_version` must be the integer `1`; booleans and floating-point values are rejected even if Python would compare them equal to `1`.
 - Tracking and telemetry are distinct from advertising and must not be reclassified as ads without evidence.
 - Observation and review timestamps cannot be in the future. Overdue reviews and expired evidence fail validation; re-review and update the evidence dates before reuse.
