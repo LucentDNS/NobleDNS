@@ -210,7 +210,7 @@ def compile_bare_matcher(domains: set[str]):
     return re.compile(r"(?=(?:^|\.)(?P<rule>" + alternatives + r"))")
 
 
-def baseline_parent_matches(candidate_rule: str, baseline: dict) -> list[str]:
+def baseline_parent_matches(candidate_rule: str, baseline: dict, bare_matcher=None) -> list[str]:
     """Baseline rules that fully cover the candidate rule's matching scope."""
     match = RULE_RE.fullmatch(candidate_rule)
     if not match:
@@ -219,7 +219,8 @@ def baseline_parent_matches(candidate_rule: str, baseline: dict) -> list[str]:
     matches = set()
     if match.group("caret"):
         matches.update(set(suffixes(domain)) & set(baseline["caret"]))
-    bare_matcher = compile_bare_matcher(set(baseline["bare"]))
+    if bare_matcher is None:
+        bare_matcher = compile_bare_matcher(set(baseline["bare"]))
     if bare_matcher:
         matches.update(item.group("rule") for item in bare_matcher.finditer(domain))
     return sorted(matches)
@@ -247,6 +248,7 @@ def build_baseline_index(baseline: dict) -> dict:
         "domains": domains,
         "caret_domains": caret_domains,
         "bare_domains": bare_domains,
+        "bare_matcher": bare_matcher,
         "effective_domains": effective_domains,
         "descendants": descendants,
     }
@@ -336,7 +338,7 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
     for rule in candidate_rules - exact_rule_overlap:
         match = RULE_RE.fullmatch(rule)
         if match.group("caret"):
-            parents = baseline_parent_matches(rule, baseline)
+            parents = baseline_parent_matches(rule, baseline, baseline_index["bare_matcher"])
             if parents:
                 parent_covered_rules[rule] = parents
                 continue
@@ -971,7 +973,7 @@ No production source configuration, public rules, manifest, subscription, or rel
         for rule in sorted(source["blocks"]):
             domain = rule_domain(rule)
             match = RULE_RE.fullmatch(rule)
-            parent_matches = baseline_parent_matches(rule, baseline)
+            parent_matches = baseline_parent_matches(rule, baseline, baseline_index["bare_matcher"])
             exact_rule_match = rule in baseline["blocks"]
             exact_domain_match = domain in baseline_block_domains
             effective_incremental = not exact_rule_match and not parent_matches
