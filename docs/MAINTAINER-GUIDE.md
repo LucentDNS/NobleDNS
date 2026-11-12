@@ -136,6 +136,7 @@ Pay particular attention to these files:
 | `manifest.json` | Sources, counts, hashes, and build metadata |
 | `validation-report.txt` | Build validation report |
 | `parser-exclusions.csv` | Excluded rules and their reasons |
+| `badfilter-audit.csv` | Supported `$badfilter` directives, exact targets, outcomes and affected sources |
 | `allowlist-active.txt` | Simple upstream exception rules included in the main subscription |
 | `sources/sources-manifest.json` | Upstream snapshots and SHA256 hashes |
 
@@ -190,6 +191,7 @@ Compare:
 - Changes in complex-syntax exclusions.
 - Changes in the number of excluded leading-dot rules (`.domain^`, `.domain`).
 - Exception-rule changes and whether those rules entered `allowlist-active.txt`.
+- `$badfilter` directives: exact target, whether it was removed, and which approved source sets were affected.
 - Confirm that every entry in `allowlist-active.txt` also appears in the main subscription, and compare the result with `active_exception_rules` in the manifest.
 
 For large changes, preserve the upstream snapshots and build output for a separate review.
@@ -260,6 +262,7 @@ build-output/
     ├── manifest.json
     ├── validation-report.txt
     ├── parser-exclusions.csv
+    ├── badfilter-audit.csv
     ├── allowlist-active.txt
     └── sources/
         └── sources-manifest.json
