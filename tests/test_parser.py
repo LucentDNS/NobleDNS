@@ -125,7 +125,7 @@ class ParserTests(unittest.TestCase):
 
     def test_leading_dot_rules_preserve_subdomain_only_semantics(self):
         blocks, _, rejected, rows = mod.parse_source(
-            b".ads.example.com^\\n.bare.example.com\\n||ok.example.com^\\n",
+            b".ads.example.com^\n.bare.example.com\n||ok.example.com^\n",
             "test",
             min_blocks=1,
         )
