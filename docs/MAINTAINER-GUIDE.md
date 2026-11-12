@@ -247,7 +247,7 @@ build-output/
     ├── manifest.json
     ├── validation-report.txt
     ├── parser-exclusions.csv
-    ├── whitelist-review.txt
+    ├── allowlist-active.txt
     └── sources/
         └── sources-manifest.json
 ```
