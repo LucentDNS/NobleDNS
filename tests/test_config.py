@@ -11,6 +11,15 @@ class ConfigTests(unittest.TestCase):
     def test_project_version_is_stable_semver(self):
         import re
         self.assertRegex(mod.VERSION_BASE, r"^\d+\.\d+\.\d+$")
+        self.assertIn(f"! Version: {mod.VERSION_BASE}", mod.FILTER_HEADER)
+
+    def test_proxy_url_validation(self):
+        self.assertEqual(mod.validate_proxy_url("http://127.0.0.1:7897"), "http://127.0.0.1:7897")
+        self.assertEqual(mod.validate_proxy_url("https://proxy.example:8443"), "https://proxy.example:8443")
+        self.assertIsNone(mod.validate_proxy_url(None))
+        for value in ("socks5://127.0.0.1:1080", "127.0.0.1:7897", "http://user:pass@127.0.0.1:7897", "http://proxy.example:70000", "http://proxy.example/path"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                mod.validate_proxy_url(value)
 
     def test_exactly_two_approved_sources(self):
         cfg = mod.load_config()

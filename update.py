@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse, csv, hashlib, ipaddress, json, os, re, shutil, socket, sys, tempfile, time
 import http.client, urllib.error, urllib.request
+from urllib.parse import urlsplit
 import idna
 from collections import Counter
 from datetime import datetime, timezone
@@ -11,12 +12,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.0"
+VERSION_BASE = "1.0.1"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
     "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.\n"
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
+    f"! Version: {VERSION_BASE}\n"
+    "! Expires: 1 day\n"
     "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
 )
 MIN_SOURCE_BYTES = 100_000
@@ -201,7 +204,28 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
     return blocks, exceptions, rejected, rows
 
 
+def validate_proxy_url(proxy: str | None) -> str | None:
+    """Accept only explicit HTTP(S) proxy endpoints without embedded credentials."""
+    if proxy is None or not proxy.strip():
+        return None
+    try:
+        parsed = urlsplit(proxy)
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError("Invalid proxy URL: malformed host or port") from exc
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Invalid proxy URL: only explicit http:// or https:// endpoints are supported")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError("Proxy credentials must not be embedded in the command-line URL")
+    if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
+        raise ValueError("Invalid proxy URL: paths, queries and fragments are not supported")
+    if port is not None and not 1 <= port <= 65535:
+        raise ValueError("Invalid proxy URL: port must be between 1 and 65535")
+    return proxy
+
+
 def fetch(url: str, proxy: str | None) -> bytes:
+    proxy = validate_proxy_url(proxy)
     handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy})] if proxy else []
     opener = urllib.request.build_opener(*handlers)
     last = None
@@ -346,6 +370,8 @@ def build(args) -> Path:
     try:
         stage = temp_parent / "latest"; stage.mkdir()
         (stage / "dns-filter.txt").write_bytes(main_bytes)
+        # Compatibility path: byte-identical to the canonical subscription.
+        (stage / "NobleDNS.txt").write_bytes(main_bytes)
         shutil.copy2(LICENSE_PATH, stage / "LICENSE")
         shutil.copy2(THIRD_PARTY_NOTICES_PATH, stage / "THIRD-PARTY-NOTICES.md")
         staged_licenses = stage / "licenses"; staged_licenses.mkdir()
@@ -367,6 +393,8 @@ def build(args) -> Path:
         # Validate staged bytes before swapping latest; keep previous latest intact on failure.
         staged = (stage / "dns-filter.txt").read_bytes()
         if sha256(staged) != manifest["main_subscription_sha256"]: raise RuntimeError("Staged SHA256 mismatch")
+        if (stage / "NobleDNS.txt").read_bytes() != staged:
+            raise RuntimeError("Legacy subscription mirror differs from canonical output")
         latest = out / "latest"; backup = out / ".latest-previous"
         if backup.exists(): shutil.rmtree(backup)
         if latest.exists(): os.replace(latest, backup)

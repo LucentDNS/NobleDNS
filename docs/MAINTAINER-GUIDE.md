@@ -46,6 +46,7 @@ NobleDNS/
 ├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
+├── NobleDNS.txt              # 旧订阅地址兼容镜像，由发布流程生成
 ├── README.md
 ├── requirements.txt
 ├── THIRD-PARTY-NOTICES.md
@@ -116,6 +117,8 @@ py -3.12 .\update.py --out .\build-output --previous-manifest .\dist\manifest.js
 
 如果网络需要代理，可以使用：
 
+仅使用受信任的本机或可信网络代理。`--proxy` 应传入明确的 HTTP/HTTPS 代理地址；源站仍通过 HTTPS 下载。不要将带账号密码的代理 URI 写入命令历史、维护日志、提交内容或 CI 日志。GitHub Actions 不应依赖维护者个人电脑上的代理。
+
 ```powershell
 py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previous-manifest .\dist\manifest.json
 ```
@@ -159,7 +162,7 @@ git diff --check
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）也必须通过回归测试，不得只依赖临时人工测试。
+所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）也必须通过回归测试，不得只依赖临时人工测试。前置点规则在 AdGuard DNS 规则语法中具有子域名专用语义，不得改写为 `||domain^`，以免扩大到 apex 域名。
 
 ### 4.5 审查规则变化
 
@@ -250,7 +253,7 @@ build-output/
 
 `sources/sources-manifest.json` 属于本地构建输出，不应误认为当前 `dist/` 中已有该文件。
 
-构建完成后应先检查报告和规则变化，再决定是否更新正式发布产物。
+构建完成后应先检查报告和规则变化，再决定是否更新正式发布产物。构建器同时生成 `build-output/latest/NobleDNS.txt`，必须与 `dns-filter.txt` 字节级一致；正式发布流程会将其同步到仓库根目录，供旧订阅地址继续使用。
 ## 6. 自动化工作流
 
 工作流：

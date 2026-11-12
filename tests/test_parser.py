@@ -16,6 +16,8 @@ class ParserTests(unittest.TestCase):
                 "! Title: NobleDNS Filter",
                 "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.",
                 "! Homepage: https://github.com/LucentDNS/NobleDNS",
+                "! Version: 1.0.1",
+                "! Expires: 1 day",
                 "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal",
             ],
         )

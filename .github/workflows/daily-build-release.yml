@@ -115,6 +115,8 @@ jobs:
           OUT="build-output/latest"
 
           test -s "$OUT/dns-filter.txt"
+          test -s "$OUT/NobleDNS.txt"
+          cmp -s "$OUT/dns-filter.txt" "$OUT/NobleDNS.txt"
           test -s "$OUT/manifest.json"
           test -s "$OUT/validation-report.txt"
           test -s "$OUT/whitelist-review.txt"
@@ -140,6 +142,12 @@ jobs:
 
           assert len(manifest.get("sources", {})) == 2, \
               "Expected exactly two upstream sources"
+
+          subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
+          legacy = Path("build-output/latest/NobleDNS.txt").read_text(encoding="utf-8")
+          assert subscription == legacy, "Legacy subscription differs from canonical list"
+          assert f"! Version: {manifest['version']}" in subscription.splitlines(), "Header version differs from manifest"
+          assert "! Expires: 1 day" in subscription.splitlines(), "Filter expiry metadata missing"
 
           licensing = manifest.get("licensing", {})
           original_code = licensing.get("original_project_code", {})
@@ -335,6 +343,7 @@ jobs:
           mkdir -p dist
 
           cp build-output/latest/dns-filter.txt dist/dns-filter.txt
+          cp build-output/latest/NobleDNS.txt NobleDNS.txt
           cp build-output/latest/manifest.json dist/manifest.json
           cp build-output/latest/validation-report.txt dist/validation-report.txt
           cp build-output/latest/whitelist-review.txt dist/whitelist-review.txt
@@ -350,7 +359,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add dist/
+          git add dist/ NobleDNS.txt
 
           if ! git diff --cached --quiet; then
             git commit -m "chore(data): refresh NobleDNS artifacts $(date -u +%Y-%m-%d)"
@@ -383,6 +392,8 @@ jobs:
           set -euo pipefail
 
           test -s dist/dns-filter.txt
+          test -s NobleDNS.txt
+          cmp -s dist/dns-filter.txt NobleDNS.txt
           test -s dist/manifest.json
           test -s dist/validation-report.txt
           test -s dist/whitelist-review.txt
@@ -411,6 +422,7 @@ jobs:
 
           ASSETS=(
             dist/dns-filter.txt
+            NobleDNS.txt
             dist/manifest.json
             dist/validation-report.txt
             dist/whitelist-review.txt
@@ -528,6 +540,7 @@ jobs:
 
             ASSETS=(
               dist/dns-filter.txt
+            NobleDNS.txt
               dist/manifest.json
               dist/validation-report.txt
               dist/whitelist-review.txt
@@ -565,6 +578,7 @@ jobs:
 
           gh release create "$VERSION_TAG" \
             dist/dns-filter.txt \
+            NobleDNS.txt \
             dist/manifest.json \
             dist/validation-report.txt \
             dist/whitelist-review.txt \
