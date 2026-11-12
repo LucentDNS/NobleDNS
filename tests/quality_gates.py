@@ -50,6 +50,10 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
         line = raw.strip()
         if not line or line.startswith("!"):
             continue
+        important = line.endswith("$important")
+        if important:
+            line = line[:-len("$important")]
+        important_suffix = "$important" if important else ""
         match = RULE_RE.fullmatch(line)
         leading_dot = False
         exception_form = None
@@ -89,25 +93,27 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             continue
 
         if exception_form == "domain_and_subdomains_end":
-            exceptions.add("||" + domain + "^|")
+            exceptions.add("||" + domain + "^|" + important_suffix)
         elif exception_form == "exact_hostname":
-            exceptions.add("|" + domain + "^|")
+            exceptions.add("|" + domain + "^|" + important_suffix)
         elif is_exception:
-            exceptions.add(domain + "^")
+            exceptions.add(domain + "^" + important_suffix)
         elif block_form == "domain_and_subdomains_end":
-            blocks.add("||" + domain + "^|")
+            blocks.add("||" + domain + "^|" + important_suffix)
         elif block_form == "exact_hostname":
-            blocks.add("|" + domain + "^" + ("|" if match.groupdict().get("end") else ""))
+            blocks.add("|" + domain + "^" + ("|" if match.groupdict().get("end") else "") + important_suffix)
         elif leading_dot:
-            blocks.add("." + domain + ("^" if has_caret else ""))
+            blocks.add("." + domain + ("^" if has_caret else "") + important_suffix)
         else:
-            blocks.add(domain + ("^" if has_caret else ""))
+            blocks.add(domain + ("^" if has_caret else "") + important_suffix)
 
     return blocks, exceptions, invalid
 
 
 def covers(rule: str, hostname: str) -> bool:
     """Model the documented DNS hostname-pattern semantics for supported rules."""
+    if rule.endswith("$important"):
+        rule = rule[:-len("$important")]
     if rule.startswith("||") and rule.endswith("^|"):
         domain = rule[2:-2]
         return hostname == domain or hostname.endswith("." + domain)
@@ -131,9 +137,21 @@ def matching_rules(hostname: str, rules: set[str]) -> set[str]:
 
 
 def is_blocked(hostname: str, blocks: set[str], exceptions: set[str]) -> bool:
-    return bool(matching_rules(hostname, blocks)) and not bool(
-        matching_rules(hostname, exceptions)
-    )
+    important_blocks = {
+        rule for rule in blocks
+        if rule.endswith("$important") and covers(rule, hostname)
+    }
+    important_exceptions = {
+        rule for rule in exceptions
+        if rule.endswith("$important") and covers(rule, hostname)
+    }
+    if important_exceptions:
+        return False
+    if important_blocks:
+        return True
+    if matching_rules(hostname, exceptions):
+        return False
+    return bool(matching_rules(hostname, blocks))
 
 
 class QualityGateTests(unittest.TestCase):
@@ -166,6 +184,14 @@ class QualityGateTests(unittest.TestCase):
         self.assertTrue(is_blocked("www.example.com", blocks, set()))
         self.assertTrue(is_blocked("deep.www.example.com", blocks, set()))
         self.assertFalse(is_blocked("notexample.com", blocks, set()))
+
+    def test_important_rules_override_basic_exceptions(self) -> None:
+        blocks = {"example.com^$important"}
+        basic_exception = {"example.com^"}
+        important_exception = {"example.com^$important"}
+        self.assertTrue(is_blocked("www.example.com", blocks, basic_exception))
+        self.assertFalse(is_blocked("www.example.com", blocks, important_exception))
+        self.assertFalse(is_blocked("www.example.com", {"example.com^"}, important_exception))
 
     def test_documented_end_anchored_block_forms_keep_exact_scope(self) -> None:
         blocks = {"||sub.example.com^|", "|exact.example.com^"}
