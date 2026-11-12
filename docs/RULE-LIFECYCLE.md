@@ -48,7 +48,7 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 
 The threshold is intentionally conservative. It reduces the chance that one resolver outage, one region, one query type, or one short-lived DNS change is mistaken for a dead domain. It does not prove that the domain is malicious, unregistered, abandoned, or safe to unblock.
 
-Resolvers and vantage points must be genuinely independent. Do not count multiple endpoints operated by the same provider as independent operators. A single CI runner is not multiple geographic vantage points. The tool can validate the labels and observation structure, but it cannot cryptographically prove operator ownership or geographic independence; that verification must be documented by the collector/reviewer before evidence is accepted.
+Resolvers and vantage points must be genuinely independent. Do not count multiple endpoints operated by the same provider as independent operators. A single CI runner is not multiple geographic vantage points. The tool validates stable resolver-ID-to-endpoint mapping and rejects one endpoint hostname claimed by multiple operator labels. It still cannot cryptographically prove provider ownership or geographic independence; those facts must be independently verified and documented by the collector/reviewer before evidence is accepted.
 
 ## Reproducible pilot sample
 
