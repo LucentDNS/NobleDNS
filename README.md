@@ -35,7 +35,7 @@ Add this URL as a custom DNS blocklist in a compatible filtering client. Keep th
 
 NobleDNS provides DNS-level blocking for advertising, tracking, telemetry and other unwanted domains represented by its configured sources. DNS filtering is one layer of protection; it cannot remove every ad, especially first-party ads, ads served from shared domains or content embedded directly in apps and media.
 
-The main subscription contains block rules only. Upstream exceptions are reviewed separately and are not automatically converted into allow rules.
+Upstream exceptions are reviewed separately and are never activated automatically. Only evidence-reviewed entries in the project-maintained allowlist can generate active exceptions in the main subscription.
 
 ## Sources and maintenance
 
