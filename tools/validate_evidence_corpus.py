@@ -209,8 +209,14 @@ def validate_record(record: Any, index: int, now: datetime) -> list[str]:
             errors.append(f"{prefix}: threat requires high-confidence threat_intelligence evidence")
         if expires is None:
             errors.append(f"{prefix}: threat records require expires_at_utc")
-    if classification == "essential_service" and policy != "allowed":
-        errors.append(f"{prefix}: essential_service records must expect allowed policy")
+    if classification == "essential_service":
+        if policy != "allowed":
+            errors.append(f"{prefix}: essential_service records must expect allowed policy")
+        if evidence_type not in strong_evidence or confidence != "high":
+            errors.append(
+                f"{prefix}: essential_service requires high-confidence controlled, "
+                "vendor, or independent evidence"
+            )
     if classification in {"confirmed_tracker", "unwanted_telemetry"} and policy == "allowed":
         errors.append(f"{prefix}: privacy-risk records cannot be ground-truth allowed services")
     if evidence_type == "upstream_rule" and classification != "unresolved":
