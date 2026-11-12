@@ -26,6 +26,7 @@ NobleDNS/
 │   └── workflows/
 │       └── daily-build-release.yml
 ├── config/
+│   ├── allowlist.txt
 │   └── sources.json
 ├── docs/
 │   ├── CHANGELOG.md
@@ -46,6 +47,7 @@ NobleDNS/
 ├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
+├── NobleDNS.txt
 ├── README.md
 ├── requirements.txt
 ├── THIRD-PARTY-NOTICES.md
@@ -58,7 +60,7 @@ NobleDNS/
 
 主要文件用途：
 
-- `config/sources.json`：上游来源、规则数量上限和发布通道配置。
+- `config/sources.json`：上游来源、规则数量上限和发布通道配置；`config/allowlist.txt`：证据审核通过后才可启用的项目白名单。
 - `update.py`：规则下载、解析、过滤、合并、校验和构建。
 - `tests/`：回归测试。
 - `dist/`：公开发布的规则和审计文件。
@@ -125,6 +127,8 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 `build-output/latest/`。其中 `NobleDNS.txt` 与 `dns-filter.txt` 必须字节级一致；`project-allowlist.txt` 是本次构建使用的白名单输入副本。
 
 构建失败时，不得将失败结果复制到 `dist/`。
+
+`--proxy` 只接受不含账号密码的 HTTP/HTTPS 代理端点。未指定时，构建器不读取系统代理环境变量；需要代理时必须显式传入。下载重定向必须继续使用 HTTPS。
 
 `--proxy` 只接受不含账号密码的 HTTP/HTTPS 代理端点。未指定时，构建器不会读取系统代理环境变量；如果需要代理，必须显式传入。下载重定向必须继续使用 HTTPS，代理错误不能通过静默直连来绕过。
 
