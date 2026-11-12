@@ -129,6 +129,17 @@ def main() -> int:
     union_unique = set().union(*candidate_unique_sets.values()) if candidate_unique_sets else set()
     union_parent_covered = {d for d in union_unique if is_covered(d, baseline)}
 
+    # Record the reverse conflict direction too: candidate blocks that collide
+    # with exceptions already active in the published baseline.
+    block_exception_rows = []
+    for key in candidate_keys:
+        for domain in sorted(parsed[key]["blocks"] & baseline_exceptions):
+            block_exception_rows.append({
+                "source": key,
+                "candidate_block_domain": domain,
+                "baseline_exception_domain": domain,
+            })
+
     exception_rows = []
     all_exception_domains = {d for source in parsed.values() for d in source["exceptions"]}
     child_block_counts = {d: 0 for d in all_exception_domains}
@@ -161,6 +172,10 @@ def main() -> int:
         writer = csv.DictWriter(handle, fieldnames=["source", "exception_domain", "exact_baseline_block_conflict", "baseline_blocked_subdomains_neutralized_count", "baseline_parent_blocks"])
         writer.writeheader()
         writer.writerows(exception_rows)
+    with (out / "block-exception-conflicts.csv").open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["source", "candidate_block_domain", "baseline_exception_domain"])
+        writer.writeheader()
+        writer.writerows(block_exception_rows)
 
     report = {
         "project": "NobleDNS",
@@ -179,6 +194,7 @@ def main() -> int:
         "candidate_union_unique_not_covered_by_baseline_parent": len(union_unique - union_parent_covered),
         "candidate_union_unique_already_covered_by_baseline_parent": len(union_parent_covered),
         "candidate_union_plus_baseline_exact_domain_total": len(baseline | union_unique),
+        "candidate_blocks_conflicting_with_baseline_exceptions": block_exception_rows,
         "candidate_union_incremental_by_source_order": {},
         "download_or_parse_failures": failures,
         "limitations": [
@@ -246,6 +262,8 @@ def main() -> int:
         )
     lines += ["", "## Exception conflicts", ""]
     lines += [f"- {r['source']}: {r['exception_domain']} (exact baseline conflict: {r['exact_baseline_block_conflict']})" for r in exception_rows] if exception_rows else ["No exception rules found."]
+    lines += ["", "## Candidate blocks conflicting with baseline exceptions", ""]
+    lines += [f"- {r['source']}: {r['candidate_block_domain']}" for r in block_exception_rows] if block_exception_rows else ["No candidate blocking rules conflict with baseline exceptions."]
     lines += ["", "## Failures", ""]
     lines += [f"- **{key}:** {value}" for key, value in failures.items()] if failures else ["None."]
     lines += ["", "## Interpretation limits", ""] + [f"- {item}" for item in report["limitations"]]
