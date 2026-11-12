@@ -18,7 +18,7 @@ All notable changes to NobleDNS are documented here.
 - Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
 - Preserve the previous subscription modification date on identical rule content to avoid timestamp-only daily subscription churn.
 
-- Exclude undocumented leading-dot hostname patterns from the public DNS subscription and retain all excluded source lines in the parser audit.
+- Preserve documented leading-dot DNS rules (`.domain^` and `.domain`) with subdomain-only semantics; reject malformed hostnames rather than broadening their scope.
 - Preserve documented `||domain` rules without an explicit `^`; do not apply a blanket trailing-caret rejection.
 - Disable implicit environment-proxy discovery when no proxy is specified and reject HTTPS-to-HTTP source redirects.
 - Bump the next immutable release to 1.0.3; keep v1.0.2 unchanged.
