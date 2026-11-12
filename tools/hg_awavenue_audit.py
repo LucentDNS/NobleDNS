@@ -59,7 +59,7 @@ RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)
 
 
 def fetch_snapshot(url: str) -> bytes:
-    """Fetch HTTPS text with bounded size, strict UTF-8, and no proxy inheritance."""
+    """Fetch pinned HTTPS text with bounded size and strict UTF-8."""
     last_error = None
     print(f"Fetching snapshot: {url}", flush=True)
     for attempt in range(1, 4):
@@ -566,19 +566,42 @@ def main() -> int:
     snapshots = out / "source-snapshots"
     snapshots.mkdir(parents=True, exist_ok=True)
 
+    baseline_ref = os.environ.get("BASELINE_MAIN_SHA", "")
+    hg_ref = os.environ.get("HG_MAIN_SHA", "")
+    awa_ref = os.environ.get("AWAVENUE_MAIN_SHA", "")
+    for label, ref in (("BASELINE_MAIN_SHA", baseline_ref), ("HG_MAIN_SHA", hg_ref),
+                       ("AWAVENUE_MAIN_SHA", awa_ref)):
+        if not re.fullmatch(r"[0-9a-f]{40}", ref):
+            raise RuntimeError(f"{label} must be a full 40-character commit SHA")
+
+    def pinned(url: str, ref: str) -> str:
+        return url.replace("/main/", f"/{ref}/", 1)
+
+    baseline_url = pinned(BASELINE_URL, baseline_ref)
+    manifest_url = pinned(MANIFEST_URL, baseline_ref)
+    noble_license_url = pinned(NOBLE_LICENSE_URL, baseline_ref)
+    changelog_url = pinned(AWA_CHANGELOG_URL, awa_ref)
+    awa_license_url = pinned(AWA_LICENSE_URL, awa_ref)
+
     downloaded = {}
     parsed = {}
+    source_urls = {}
+    source_refs = {}
     for key, source in SOURCES.items():
-        data = fetch_snapshot(source["url"])
+        ref = hg_ref if key.startswith("hg") else awa_ref
+        url = pinned(source["url"], ref)
+        source_urls[key] = url
+        source_refs[key] = ref
+        data = fetch_snapshot(url)
         (snapshots / f"{key}.txt").write_bytes(data)
         downloaded[key] = data
         parsed[key] = parse_snapshot(key, data)
         print(f"Parsed {key}: {len(parsed[key]['blocks']):,} supported block rules", flush=True)
 
-    changelog_data = fetch_snapshot(AWA_CHANGELOG_URL)
+    changelog_data = fetch_snapshot(changelog_url)
     (snapshots / "awavenue-changelog.md").write_bytes(changelog_data)
-    noble_license_data = fetch_snapshot(NOBLE_LICENSE_URL)
-    awa_license_data = fetch_snapshot(AWA_LICENSE_URL)
+    noble_license_data = fetch_snapshot(noble_license_url)
+    awa_license_data = fetch_snapshot(awa_license_url)
     (snapshots / "nobledns-LICENSE").write_bytes(noble_license_data)
     (snapshots / "awavenue-LICENSE").write_bytes(awa_license_data)
     noble_license_sha256 = sha256(noble_license_data)
@@ -605,13 +628,13 @@ def main() -> int:
                 "entry": line.strip(),
             })
 
-    baseline_data = fetch_snapshot(BASELINE_URL)
+    baseline_data = fetch_snapshot(baseline_url)
     (snapshots / "nobledns-main-dns-filter.txt").write_bytes(baseline_data)
     baseline = parse_snapshot("nobledns_baseline", baseline_data)
     if not baseline["blocks"]:
         raise RuntimeError("NobleDNS baseline parsed no blocking rules; refusing an incomplete comparison")
 
-    manifest_data = fetch_snapshot(MANIFEST_URL)
+    manifest_data = fetch_snapshot(manifest_url)
     (snapshots / "nobledns-main-manifest.json").write_bytes(manifest_data)
     baseline_manifest = json.loads(manifest_data.decode("utf-8-sig"))
     manifest_rule_count = len(baseline["blocks"]) + len(baseline["exceptions"])
@@ -668,8 +691,8 @@ def main() -> int:
     report = {
         "schema_version": 1,
         "audit_time_utc": datetime.now(timezone.utc).isoformat(),
-        "baseline_main_commit": os.environ.get("BASELINE_MAIN_SHA"),
-        "baseline_url": BASELINE_URL,
+        "baseline_main_commit": baseline_ref,
+        "baseline_url": baseline_url,
         "baseline_sha256": baseline["sha256"],
         "baseline_manifest_sha256": sha256(manifest_data),
         "baseline_version": baseline_manifest.get("version"),
@@ -684,7 +707,8 @@ def main() -> int:
         "sources": {
             key: {
                 "name": SOURCES[key]["name"],
-                "url": SOURCES[key]["url"],
+                "url": source_urls[key],
+                "source_commit": source_refs[key],
                 "repository": SOURCES[key]["repository"],
                 "license_assessment": SOURCES[key]["license"],
                 "sha256": parsed[key]["sha256"],
@@ -700,13 +724,13 @@ def main() -> int:
         },
         "source_anomalies": hg_watermark_anomalies,
         "licensing": {
-            "nobledns_project_license": {"identifier": noble_license_id, "sha256": noble_license_sha256},
-            "awavenue_license": {"identifier": awa_license_id, "sha256": awa_license_sha256},
+            "nobledns_project_license": {"identifier": noble_license_id, "sha256": noble_license_sha256, "source_commit": baseline_ref, "url": noble_license_url},
+            "awavenue_license": {"identifier": awa_license_id, "sha256": awa_license_sha256, "source_commit": awa_ref, "url": awa_license_url},
             "hg_license": "No public LICENSE file found in HG repository root; written redistribution permission still required.",
             "assessment": "NobleDNS and AWAvenue both identify GPL-3.0; same license family is compatible at a high level when notices and terms are preserved. HG has no public license file.",
         },
         "awa_changelog": {
-            "url": AWA_CHANGELOG_URL,
+            "url": changelog_url,
             "sha256": sha256(changelog_data),
             "bytes": len(changelog_data),
             "evidence": changelog_evidence,
@@ -833,7 +857,7 @@ def main() -> int:
 ## Reproducibility
 
 - Baseline commit: {report['baseline_main_commit'] or 'not supplied'}
-- Baseline URL: {BASELINE_URL}
+- Baseline URL: {baseline_url}
 - Baseline SHA-256: {baseline['sha256']}
 - Baseline manifest SHA-256: {sha256(manifest_data)}
 - Baseline manifest integrity: PASS (manifest version {baseline_manifest.get('version')}, status {baseline_manifest.get('status')}, built {baseline_manifest.get('built_at_utc')})
