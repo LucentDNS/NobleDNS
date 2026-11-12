@@ -4,17 +4,21 @@
 
 DNS exception rules (for example, `@@||host.example^`) can override matching blocking rules in compatible clients. They can restore legitimate functionality, but an overly broad or unjustified exception can also weaken filtering. NobleDNS therefore tracks exceptions separately from blocking rules.
 
-This register records the current simple upstream exceptions found in the AdGuard DNS Filter snapshot used by build run 399 (2026-11-12). It is an audit baseline, **not an approval record**.
+This register records the current simple upstream exceptions found in the AdGuard DNS Filter snapshot captured by NobleDNS GitHub Actions build run 406 (2026-11-12). It is an audit baseline, **not an approval record**.
 
 ## Current audit result
 
 - Source: AdGuard DNS Filter.
-- Snapshot SHA-256: `51b8e02e339093a858c744cd475948ca3e34e87cae31a29c6adb475e15e48205`.
+- Snapshot SHA-256: `544a98f0648cbaaff157528f287758ae44f0ad750546133be4a9efb129a5aac1`.
+- Snapshot size: 4,663,192 bytes.
 - Snapshot path in the CI audit artifact: `sources/adguard_dns.txt`.
-- Original source line numbers: 178892–178902.
+- Verification evidence: [GitHub Actions build run 406](https://github.com/LucentDNS/NobleDNS/actions/runs/43218091766), artifact `nobledns-build-audit-406`.
+- Original source line numbers: 178918–178928.
 - Simple exceptions parsed into the current main subscription: 11.
 - Independently reviewed and approved by NobleDNS in this audit: **0**.
 - Status of all 11 entries: `pending`.
+
+Compared with the previously registered snapshot (SHA-256 `51b8e02e339093a858c744cd475948ca3e34e87cae31a29c6adb475e15e48205`, lines 178892–178902), the exact text of all 11 registered exception rules is unchanged: no registered rule was added, removed or modified. Their source line numbers moved forward by 26. The current source bytes and fingerprint above were read from the build artifact, not inferred from a search result.
 
 The 11 rules occur together in the upstream snapshot without an adjacent per-rule explanation in that section. This establishes provenance and syntax, but it does not establish why each exception is needed, which block rule it overrides, whether the exception is still necessary, or whether its scope is appropriate.
 
