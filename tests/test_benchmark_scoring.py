@@ -15,12 +15,48 @@ SPEC.loader.exec_module(scorer)
 
 class BenchmarkScorerTests(unittest.TestCase):
     def test_parent_block_and_exception_precedence(self) -> None:
-        blocks = {"ads.example.test", "example.test"}
-        exceptions = {"safe.example.test"}
+        blocks = {"||ads.example.test^", "||example.test^"}
+        exceptions = {"@@||safe.example.test^"}
         self.assertEqual(scorer.decide("cdn.ads.example.test", blocks, exceptions)[0], "block")
         self.assertEqual(scorer.decide("safe.example.test", blocks, exceptions)[0], "allow")
         self.assertEqual(scorer.decide("child.safe.example.test", blocks, exceptions)[0], "allow")
         self.assertEqual(scorer.decide("notexample.test", blocks, exceptions)[0], "allow")
+
+    def test_bare_anchor_has_no_hostname_end_separator(self) -> None:
+        blocks = {"||example.test"}
+        self.assertEqual(scorer.decide("example.test.evil.test", blocks, set())[0], "block")
+        self.assertEqual(scorer.decide("www.example.test.evil.test", blocks, set())[0], "block")
+        self.assertEqual(scorer.decide("notexample.test", blocks, set())[0], "allow")
+        caret = {"||example.test^"}
+        self.assertEqual(scorer.decide("example.test.evil.test", caret, set())[0], "allow")
+        self.assertEqual(scorer.decide("www.example.test", caret, set())[0], "block")
+
+    def test_leading_dot_matches_subdomains_only(self) -> None:
+        blocks = {".example.test^", ".bare.example.test"}
+        self.assertEqual(scorer.decide("example.test", blocks, set())[0], "allow")
+        self.assertEqual(scorer.decide("www.example.test", blocks, set())[0], "block")
+        self.assertEqual(scorer.decide("bare.example.test", blocks, set())[0], "allow")
+        self.assertEqual(scorer.decide("cdn.bare.example.test", blocks, set())[0], "block")
+
+    def test_rule_loader_accepts_all_supported_forms(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.txt"
+            path.write_text(
+                "||caret.example.test^\\n||bare.example.test\\n"
+                ".subonly.example.test^\\n.subonlybare.example.test\\n"
+                "@@||safe.example.test^\\n",
+                encoding="utf-8",
+            )
+            blocks, exceptions, unsupported = scorer.load_rules(path)
+            self.assertEqual(
+                blocks,
+                {
+                    "||caret.example.test^", "||bare.example.test",
+                    ".subonly.example.test^", ".subonlybare.example.test",
+                },
+            )
+            self.assertEqual(exceptions, {"@@||safe.example.test^"})
+            self.assertEqual(unsupported, [])
 
     def test_confusion_matrix_is_category_specific(self) -> None:
         rows = [
@@ -28,7 +64,7 @@ class BenchmarkScorerTests(unittest.TestCase):
             {"hostname": "safe.example.test", "category": "essential", "expected": "allow", "evidence_ref": "test-2"},
             {"hostname": "miss.example.test", "category": "tracking", "expected": "block", "evidence_ref": "test-3"},
         ]
-        result = scorer.score(rows, {"ads.example.test"}, set())
+        result = scorer.score(rows, {"||ads.example.test^"}, set())
         self.assertEqual(result["by_category"]["ad"]["tp"], 1)
         self.assertEqual(result["by_category"]["essential"]["tn"], 1)
         self.assertEqual(result["by_category"]["tracking"]["fn"], 1)
