@@ -25,7 +25,7 @@ The project does **not** currently claim:
 - Live DNS integration testing across AdGuard for Android, AdGuard Home, dnsmasq, or other clients.
 - A comprehensive real-world website/app compatibility matrix.
 
-These are known evidence gaps, not claims of failure. They must remain visible until actual test data and reproducible results exist. Do not infer filtering effectiveness from rule count, parser tests, source reputation or a successful build.
+These are known evidence gaps, not claims of failure. They must remain visible until actual test data and reproducible results exist. Do not infer filtering effectiveness from rule count, parser tests, source reputation or a successful build. The [DNS client compatibility test plan](COMPATIBILITY-TEST-PLAN.md) defines a controlled procedure for testing syntax semantics without using production domains.
 
 ## Current parser scope
 
