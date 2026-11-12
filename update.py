@@ -296,7 +296,7 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     }
     semantics = {
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
-        "domain_anchor_without_end_boundary": "Hostname-start/subdomain anchor without an explicit hostname-end separator (^); suffix-like hostnames may also match and require compatibility review.",
+        "domain_anchor_without_end_boundary": "Valid hostname-start anchor that also matches subdomains, without an explicit hostname-end separator (^); suffix-like hostnames may also match and require compatibility review.",
     }
     counts = {name: 0 for name in forms}
     examples = {name: [] for name in forms}
