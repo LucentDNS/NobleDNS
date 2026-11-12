@@ -171,7 +171,7 @@ jobs:
               badfilter_rows = list(csv.DictReader(handle))
           assert len(badfilter_rows) == badfilter.get("directives"), "Badfilter audit artifact count differs from manifest"
           for row in badfilter_rows:
-              if row["status"] == "applied":
+              if row["status"] in {"applied", "already_applied"}:
                   assert row["target_rule"] not in published_rules, "Applied badfilter target remains in subscription"
 
           assert manifest.get("active_exception_rules", 0) == len([line for line in subscription.splitlines() if line.startswith("@@")]), "Active exception count differs from manifest"
