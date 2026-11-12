@@ -264,14 +264,28 @@ def build_baseline_index(baseline: dict) -> dict:
     }
 
 
+def matches_parsed_rule(domain: str, caret: bool, hostname: str) -> bool:
+    if caret:
+        return hostname == domain or hostname.endswith("." + domain)
+    return bare_domain_matches(domain, hostname)
+
+
 def rule_overlap_pairs(left_rules: set[str], right_rules: set[str]) -> list[tuple[str, str]]:
     """Find hierarchical overlaps, including prefix collisions involving bare anchors."""
+    left_parsed = {
+        rule: (rule_domain(rule), bool(RULE_RE.fullmatch(rule).group("caret")))
+        for rule in left_rules
+    }
+    right_parsed = {
+        rule: (rule_domain(rule), bool(RULE_RE.fullmatch(rule).group("caret")))
+        for rule in right_rules
+    }
     left_by_domain = defaultdict(list)
     right_by_domain = defaultdict(list)
-    for rule in left_rules:
-        left_by_domain[rule_domain(rule)].append(rule)
-    for rule in right_rules:
-        right_by_domain[rule_domain(rule)].append(rule)
+    for rule, (domain, _) in left_parsed.items():
+        left_by_domain[domain].append(rule)
+    for rule, (domain, _) in right_parsed.items():
+        right_by_domain[domain].append(rule)
 
     pairs = set()
     for left_domain, right_domain in relation_pairs(set(left_by_domain), set(right_by_domain)):
@@ -279,19 +293,15 @@ def rule_overlap_pairs(left_rules: set[str], right_rules: set[str]) -> list[tupl
             for right_rule in right_by_domain[right_domain]:
                 pairs.add((left_rule, right_rule))
 
-    left_bare = [rule for rule in left_rules if not RULE_RE.fullmatch(rule).group("caret")]
-    right_bare = [rule for rule in right_rules if not RULE_RE.fullmatch(rule).group("caret")]
-    for bare_rule in left_bare:
-        bare_domain = rule_domain(bare_rule)
-        for other_rule in right_rules:
-            other_domain = rule_domain(other_rule)
-            if rule_matches_host(bare_rule, other_domain) or rule_matches_host(other_rule, bare_domain):
+    left_bare = [(rule, domain) for rule, (domain, caret) in left_parsed.items() if not caret]
+    right_bare = [(rule, domain) for rule, (domain, caret) in right_parsed.items() if not caret]
+    for bare_rule, bare_domain in left_bare:
+        for other_rule, (other_domain, other_caret) in right_parsed.items():
+            if bare_domain_matches(bare_domain, other_domain) or matches_parsed_rule(other_domain, other_caret, bare_domain):
                 pairs.add((bare_rule, other_rule))
-    for bare_rule in right_bare:
-        bare_domain = rule_domain(bare_rule)
-        for other_rule in left_rules:
-            other_domain = rule_domain(other_rule)
-            if rule_matches_host(bare_rule, other_domain) or rule_matches_host(other_rule, bare_domain):
+    for bare_rule, bare_domain in right_bare:
+        for other_rule, (other_domain, other_caret) in left_parsed.items():
+            if bare_domain_matches(bare_domain, other_domain) or matches_parsed_rule(other_domain, other_caret, bare_domain):
                 pairs.add((other_rule, bare_rule))
     return sorted(pairs)
 
