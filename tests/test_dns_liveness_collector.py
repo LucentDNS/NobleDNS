@@ -97,6 +97,18 @@ class DNSLivenessCollectorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must be unique"):
             mod.validate_config(config)
 
+    def test_duplicate_resolver_endpoint_host_is_rejected(self):
+        config = {
+            "schema_version": 1,
+            "resolvers": [
+                {"id": "a", "operator": "One", "transport": "doh", "endpoint": "https://dns.example.test/dns-query"},
+                {"id": "b", "operator": "Two", "transport": "doh", "endpoint": "https://dns.example.test/resolve"},
+                {"id": "c", "operator": "Three", "transport": "dot", "endpoint": "tls://third.example.test:853"},
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "endpoint hosts must be unique"):
+            mod.validate_config(config)
+
     def test_sample_is_deduplicated_and_capped(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "sample.txt"
