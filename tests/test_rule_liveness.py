@@ -23,7 +23,11 @@ def observation(host="ads.example.com", day="2026-11-10", resolver="r1",
         "observed_at_utc": f"{day}T12:00:00Z",
         "resolver": resolver,
         "resolver_operator": operator,
-        "resolver_endpoint": "https://dns.example.test/dns-query",
+        "resolver_endpoint": {
+            "cloudflare": "https://cloudflare-dns.com/dns-query",
+            "google": "https://dns.google/dns-query",
+            "quad9": "tls://dns10.quad9.net:853",
+        }.get(operator.lower(), "https://resolver.example.test/dns-query"),
         "vantage": vantage,
         "qtype": qtype,
         "rcode": rcode,
@@ -276,6 +280,26 @@ class RuleLivenessTests(unittest.TestCase):
         )
         status, _ = mod.classify(rows, NOW, 30)
         self.assertEqual(status, "cname_chain_observed_manual_review")
+
+    def test_same_endpoint_host_cannot_claim_multiple_resolver_operators(self):
+        first = observation(resolver="cf", operator="cloudflare")
+        second = observation(resolver="other", operator="impostor", qtype="AAAA")
+        second["resolver_endpoint"] = "https://cloudflare-dns.com/dns-query"
+        with self.assertRaisesRegex(ValueError, "claimed by multiple operators"):
+            mod.validate_observations({
+                "schema_version": 1,
+                "observations": [first, second],
+            }, NOW)
+
+    def test_resolver_id_cannot_change_endpoint(self):
+        first = observation(resolver="same-id", operator="cloudflare", qtype="A")
+        second = observation(resolver="same-id", operator="cloudflare", qtype="AAAA")
+        second["resolver_endpoint"] = "https://alternate-cloudflare.example/dns-query"
+        with self.assertRaisesRegex(ValueError, "maps to multiple operators or endpoints"):
+            mod.validate_observations({
+                "schema_version": 1,
+                "observations": [first, second],
+            }, NOW)
 
     def test_invalid_cname_target_is_rejected(self):
         row = observation()
