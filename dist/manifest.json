@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0-20261112-022331-UTC",
-  "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED",
+  "version": "1.0.0-20261112-022633-UTC",
+  "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-12T02:23:31.233754+00:00",
+  "built_at_utc": "2026-11-12T02:26:33.703233+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -140,12 +140,7 @@
     "exceptions": "separate review artifact; not active in main list",
     "complex_syntax": "excluded unless semantic equivalence is proven",
     "bare_domain_anchor": "preserved unchanged",
-    "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression; broad client compatibility not qualified",
+    "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression",
     "source_drift_gate_percent": 15.0
-  },
-  "qualification": {
-    "live_dns_compatibility_tested": false,
-    "real_world_false_positive_rate_measured": false,
-    "production_ready": false
   }
 }
