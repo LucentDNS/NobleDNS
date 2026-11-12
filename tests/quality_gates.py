@@ -26,7 +26,7 @@ ESSENTIAL = ROOT / "tests" / "fixtures" / "essential-domains.txt"
 KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
 EVIDENCE_CORPUS = ROOT / "tests" / "fixtures" / "evidence-corpus.json"
 
-RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+RULE_RE = re.compile(r"^(?P<exception>@@)?(?P<kind>\|\||\.)(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 
 
 def read_domains(path: Path) -> list[str]:
@@ -37,12 +37,14 @@ def read_domains(path: Path) -> list[str]:
     ]
 
 
-def load_rules() -> tuple[set[str], set[str], set[str], list[str]]:
+def load_rules() -> tuple[set[str], set[str], set[str], set[str], set[str], list[str]]:
     if not FILTER.is_file():
         raise AssertionError(f"Generated subscription is missing: {FILTER}")
 
     blocks: set[str] = set()
     bare_blocks: set[str] = set()
+    subdomain_blocks: set[str] = set()
+    bare_subdomain_blocks: set[str] = set()
     exceptions: set[str] = set()
     invalid: list[str] = []
 
@@ -57,8 +59,9 @@ def load_rules() -> tuple[set[str], set[str], set[str], list[str]]:
 
         domain = match.group("domain").lower()
         is_exception = bool(match.group("exception"))
+        kind = match.group("kind")
         has_caret = bool(match.group("caret"))
-        if is_exception and not has_caret:
+        if is_exception and (not has_caret or kind != "||"):
             invalid.append(line)
             continue
         valid, _reason = mod.valid_domain(domain)
@@ -68,17 +71,16 @@ def load_rules() -> tuple[set[str], set[str], set[str], list[str]]:
 
         if is_exception:
             exceptions.add(domain)
-        elif has_caret:
+        elif kind == "||" and has_caret:
             blocks.add(domain)
-        else:
+        elif kind == "||":
             bare_blocks.add(domain)
+        elif has_caret:
+            subdomain_blocks.add(domain)
+        else:
+            bare_subdomain_blocks.add(domain)
 
-    return blocks, bare_blocks, exceptions, invalid
-
-
-def covers(rule_domain: str, hostname: str) -> bool:
-    """A parent hostname rule covers the hostname and its subdomains."""
-    return hostname == rule_domain or hostname.endswith("." + rule_domain)
+    return blocks, bare_blocks, subdomain_blocks, bare_subdomain_blocks, exceptions, invalid
 
 
 def matching_rules(hostname: str, rules: set[str]) -> set[str]:
@@ -89,11 +91,21 @@ def matching_rules(hostname: str, rules: set[str]) -> set[str]:
 
 
 def matching_bare_rules(hostname: str, rules: set[str]) -> set[str]:
-    """Match ||domain rules without ^: domain anchor, but no hostname-end boundary."""
+    """Match ||domain rules without ^: anchor at hostname/subdomain start, no end boundary."""
     return {
         rule for rule in rules
         if hostname == rule or hostname.startswith(rule) or f".{rule}" in hostname
     }
+
+
+def matching_subdomain_rules(hostname: str, rules: set[str]) -> set[str]:
+    """Match .domain^ rules to subdomains only, never the apex."""
+    return {rule for rule in rules if hostname.endswith("." + rule) and hostname != rule}
+
+
+def matching_bare_subdomain_rules(hostname: str, rules: set[str]) -> set[str]:
+    """Match .domain rules to subdomain labels without an explicit end boundary."""
+    return {rule for rule in rules if f".{rule}" in hostname}
 
 
 def is_blocked(
@@ -101,17 +113,30 @@ def is_blocked(
     blocks: set[str],
     exceptions: set[str],
     bare_blocks: set[str] | None = None,
+    subdomain_blocks: set[str] | None = None,
+    bare_subdomain_blocks: set[str] | None = None,
 ) -> bool:
     block_matches = matching_rules(hostname, blocks)
     if bare_blocks:
         block_matches |= matching_bare_rules(hostname, bare_blocks)
+    if subdomain_blocks:
+        block_matches |= matching_subdomain_rules(hostname, subdomain_blocks)
+    if bare_subdomain_blocks:
+        block_matches |= matching_bare_subdomain_rules(hostname, bare_subdomain_blocks)
     return bool(block_matches) and not bool(matching_rules(hostname, exceptions))
 
 
 class QualityGateTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.blocks, cls.bare_blocks, cls.exceptions, cls.invalid = load_rules()
+        (
+            cls.blocks,
+            cls.bare_blocks,
+            cls.subdomain_blocks,
+            cls.bare_subdomain_blocks,
+            cls.exceptions,
+            cls.invalid,
+        ) = load_rules()
         cls.essential = read_domains(ESSENTIAL)
         cls.known_ads = read_domains(KNOWN_ADS)
         cls.evidence_corpus = json.loads(EVIDENCE_CORPUS.read_text(encoding="utf-8"))
@@ -157,6 +182,17 @@ class QualityGateTests(unittest.TestCase):
         self.assertFalse(is_blocked("bare.example.com.evil.test", blocks, set()))
         self.assertFalse(is_blocked("notbare.example.com", blocks, set()))
 
+    def test_leading_dot_rules_match_subdomains_only(self) -> None:
+        caret = {"example.com"}
+        bare = {"example.com"}
+        self.assertFalse(is_blocked("example.com", set(), set(), subdomain_blocks=caret))
+        self.assertTrue(is_blocked("www.example.com", set(), set(), subdomain_blocks=caret))
+        self.assertFalse(is_blocked("www.example.com.evil.test", set(), set(), subdomain_blocks=caret))
+        self.assertFalse(is_blocked("example.com", set(), set(), bare_subdomain_blocks=bare))
+        self.assertTrue(is_blocked("www.example.com", set(), set(), bare_subdomain_blocks=bare))
+        self.assertTrue(is_blocked("www.example.com.evil.test", set(), set(), bare_subdomain_blocks=bare))
+        self.assertFalse(is_blocked("notexample.com", set(), set(), bare_subdomain_blocks=bare))
+
     def test_exception_count_stays_small(self) -> None:
         """Exceptions are allow-rules; a sudden surge means the list is leaking."""
         self.assertLessEqual(
@@ -176,7 +212,12 @@ class QualityGateTests(unittest.TestCase):
             self.invalid,
             f"{len(self.invalid)} unsupported/malformed rule(s); first 10: {self.invalid[:10]}",
         )
-        total_block_rules = len(self.blocks) + len(self.bare_blocks)
+        total_block_rules = (
+            len(self.blocks)
+            + len(self.bare_blocks)
+            + len(self.subdomain_blocks)
+            + len(self.bare_subdomain_blocks)
+        )
         self.assertGreater(total_block_rules, 200_000)
         self.assertLessEqual(total_block_rules + len(self.exceptions), 500_000)
 
@@ -184,11 +225,19 @@ class QualityGateTests(unittest.TestCase):
         affected = [
             (
                 hostname,
-                sorted(matching_rules(hostname, self.blocks) | matching_bare_rules(hostname, self.bare_blocks)),
+                sorted(
+                    matching_rules(hostname, self.blocks)
+                    | matching_bare_rules(hostname, self.bare_blocks)
+                    | matching_subdomain_rules(hostname, self.subdomain_blocks)
+                    | matching_bare_subdomain_rules(hostname, self.bare_subdomain_blocks)
+                ),
                 sorted(matching_rules(hostname, self.exceptions)),
             )
             for hostname in self.essential
-            if is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks)
+            if is_blocked(
+                hostname, self.blocks, self.exceptions, self.bare_blocks,
+                self.subdomain_blocks, self.bare_subdomain_blocks
+            )
         ]
         self.assertFalse(
             affected,
@@ -198,7 +247,10 @@ class QualityGateTests(unittest.TestCase):
     def test_known_ad_infrastructure_remains_blocked(self) -> None:
         missing = [
             hostname for hostname in self.known_ads
-            if not is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks)
+            if not is_blocked(
+                hostname, self.blocks, self.exceptions, self.bare_blocks,
+                self.subdomain_blocks, self.bare_subdomain_blocks
+            )
         ]
         self.assertFalse(
             missing,
