@@ -17,7 +17,7 @@ Add another client only when its support for the exact NobleDNS rule syntax is d
 
 ## Controlled test zone
 
-Use a locally hosted authoritative zone under the reserved `.test` TLD, for example `nobledns.test`. Configure the test client to use this zone only in an isolated lab.
+Use locally hosted authoritative zones under the reserved `.test` TLD, including `nobledns.test` and `evil.test`. Configure the test client to use these zones only in an isolated lab.
 
 Create controlled records for:
 
@@ -31,7 +31,7 @@ Create controlled records for:
 - `subonly.nobledns.test`
 - `child.subonly.nobledns.test`
 
-The authoritative server should return a known test address for every name. This separates filtering behavior from upstream resolution failures.
+The authoritative server should return a known test address for every name in both zones. This separates filtering behavior from upstream resolution failures.
 
 ## Rule fixtures
 
