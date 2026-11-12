@@ -203,16 +203,25 @@ def rule_domain(rule: str) -> str:
     return match.group("domain")
 
 
+def compile_bare_matcher(domains: set[str]):
+    if not domains:
+        return None
+    alternatives = "|".join(re.escape(domain) for domain in sorted(domains, key=len, reverse=True))
+    return re.compile(r"(?=(?:^|\.)(?P<rule>" + alternatives + r"))")
+
+
 def baseline_parent_matches(candidate_rule: str, baseline: dict) -> list[str]:
-    """Rules that fully cover a candidate caret-bounded rule's hostname scope."""
+    """Baseline rules that fully cover the candidate rule's matching scope."""
     match = RULE_RE.fullmatch(candidate_rule)
-    if not match or not match.group("caret"):
+    if not match:
         return []
     domain = match.group("domain")
-    matches = set(suffixes(domain)) & set(baseline["caret"])
-    for parent in baseline["bare"]:
-        if bare_domain_matches(parent, domain):
-            matches.add(parent)
+    matches = set()
+    if match.group("caret"):
+        matches.update(set(suffixes(domain)) & set(baseline["caret"]))
+    bare_matcher = compile_bare_matcher(set(baseline["bare"]))
+    if bare_matcher:
+        matches.update(item.group("rule") for item in bare_matcher.finditer(domain))
     return sorted(matches)
 
 
@@ -220,6 +229,7 @@ def build_baseline_index(baseline: dict) -> dict:
     domains = set(baseline["caret"]) | set(baseline["bare"])
     caret_domains = set(baseline["caret"])
     bare_domains = set(baseline["bare"])
+    bare_matcher = compile_bare_matcher(bare_domains)
     effective_domains = set()
     descendants = defaultdict(list)
     for domain in domains:
@@ -228,9 +238,8 @@ def build_baseline_index(baseline: dict) -> dict:
             descendants[suffix].append(domain)
         if (domain_suffixes - {domain}) & caret_domains:
             continue
-        if any(
-            parent != domain and bare_domain_matches(parent, domain)
-            for parent in bare_domains
+        if bare_matcher and any(
+            item.group("rule") != domain for item in bare_matcher.finditer(domain)
         ):
             continue
         effective_domains.add(domain)
@@ -367,11 +376,12 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
             if baseline_domain in effective_baseline_domains:
                 broadens[matching_rule].add(baseline_domain)
     if new_bare_rules:
-        bare_candidates = [(rule, rule_domain(rule)) for rule in new_bare_rules]
+        bare_candidates = {rule_domain(rule): rule for rule in new_bare_rules}
+        candidate_bare_matcher = compile_bare_matcher(set(bare_candidates))
         for baseline_domain in effective_baseline_domains:
-            for candidate_rule, candidate_domain in bare_candidates:
-                if bare_domain_matches(candidate_domain, baseline_domain):
-                    broadens[candidate_rule].add(baseline_domain)
+            for match in candidate_bare_matcher.finditer(baseline_domain):
+                candidate_rule = bare_candidates[match.group("rule")]
+                broadens[candidate_rule].add(baseline_domain)
 
     affected_baseline_domains = set()
     for values in broadens.values():
