@@ -28,8 +28,6 @@ Create controlled records for:
 - `child.bare.nobledns.test`
 - `bare.nobledns.test.evil.test`
 - `notbare.nobledns.test`
-- `subonly.nobledns.test`
-- `child.subonly.nobledns.test`
 - `exception.nobledns.test`
 - `www.exception.nobledns.test`
 - `exact.nobledns.test`
@@ -49,7 +47,6 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ```text
 ||apex.nobledns.test^
 ||bare.nobledns.test
-.subonly.nobledns.test^
 ||exception.nobledns.test^
 @@||exception.nobledns.test^|
 ||exact.nobledns.test^
@@ -59,6 +56,8 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ```
 
 Do not add these synthetic rules to the public subscription.
+
+Leading-dot strings found in upstream sources (for example, `.example.test^`) are not part of the supported public syntax. Do not include them in this expected-results matrix or publish them. If their behavior is investigated experimentally, use a separate disposable test list, record the exact client version and observed query behavior, and make no semantic assumption in advance.
 
 ## Test cases
 
@@ -71,8 +70,6 @@ Do not add these synthetic rules to the public subscription.
 | `||bare.nobledns.test` | `child.bare.nobledns.test` | Block |
 | `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Expected to match: the hostname starts with the anchored pattern and no `^` end separator is present; verify in client |
 | `||bare.nobledns.test` | `notbare.nobledns.test` | Must not be blocked by a hostname-start anchor |
-| `.subonly.nobledns.test^` | apex | Allow |
-| `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
 | `@@||exception.nobledns.test^|` | apex | Allow |
 | `@@||exception.nobledns.test^|` | `www.exception.nobledns.test` | Allow |
 | `@@|exact.nobledns.test^|` | apex | Allow |
