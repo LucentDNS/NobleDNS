@@ -27,6 +27,7 @@ NobleDNS 是一个独立维护的 DNS 过滤规则项目，面向日常网络使
 将以上地址添加到支持相应 DNS 规则语法的过滤客户端即可。建议使用这个固定地址，后续经过验证的规则更新会发布到同一地址；具体更新时间由客户端控制。
 
 - [查看当前规则](https://github.com/LucentDNS/NobleDNS/blob/main/dist/dns-filter.txt)
+- [兼容旧版订阅地址](https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/NobleDNS.txt)
 - [构建清单](dist/manifest.json)
 - [最新验证报告](dist/validation-report.txt)
 - [正式版本发布页](https://github.com/LucentDNS/NobleDNS/releases)
