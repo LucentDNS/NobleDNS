@@ -177,6 +177,7 @@ def validate_config(document: object) -> list[dict]:
         raise ValueError("configure between 3 and 10 independent DNS resolvers")
     seen_ids: set[str] = set()
     seen_operators: set[str] = set()
+    seen_endpoint_hosts: set[str] = set()
     for index, resolver in enumerate(resolvers):
         if not isinstance(resolver, dict) or set(resolver) != {"id", "operator", "transport", "endpoint"}:
             raise ValueError(f"resolver[{index}] must contain exactly id, operator, transport and endpoint")
@@ -201,6 +202,10 @@ def validate_config(document: object) -> list[dict]:
             or (port is not None and not 1 <= port <= 65535)
         ):
             raise ValueError(f"resolver[{index}] endpoint scheme/path/port does not match doh or dot transport")
+        endpoint_host = parsed.hostname.lower()
+        if endpoint_host in seen_endpoint_hosts:
+            raise ValueError("resolver endpoint hosts must be unique across operators")
+        seen_endpoint_hosts.add(endpoint_host)
     return resolvers
 
 
@@ -220,7 +225,11 @@ def query_doh(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
         # Bypass ambient HTTP proxy settings: a proxy would invalidate resolver identity.
         opener = build_opener(ProxyHandler({}))
         with opener.open(request, timeout=timeout) as response:
-            if response.status != 200 or response.headers.get_content_type() != "application/dns-message":
+            if (
+                response.status != 200
+                or response.headers.get_content_type() != "application/dns-message"
+                or urlsplit(response.geturl()).hostname != urlsplit(endpoint).hostname
+            ):
                 return {"rcode": "OTHER", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
             body = response.read(65536)
         return parse_response(body, query_id, qtype, hostname)
