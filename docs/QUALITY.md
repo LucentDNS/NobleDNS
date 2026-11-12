@@ -18,7 +18,7 @@ NobleDNS maintains **one balanced public edition**, designed with mainland China
 
 - The only supported public product is the **NobleDNS Balanced Edition**.
 - Do not create separate aggressive, strict, lite, regional or app-specific public variants unless the project explicitly revises this policy after evidence and maintenance-capacity review.
-- The main subscription remains block-only. Exceptions and allowlist candidates are reviewed separately; they must not be silently merged into the main blocklist.
+- The main subscription is a blocklist. Upstream exception rules are preserved in a separate review artifact and are not automatically activated. A future active allowlist must be project-maintained, evidence-backed, narrowly scoped, conflict-audited against both upstreams, and covered by explicit precedence tests. Do not activate every upstream exception wholesale: an exception can override a block from another source.
 - A source is not accepted merely because it is popular or large. Review its purpose, license, syntax, update behavior, rule scope, overlap, provenance and likely compatibility impact.
 - Upstream lists currently configured are general-purpose lists, not mainland-China-specific datasets. Do not imply that their upstream maintainers have validated them for mainland services.
 
