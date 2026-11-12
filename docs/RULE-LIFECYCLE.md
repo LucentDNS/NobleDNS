@@ -60,13 +60,16 @@ Use this sample for a controlled pilot, not as a dead-domain list. It is too sma
 
 The companion `tools/collect_dns_liveness.py` performs the network queries; the audit tool above remains offline. The collector accepts only an explicit newline-separated sample file and a resolver configuration. It never reads or probes the complete subscription automatically.
 
-The example resolver configuration uses three independent operators:
+The example resolver configuration uses four independent operators to improve the chance of obtaining a three-operator quorum from Mainland and international vantage points:
 
-- Cloudflare DoH: `https://cloudflare-dns.com/dns-query`
+- Tencent DNSPod Public DNS DoH: `https://doh.pub/dns-query`
+- Cloudflare standard public DNS DoH: `https://cloudflare-dns.com/dns-query`
 - Google Public DNS DoH: `https://dns.google/dns-query`
 - Quad9 unfiltered DoT: `tls://dns10.quad9.net:853` (the 9.9.9.10 service family does not apply threat blocking)
 
-Cloudflare and Google document RFC 8484 wire-format DoH; Quad9 documents the unfiltered DoT service and endpoint. References: [Cloudflare DoH wire format](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/make-api-requests/dns-wireformat/), [Google Public DNS DoH](https://developers.google.com/speed/public-dns/docs/doh), [Quad9 service addresses](https://docs.quad9.net/services/).
+Tencent's official documentation publishes the DNSPod DoH/DoT endpoints, a 20 QPS per-domain limit, and no SLA for the free service. The collector's default 0.5-second inter-query delay stays well below that limit. Cloudflare and Google document RFC 8484 wire-format DoH; Quad9 documents the unfiltered DoT service and endpoint. References: [Tencent DNSPod Public DNS](https://cloud.tencent.cn/document/product/302/110786), [Cloudflare DoH wire format](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/make-api-requests/dns-wireformat/), [Google Public DNS DoH](https://developers.google.com/speed/public-dns/docs/doh), [Quad9 service addresses](https://docs.quad9.net/services/).
+
+The example deliberately does not count security-filtering resolvers as neutral evidence. 360 Safe DNS's own product page describes threat-intelligence-backed security features, so its response policy needs separate verification before it could be admitted to a dead-domain quorum. We also do not hard-code a generic AliDNS hostname: current Alibaba HTTPDNS documentation describes account-configured DoH endpoints, so a usable public endpoint must be verified before inclusion.
 
 Example PowerShell invocation:
 
