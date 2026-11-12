@@ -20,8 +20,8 @@ SOURCES = {
     "adguard_dns": {"name": "AdGuard DNS Filter", "role": "baseline", "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt", "license": "GPL-3.0"},
     "hagezi_normal": {"name": "HaGeZi Multi NORMAL", "role": "baseline", "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt", "license": "GPL-3.0"},
     "oisd_big": {"name": "OISD Big", "role": "candidate", "url": "https://big.oisd.nl/", "license": "GPL-3.0"},
-    "anti_ad": {"name": "anti-AD (AdGuard Home DNS format)", "role": "candidate", "url": "https://anti-ad.net/easylist.txt", "license": "MIT"},
-    "adrules_dns": {"name": "AdRules DNS", "role": "candidate", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt", "license": "0BSD"},
+    "anti_ad": {"name": "anti-AD (AdGuard Home DNS format)", "role": "candidate", "url": "https://anti-ad.net/easylist.txt", "license": "MIT repository license; upstream-derived rule data needs provenance review", "redistribution_review": "Review upstream inputs and third-party terms before redistributing compiled rules"},
+    "adrules_dns": {"name": "AdRules DNS", "role": "candidate", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt", "license": "Mixed upstream licenses; Source.md includes No/Unknown entries", "redistribution_review": "Do not treat generated DNS rules as 0BSD; upstream provenance and rights clearance required"},
 }
 RULE_DOMAIN_RE = re.compile(r"^(?:@@)?\|\|([^\^/$|]+)(?:\^)?$")
 
