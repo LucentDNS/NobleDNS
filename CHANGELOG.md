@@ -8,7 +8,7 @@ All notable changes to NobleDNS are documented here.
 - Add generated-subscription regression gates for 72 essential-service hostnames and 20 known advertising-infrastructure hostnames.
 - Enforce an additional absolute drift ceiling of 3,000 rule additions and 3,000 removals per build, alongside the existing percentage-based source drift gate.
 - Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.
-- Publish verified build statistics and clarify that compiled domains are included as DNS blocking targets only.
+- Publish verified build statistics and clarify that the main subscription contains supported DNS blocking and exception rules with their respective matching semantics.
 - Preserve 193 documented upstream end-anchored exceptions (domain/subdomain and exact-hostname scope) and bound the active exception set at 250 to reject abnormal surges.
 - Preserve documented end-anchored block patterns (`||domain^|` and `|domain^`) without widening them into domain/subdomain rules.
 - Document the exact workflow for adding regression fixtures and updating their pinned counts.
