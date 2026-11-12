@@ -167,10 +167,10 @@ class ParserTests(unittest.TestCase):
 
     def test_documented_exception_anchor_forms_are_preserved(self):
         blocks, exceptions, rejected, rows, directives = mod.parse_source(
-            b"||base.example.com^\\n"
-            b"@@||service.example.com^|\\n"
-            b"@@|exact.example.com^|\\n"
-            b"@@||simple.example.com^\\n",
+            b"||base.example.com^\n"
+            b"@@||service.example.com^|\n"
+            b"@@|exact.example.com^|\n"
+            b"@@||simple.example.com^\n",
             "adguard_dns",
             min_blocks=1,
         )
