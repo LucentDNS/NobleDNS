@@ -392,6 +392,7 @@ jobs:
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
           cp build-output/latest/syntax-audit.json dist/syntax-audit.json
           cp build-output/latest/syntax-review.csv dist/syntax-review.csv
+          cp build-output/latest/badfilter-audit.csv dist/badfilter-audit.csv
 
       - name: Commit updated public artifacts
         shell: bash
@@ -442,6 +443,7 @@ jobs:
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
           test -s dist/syntax-review.csv
+          test -s dist/badfilter-audit.csv
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
@@ -471,6 +473,7 @@ jobs:
             dist/parser-exclusions.csv
             dist/syntax-audit.json
             dist/syntax-review.csv
+            dist/badfilter-audit.csv
             LICENSE
             THIRD-PARTY-NOTICES.md
             licenses/GPL-3.0.txt
