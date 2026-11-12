@@ -1,44 +1,27 @@
 # Changelog
 
-All notable project changes are documented in this file.
+All notable changes to NobleDNS are documented here.
 
-The project is currently an RC3 automation candidate and has not yet
-been qualified for production use.
-
-## [Unreleased]
+## Unreleased
 
 ### Added
-
-- Added automatic build and validation checks for pushes to the `main` branch.
-- Added parser support for preserving `.domain^` and `.domain` leading-dot rules without rewriting their syntax.
-- Added a real upstream regression fixture covering 28 records: 27 accepted rules and one trailing-dot rule that remains excluded.
+- Public release workflow that publishes validated subscription and audit artifacts.
+- Public feedback guidance for blocking and compatibility reports.
 
 ### Changed
-
-- Separated push-triggered build and validation from candidate release publishing; pushes do not execute the publish job.
+- NobleDNS is maintained and published as a public DNS filtering rule set.
+- Main-branch pushes run the complete build, validation and publication process.
 
 ### Fixed
+- Corrected GitHub Actions output handling so the release identity hash is passed to the publication job.
 
-- Enforced strict IDNA2008 validation for Punycode A-labels.
-- Added decode-and-re-encode consistency checks to reject invalid Punycode labels.
+## Historical notes
 
-### Documentation
-
-- Added the personal maintainer guide.
-- Clarified that leading-dot parser regression coverage does not establish broad DNS-client compatibility or production qualification.
+Earlier development milestones and the RC2.2 reproducibility baseline are retained as historical engineering records in [docs/RC2.2-BASELINE.md](docs/RC2.2-BASELINE.md).
 
 ## Changelog maintenance
 
 - Keep unreleased changes under `[Unreleased]`.
 - Move changes into a versioned section only when that version is actually released.
 - Use the actual release version and release date; do not fabricate historical release entries.
-- Organize entries under the following categories when applicable:
-  - Added
-  - Changed
-  - Deprecated
-  - Removed
-  - Fixed
-  - Security
-  - Documentation
 - Record meaningful project changes rather than routine build noise.
-- Do not describe existing behavior as a new change unless it was actually introduced or modified in that release.
