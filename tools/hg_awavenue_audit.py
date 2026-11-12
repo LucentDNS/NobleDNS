@@ -575,7 +575,14 @@ def main() -> int:
             raise RuntimeError(f"{label} must be a full 40-character commit SHA")
 
     def pinned(url: str, ref: str) -> str:
-        return url.replace("/main/", f"/{ref}/", 1)
+        match = re.fullmatch(
+            r"https://raw\.githubusercontent\.com/([^/]+/[^/]+)/main/(.+)",
+            url,
+        )
+        if not match:
+            raise RuntimeError(f"Cannot pin unsupported upstream URL: {url}")
+        repository, path = match.groups()
+        return f"https://cdn.jsdelivr.net/gh/{repository}@{ref}/{path}"
 
     baseline_url = pinned(BASELINE_URL, baseline_ref)
     manifest_url = pinned(MANIFEST_URL, baseline_ref)
