@@ -65,6 +65,8 @@ class WorkflowSecurityTests(unittest.TestCase):
         )
         self.assertIn("github.event_name != 'pull_request'", workflow)
         self.assertIn("needs.build-test.outputs.publish_update == 'true'", workflow)
+        self.assertEqual(workflow.count("persist-credentials: false"), 1)
+        self.assertEqual(workflow.count("persist-credentials: true"), 1)
 
 
 if __name__ == "__main__":
