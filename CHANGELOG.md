@@ -9,6 +9,9 @@ All notable changes to NobleDNS are documented here.
 - Enforce an additional absolute drift ceiling of 3,000 rule additions and 3,000 removals per build, alongside the existing percentage-based source drift gate.
 - Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.
 - Publish verified build statistics and clarify that compiled domains are included as DNS blocking targets only.
+- Add an explicit quality gate limiting active exception/allow rules to 50, so an abnormal allow-rule surge fails validation.
+- Document the exact workflow for adding regression fixtures and updating their pinned counts.
+- Add code and upstream rule-data license metadata to the generated subscription banner.
 
 ### Fixed
 - Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
