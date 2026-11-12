@@ -31,10 +31,10 @@ NobleDNS/
 │   ├── FEEDBACK.md
 │   ├── MAINTAINER-GUIDE.md
 │   ├── MAINTAINER-GUIDE.zh-CN.md
-│   └── RELEASE-AUTHENTICATION.md
 │   ├── QUALITY.md
 │   ├── RC2.2-BASELINE.md
-│   └── RELEASE.md
+│   ├── RELEASE.md
+│   └── RELEASE-AUTHENTICATION.md
 ├── dist/
 │   ├── dns-filter.txt
 │   ├── manifest.json
