@@ -20,7 +20,7 @@ class ParserTests(unittest.TestCase):
             ],
         )
 
-    def test_syntax_audit_classifies_without_rewriting(self):
+    def test_syntax_audit_uses_documented_dns_semantics(self):
         rules = {
             "||ads.example.com^",
             "||bare.example.com",
@@ -38,16 +38,16 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(
             summary["forms"],
             {
-                "anchored_domain_with_separator": 1,
-                "anchored_domain_without_separator": 1,
-                "leading_dot_with_separator": 1,
-                "leading_dot_without_separator": 1,
+                "domain_and_subdomains": 1,
+                "domain_anchor_without_end_boundary": 1,
+                "subdomains_only_with_end_boundary": 1,
+                "subdomains_only": 1,
             },
         )
-        self.assertEqual(
-            {row[0] for row in review},
-            {".sub.example.com^", ".bare.example.com", "||bare.example.com"},
-        )
+        self.assertEqual(summary["review_required"], 1)
+        self.assertEqual(len(review), 1)
+        self.assertEqual(review[0][0], "||bare.example.com")
+        self.assertIn("does not block the apex", summary["semantics"]["subdomains_only"])
 
     def test_caret_rule(self):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
