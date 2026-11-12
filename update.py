@@ -148,18 +148,12 @@ def classify_non_simple(line: str) -> str:
     if "*" in line: return "wildcard_syntax"
     if line.startswith("@@"): return "other_exception_syntax"
     if "/" in line and not line.startswith("//"): return "regex_or_path_syntax"
-        leading_dot = LEADING_DOT_RE.fullmatch(line)
-        if leading_dot:
-            candidate = leading_dot.group(1)
-            ok, result = valid_domain(candidate)
-            if ok:
-                blocks.add("." + result + ("^" if leading_dot.group(2) else ""))
-            else:
-                rejected[result] += 1
-                rows.append((source_key, line_no, result, line))
-            continue
+    if line.startswith("."): return "unsupported_leading_dot_dns_syntax"
+    if line.startswith("|") or line.endswith("|"): return "other_anchor_syntax"
+    if line.startswith("||") and line.endswith("."): return "other_anchor_syntax"
+    if line.startswith("||"): return "other_domain_or_ip_syntax"
+    if line.startswith(("0.0.0.0 ", "127.0.0.1 ")): return "hosts_syntax"
     return "other_syntax"
-
 
 def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOCKS):
     # Strict decoding: replacement characters could silently corrupt a source.
@@ -170,10 +164,15 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         line = raw.strip().lstrip("\ufeff")
         if not line or line.startswith(("!", "#", "[", "//")):
             continue
-        if line.startswith("."):
-            reason = "unsupported_leading_dot_dns_syntax"
-            rejected[reason] += 1
-            rows.append((source_key, line_no, reason, line))
+        leading_dot = LEADING_DOT_RE.fullmatch(line)
+        if leading_dot:
+            candidate = leading_dot.group(1)
+            ok, result = valid_domain(candidate)
+            if ok:
+                blocks.add("." + result + ("^" if leading_dot.group(2) else ""))
+            else:
+                rejected[result] += 1
+                rows.append((source_key, line_no, result, line))
             continue
         kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
         if not match:
