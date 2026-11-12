@@ -50,6 +50,12 @@ The threshold is intentionally conservative. It reduces the chance that one reso
 
 Resolvers and vantage points must be genuinely independent. Do not count multiple endpoints operated by the same provider as independent operators. A single CI runner is not multiple geographic vantage points. The tool can validate the labels and observation structure, but it cannot cryptographically prove operator ownership or geographic independence; that verification must be documented by the collector/reviewer before evidence is accepted.
 
+## Reproducible pilot sample
+
+A deterministic, source-stratified 20-hostname sample is available at [`docs/audits/2026-11-12-liveness-pilot-sample.txt`](audits/2026-11-12-liveness-pilot-sample.txt). Its source membership, SHA-256 provenance, sampling seed and limitations are documented in the adjacent [sample report](audits/2026-11-12-liveness-pilot-sample.md). It contains 10 hostnames shared by both approved sources, 5 AdGuard-only and 5 HaGeZi-only. All 20 were verified in the 2026-11-12 NobleDNS 1.0.3 build artifact.
+
+Use this sample for a controlled pilot, not as a dead-domain list. It is too small to estimate overall list health and no result from it can authorize a rule removal.
+
 ## Controlled observation collection
 
 The companion `tools/collect_dns_liveness.py` performs the network queries; the audit tool above remains offline. The collector accepts only an explicit newline-separated sample file and a resolver configuration. It never reads or probes the complete subscription automatically.
