@@ -15,10 +15,9 @@ All notable changes to NobleDNS are documented here.
 - Split the maintainer guide into separate English and Simplified Chinese documents while keeping their operational instructions aligned.
 
 ### Fixed
-- Correct English and Simplified Chinese README build statistics to match the published v1.0.3 manifest (303,686 blocking rules, 11 active exceptions, 303,697 total subscription rules).
+- Remove stale build-count figures from the unreleased notes; the generated manifest and validation report are the authoritative sources for current rule counts.
 - Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
 - Preserve the previous subscription modification date on identical rule content to avoid timestamp-only daily subscription churn.
-
 
 ## [1.0.3] - 2026-11-12
 
