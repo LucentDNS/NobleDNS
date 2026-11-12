@@ -37,6 +37,10 @@ Review reports and test cases across these service categories:
 
 These categories define review priorities; they do not imply that every named service or provider has been tested. Record exact hostnames and affected functions, and distinguish a confirmed block-rule false positive from resolver failure, routing, TLS, application or upstream service problems.
 
+## Current compilation model
+
+The current public build compiles supported blocking rules from the two configured general-purpose upstream snapshots. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
+
 ## Rule acceptance and correction
 
 For every proposed rule addition, removal or narrowing:
