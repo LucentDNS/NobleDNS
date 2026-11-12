@@ -404,6 +404,24 @@ Actions 结果：
 备注：
 ```
 
+## 13. 规则死域与生命周期审查
+
+规则返回 NXDOMAIN 不等于可以删除。可能原因包括区域 DNS 差异、短期解析故障、NODATA、sinkhole、域名过期或重新注册。具体状态和处理门槛见 [规则生命周期与死域审查](RULE-LIFECYCLE.md)。
+
+每日 CI 会使用空的 `tests/fixtures/dns-liveness-observations.json` 运行离线审计，以验证工具和来源快照哈希检查。它不执行 DNS 查询，也不代表已经检查了所有规则的实时状态。当前没有经过审核的真实 DNS 观测语料，因此不能声称已发现或清理了多少死域。
+
+如需进行受控审查，必须从至少三个独立 DNS 运营方、至少两个真实不同的网络观测点采集 A/AAAA 结果，并覆盖至少七天；只允许使用脱敏、最小化的受控观测，不得上传家庭、客户、员工或设备 DNS 日志。使用同一次构建产生的规则文件和 source snapshots：
+
+```powershell
+py -3.12 .\tools\audit_rule_liveness.py `
+  --rules .\build-output\latest\dns-filter.txt `
+  --observations .\private-audit\dns-liveness-observations.json `
+  --source-dir .\build-output\latest\sources `
+  --output-dir .\private-audit\liveness-report
+```
+
+重点审查 `stable_nxdomain_candidate_manual_review`，但它只代表满足筛查门槛，不代表域名无害或应当放行。工具固定报告 `automatic_removals=0`；任何移除必须经过来源、域名状态、sinkhole/重新注册风险、业务影响、第二维护者复核、回归测试和回滚审查。
+
 ## 12. 项目质量声明
 
 NobleDNS 是公开维护的 DNS 过滤规则集。自动构建通过代表构建器和已实现的自动校验通过；它不意味着所有 DNS 客户端、网站和应用都已逐一完成实测。维护者应持续检查规则变化、兼容性问题和用户反馈，并将确认的问题纳入回归测试。
