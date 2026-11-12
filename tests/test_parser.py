@@ -14,7 +14,7 @@ class ParserTests(unittest.TestCase):
             mod.filter_header("1.0.0").splitlines(),
             [
                 "! Title: NobleDNS Filter",
-                "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.",
+                "! Description: Balanced DNS filtering for ads, trackers and unwanted domains.",
                 "! Homepage: https://github.com/LucentDNS/NobleDNS",
                 "! Version: 1.0.0",
                 "! Expires: 1 day",
@@ -34,7 +34,7 @@ class ParserTests(unittest.TestCase):
                 "hagezi_normal": {"||bare.example.com", ".bare.example.com"},
             },
         )
-        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["total"], 2)
         self.assertEqual(
             summary["forms"],
             {
