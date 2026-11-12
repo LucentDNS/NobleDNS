@@ -22,9 +22,9 @@ We maintain **one balanced edition**—one subscription, one quality standard, o
 
 v1.0.3 baseline snapshot, verified **2026-11-12 (UTC)**.
 
-- **303,625** unique blocking rules, plus **11** active upstream exceptions (**303,636** total subscription rules).
-- **189,716** supported simple blocking rules parsed from AdGuard DNS Filter are retained in the merged set.
-- **113,909** additional HaGeZi-only blocking rules are added relative to the AdGuard DNS Filter baseline.
+- **303,686** unique blocking rules, plus **11** active upstream exceptions (**303,697** total subscription rules).
+- **189,781** supported simple blocking rules parsed from AdGuard DNS Filter are retained in the merged set.
+- **113,905** additional HaGeZi-only blocking rules are added relative to the AdGuard DNS Filter baseline.
 - The merged output is the union of the two parsed source sets; unsupported or complex upstream syntax is excluded rather than guessed or rewritten.
 
 These are build-manifest counts, not a claim that every raw upstream line is supported or that every listed domain has been individually reviewed. See the [manifest](dist/manifest.json) for source fingerprints and exact build metadata.
