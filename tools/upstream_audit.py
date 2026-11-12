@@ -20,7 +20,7 @@ SOURCES = {
     "adguard_dns": {"name": "AdGuard DNS Filter", "role": "baseline", "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt", "license": "GPL-3.0"},
     "hagezi_normal": {"name": "HaGeZi Multi NORMAL", "role": "baseline", "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt", "license": "GPL-3.0"},
     "oisd_big": {"name": "OISD Big", "role": "candidate", "url": "https://big.oisd.nl/", "license": "GPL-3.0"},
-    "anti_ad": {"name": "anti-AD (AdGuard format)", "role": "candidate", "url": "https://anti-ad.net/adguard.txt", "license": "MIT"},
+    "anti_ad": {"name": "anti-AD (AdGuard Home DNS format)", "role": "candidate", "url": "https://anti-ad.net/easylist.txt", "license": "MIT"},
     "adrules_dns": {"name": "AdRules DNS", "role": "candidate", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt", "license": "0BSD"},
 }
 RULE_DOMAIN_RE = re.compile(r"^(?:@@)?\|\|([^\^/$|]+)(?:\^)?$")
