@@ -124,6 +124,22 @@ class RuleLivenessTests(unittest.TestCase):
         status, _ = mod.classify(rows, NOW, 30)
         self.assertEqual(status, "insufficient_nxdomain_evidence")
 
+    def test_failed_dns_query_invalidates_that_pair_day_round(self):
+        rows = stable_nxdomain_observations()
+        failed = observation(
+            day="2026-11-01", resolver="cf1", operator="cloudflare",
+            vantage="us-west", qtype="A", rcode="SERVFAIL",
+        )
+        failed["observed_at_utc"] = "2026-11-01T11:00:00Z"
+        rows.append(failed)
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertLess(metrics["minimum_pair_observation_span_days"], 7)
+
     def test_operator_name_case_variants_do_not_fake_independent_providers(self):
         rows = stable_nxdomain_observations()
         labels = {"cf1": "cloudflare", "gg1": "CloudFlare", "q91": "CLOUDFLARE"}
