@@ -23,7 +23,6 @@ ESSENTIAL = ROOT / "tests" / "fixtures" / "essential-domains.txt"
 KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
-LEADING_DOT_RULE_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 EXCEPTION_SUBDOMAIN_END_RE = re.compile(r"^@@\|\|(?P<domain>[^\^/$|]+)\^\|$")
 EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
 BLOCK_SUBDOMAIN_END_RE = re.compile(r"^\|\|(?P<domain>[^\^/$|]+)\^\|$")
@@ -55,7 +54,6 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             line = line[:-len("$important")]
         important_suffix = "$important" if important else ""
         match = RULE_RE.fullmatch(line)
-        leading_dot = False
         exception_form = None
         if not match:
             match = EXCEPTION_SUBDOMAIN_END_RE.fullmatch(line)
@@ -74,9 +72,6 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             match = BLOCK_EXACT_HOST_RE.fullmatch(line)
             if match:
                 block_form = "exact_hostname"
-        if not match:
-            match = LEADING_DOT_RULE_RE.fullmatch(line)
-            leading_dot = bool(match)
         if not match:
             invalid.append(line)
             continue
@@ -102,8 +97,6 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             blocks.add("||" + domain + "^|" + important_suffix)
         elif block_form == "exact_hostname":
             blocks.add("|" + domain + "^" + ("|" if match.groupdict().get("end") else "") + important_suffix)
-        elif leading_dot:
-            blocks.add("." + domain + ("^" if has_caret else "") + important_suffix)
         else:
             blocks.add(domain + ("^" if has_caret else "") + important_suffix)
 
@@ -121,9 +114,6 @@ def covers(rule: str, hostname: str) -> bool:
         return hostname == rule[1:-2]
     if rule.startswith("|") and not rule.startswith("||") and rule.endswith("^"):
         return hostname == rule[1:-1]
-    if rule.startswith("."):
-        domain = rule[1:].removesuffix("^")
-        return hostname != domain and hostname.endswith("." + domain)
     if rule.endswith("^"):
         domain = rule[:-1]
         return hostname == domain or hostname.endswith("." + domain)
@@ -177,13 +167,6 @@ class QualityGateTests(unittest.TestCase):
         self.assertFalse(is_blocked("notexample.com", bare, set()))
         self.assertFalse(is_blocked("example.com.evil.test", caret, set()))
         self.assertTrue(is_blocked("www.example.com", caret, set()))
-
-    def test_leading_dot_rule_blocks_subdomains_but_not_apex(self) -> None:
-        blocks = {".example.com"}
-        self.assertFalse(is_blocked("example.com", blocks, set()))
-        self.assertTrue(is_blocked("www.example.com", blocks, set()))
-        self.assertTrue(is_blocked("deep.www.example.com", blocks, set()))
-        self.assertFalse(is_blocked("notexample.com", blocks, set()))
 
     def test_important_rules_override_basic_exceptions(self) -> None:
         blocks = {"example.com^$important"}
