@@ -72,7 +72,7 @@ class BenchmarkScorerTests(unittest.TestCase):
                     "hostname": "ads.example.test", "category": "ad", "expected": "block",
                     "evidence_ref": "test-evidence", "evidence_summary": "controlled test evidence",
                     "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
-                    "independent": "true", "reviewer": "reviewer-a",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-b",
                 })
             rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
             self.assertEqual(errors, [])
@@ -111,6 +111,45 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertEqual(rows, [])
             self.assertTrue(any("requires expected=allow" in error for error in errors))
 
+    def test_corpus_normalizes_one_terminal_root_dot_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "corpus.csv"
+            with path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=scorer.FIELDS)
+                writer.writeheader()
+                writer.writerow({
+                    "hostname": "ads.example.test.", "category": "ad", "expected": "block",
+                    "evidence_ref": "test-evidence", "evidence_summary": "reviewed evidence",
+                    "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-b",
+                })
+                writer.writerow({
+                    "hostname": "double-dot.example.test..", "category": "ad", "expected": "block",
+                    "evidence_ref": "test-evidence-2", "evidence_summary": "reviewed evidence",
+                    "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-b",
+                })
+            rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["hostname"], "ads.example.test")
+            self.assertTrue(any("invalid hostname" in error for error in errors))
+
+    def test_threat_evidence_requires_expiry_and_two_distinct_reviewers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "corpus.csv"
+            with path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=scorer.FIELDS)
+                writer.writeheader()
+                writer.writerow({
+                    "hostname": "threat.example.test", "category": "threat", "expected": "block",
+                    "evidence_ref": "threat-feed-1", "evidence_summary": "time-bound threat evidence",
+                    "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-a",
+                })
+            rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
+            self.assertEqual(rows, [])
+            self.assertTrue(any("requires an expiry date" in error for error in errors))
+            self.assertTrue(any("must differ from primary reviewer" in error for error in errors))
     def test_stale_evidence_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "corpus.csv"
