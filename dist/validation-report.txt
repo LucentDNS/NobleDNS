@@ -10,7 +10,7 @@ Active exception rules: 11
 Main subscription rules: 303,636
 Subscription last modified (UTC): 2026-11-12
 Rule cap: 303,636/500,000
-Main SHA256: f21b0773dec58ae69e9e71111141525a8f8388e36cb53ba585b024b400052cc8
+Main SHA256: 527d913bb6e385c3dace940a49c462b91b03b5c8845b7c313be36314a88d8fda
 
 Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.
 Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests.

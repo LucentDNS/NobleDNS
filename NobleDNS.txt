@@ -4,6 +4,7 @@
 ! Version: 1.0.3
 ! Expires: 1 day
 ! Sources: AdGuard DNS Filter, HaGeZi Multi Normal
+! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).
 ! Content: Listed domains are included as blocking targets only.
 ! Last modified: 2026-11-12 (UTC)
 ! Blocked domains: 303,625
