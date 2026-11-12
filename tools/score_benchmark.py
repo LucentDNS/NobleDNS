@@ -44,7 +44,9 @@ def load_corpus(path: Path, today: date) -> tuple[list[dict], list[str]]:
         seen: set[str] = set()
         for line_no, raw in enumerate(reader, 2):
             row = {key: (raw.get(key) or "").strip() for key in FIELDS}
-            host = row["hostname"].rstrip(".").lower()
+            host = row["hostname"].lower()
+            if host.endswith("."):
+                host = host[:-1]
             if not host:
                 continue
             problems = []
