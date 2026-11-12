@@ -69,6 +69,23 @@ py -3.12 .\tools\collect_dns_liveness.py `
   --output .\private-audit\observations.json
 ```
 
+Run the same reviewed sample from each location on multiple dates spanning at least seven full days. After collecting, merge the separate JSON files without changing their observation rows:
+
+```powershell
+$files = @(
+  ".\private-audit\observations-site-a.json",
+  ".\private-audit\observations-site-b.json"
+)
+$all = foreach ($file in $files) {
+  $doc = Get-Content -Raw -Encoding UTF8 $file | ConvertFrom-Json
+  if ($doc.schema_version -ne 1) { throw "Unsupported observation schema: $file" }
+  $doc.observations
+}
+[ordered]@{ schema_version = 1; observations = @($all) } |
+  ConvertTo-Json -Depth 12 |
+  Set-Content -Encoding UTF8 ".\private-audit\observations-merged.json"
+```
+
 The collector has hard bounds: at least 3 unique resolver operators, at most 10 configured resolvers, at most 50 hostnames per run (default 20), 2–20 second timeout, and 0.2–5 second delay between requests. It queries only A and AAAA and uses DNS-over-HTTPS/TLS wire format. It records response codes, address answers, CNAME targets, resolver endpoint and the DNSSEC AD bit. No retries or bulk subscription scans are performed. The DoH client bypasses ambient HTTP proxy settings so a configured proxy cannot silently impersonate the selected resolver; DoT uses a direct TLS socket with certificate validation.
 
 Run the same small sample from at least two genuinely different network locations, changing the `--vantage` label. A label is self-reported: the collector cannot prove the machine's geography, resolver ownership, or independence. Verify those facts separately and document the evidence. Public resolvers see the queried hostnames and the collector's network source address; do not include private hostnames or private traffic logs. Keep raw observations private until reviewed and sanitized.
