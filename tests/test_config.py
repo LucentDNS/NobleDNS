@@ -15,9 +15,9 @@ class ConfigTests(unittest.TestCase):
             {"@@||safe.example.org^"},
             "2026-11-12",
         )
-        self.assertIn("! Last modified: 2026-11-12 (UTC)\\n", rendered)
-        self.assertIn("! Blocked domains: 2\\n", rendered)
-        self.assertTrue(rendered.endswith("@@||safe.example.org^\\n"))
+        self.assertIn("! Last modified: 2026-11-12 (UTC)\n", rendered)
+        self.assertIn("! Blocked domains: 2\n", rendered)
+        self.assertTrue(rendered.endswith("@@||safe.example.org^\n"))
 
     def test_subscription_last_modified_is_stable_when_rules_are_unchanged(self):
         import json
@@ -30,8 +30,8 @@ class ConfigTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (root / "dns-filter.txt").write_text(
-                "! Last modified: 2026-11-09 (UTC)\\n"
-                "||example.com^\\n",
+                "! Last modified: 2026-11-09 (UTC)\n"
+                "||example.com^\n",
                 encoding="utf-8",
             )
             result = mod.resolve_subscription_last_modified(
@@ -48,8 +48,8 @@ class ConfigTests(unittest.TestCase):
             root = Path(td)
             (root / "manifest.json").write_text("{}", encoding="utf-8")
             (root / "dns-filter.txt").write_text(
-                "! Last modified: 2026-11-09 (UTC)\\n"
-                "||old.example^\\n",
+                "! Last modified: 2026-11-09 (UTC)\n"
+                "||old.example^\n",
                 encoding="utf-8",
             )
             result = mod.resolve_subscription_last_modified(
