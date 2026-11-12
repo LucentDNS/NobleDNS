@@ -97,8 +97,25 @@ def fetch_snapshot(url: str) -> bytes:
     raise RuntimeError(f"download failed after 3 attempts: {url}; last error: {last_error}")
 
 
+EXPECTED_GIT_BLOB_SHA = {
+    "hg1": "93aa59ca6837ba7f5865db025d3f32a989e6dac4",
+    "hg2": "0a0e26cd14a55f29a2781eabefbfb0b5ebad501b",
+    "awavenue_full": "ae70250555b958cc62030a9b5a3d1b0aafe03f8c",
+    "awavenue_only_ads": "7843b281a3b3c0589efddec8b53386162cff02ad",
+    "awa_changelog": "f1f6d225741e5a9630c750817dcc856b6bcf7c8b",
+    "noble_dns": "5c4c71b8ffb6b1e33e6c6a04ecd1462b1ac064a0",
+    "noble_manifest": "c32fc07e0007f64fbd0d80c8c455cdc194dfd4c5",
+    "noble_license": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+    "awa_license": "9cecc1d4669ee8af2ca727a5d8cde10cd8b2d7cc",
+}
+SNAPSHOT_ARTIFACT_RUN_ID = 43184256306
+
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+\ndef git_blob_sha(data: bytes) -> str:
+    return hashlib.sha1(f"blob {len(data)}\\0".encode("ascii") + data).hexdigest()
+
+
 
 
 def source_metadata(data: bytes) -> dict:
@@ -562,6 +579,7 @@ def self_test() -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Offline HG + AWAvenue comparison against NobleDNS; read-only.")
     parser.add_argument("--out", type=Path, default=Path("audit-output"))
+    parser.add_argument("--snapshot-dir", type=Path, help="Use a previously captured source-snapshots directory.")
     args = parser.parse_args()
     self_test()
     out = args.out
@@ -583,6 +601,18 @@ def main() -> int:
     changelog_url = AWA_CHANGELOG_URL
     awa_license_url = AWA_LICENSE_URL
 
+    def load_snapshot(key: str, filename: str, url: str) -> bytes:
+        data = (args.snapshot_dir / filename).read_bytes() if args.snapshot_dir else fetch_snapshot(url)
+        expected_blob = EXPECTED_GIT_BLOB_SHA[key]
+        actual_blob = git_blob_sha(data)
+        if actual_blob != expected_blob:
+            raise RuntimeError(
+                f"{filename}: Git blob SHA mismatch; expected {expected_blob}, got {actual_blob}"
+            )
+        data.decode("utf-8-sig", errors="strict")
+        (snapshots / filename).write_bytes(data)
+        return data
+
     downloaded = {}
     parsed = {}
     source_urls = {}
@@ -592,18 +622,14 @@ def main() -> int:
         url = source["url"]
         source_urls[key] = url
         source_refs[key] = ref
-        data = fetch_snapshot(url)
-        (snapshots / f"{key}.txt").write_bytes(data)
+        data = load_snapshot(key, f"{key}.txt", url)
         downloaded[key] = data
         parsed[key] = parse_snapshot(key, data)
         print(f"Parsed {key}: {len(parsed[key]['blocks']):,} supported block rules", flush=True)
 
-    changelog_data = fetch_snapshot(changelog_url)
-    (snapshots / "awavenue-changelog.md").write_bytes(changelog_data)
-    noble_license_data = fetch_snapshot(noble_license_url)
-    awa_license_data = fetch_snapshot(awa_license_url)
-    (snapshots / "nobledns-LICENSE").write_bytes(noble_license_data)
-    (snapshots / "awavenue-LICENSE").write_bytes(awa_license_data)
+    changelog_data = load_snapshot("awa_changelog", "awavenue-changelog.md", changelog_url)
+    noble_license_data = load_snapshot("noble_license", "nobledns-LICENSE", noble_license_url)
+    awa_license_data = load_snapshot("awa_license", "awavenue-LICENSE", awa_license_url)
     noble_license_sha256 = sha256(noble_license_data)
     awa_license_sha256 = sha256(awa_license_data)
     noble_license_id = "GPL-3.0" if b"GNU GENERAL PUBLIC LICENSE" in noble_license_data and b"Version 3" in noble_license_data[:500] else "unidentified"
@@ -628,14 +654,12 @@ def main() -> int:
                 "entry": line.strip(),
             })
 
-    baseline_data = fetch_snapshot(baseline_url)
-    (snapshots / "nobledns-main-dns-filter.txt").write_bytes(baseline_data)
+    baseline_data = load_snapshot("noble_dns", "nobledns-main-dns-filter.txt", baseline_url)
     baseline = parse_snapshot("nobledns_baseline", baseline_data)
     if not baseline["blocks"]:
         raise RuntimeError("NobleDNS baseline parsed no blocking rules; refusing an incomplete comparison")
 
-    manifest_data = fetch_snapshot(manifest_url)
-    (snapshots / "nobledns-main-manifest.json").write_bytes(manifest_data)
+    manifest_data = load_snapshot("noble_manifest", "nobledns-main-manifest.json", manifest_url)
     baseline_manifest = json.loads(manifest_data.decode("utf-8-sig"))
     manifest_rule_count = len(baseline["blocks"]) + len(baseline["exceptions"])
     if baseline_manifest.get("main_subscription_sha256") != baseline["sha256"]:
@@ -706,6 +730,8 @@ def main() -> int:
         "schema_version": 1,
         "audit_time_utc": datetime.now(timezone.utc).isoformat(),
         "baseline_main_commit": baseline_ref,
+        "snapshot_artifact_run_id": SNAPSHOT_ARTIFACT_RUN_ID if args.snapshot_dir else None,
+        "snapshot_git_blob_sha": EXPECTED_GIT_BLOB_SHA,
         "baseline_url": baseline_url,
         "baseline_sha256": baseline["sha256"],
         "baseline_manifest_sha256": sha256(manifest_data),
