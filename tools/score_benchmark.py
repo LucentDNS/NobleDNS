@@ -113,8 +113,8 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
         if not match:
             unsupported.append(f"line {line_no}: {line}")
             continue
-        domain = match.group("domain").rstrip(".").lower()
-        if not valid_hostname(domain):
+        domain = match.group("domain").lower()
+        if domain.endswith(".") or not valid_hostname(domain):
             unsupported.append(f"line {line_no}: invalid hostname in {line}")
             continue
         is_exception = bool(match.groupdict().get("exception"))
