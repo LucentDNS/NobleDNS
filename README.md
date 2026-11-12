@@ -27,6 +27,7 @@ We maintain **one balanced edition**—one subscription, one quality standard, o
 Add this URL as a custom DNS blocklist in a compatible filtering client. Keep the URL unchanged; validated builds update the contents at this address. The refresh schedule is controlled by your client.
 
 - [Open the current rule file](https://github.com/LucentDNS/NobleDNS/blob/main/dist/dns-filter.txt)
+- [Legacy-compatible subscription path](https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/NobleDNS.txt)
 - [Build manifest](dist/manifest.json)
 - [Latest validation report](dist/validation-report.txt)
 - [Versioned releases](https://github.com/LucentDNS/NobleDNS/releases)
