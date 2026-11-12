@@ -11,7 +11,7 @@
 - Raw non-comment rule lines: 13,164
 - Baseline main commit: 7cdf2d36e9333d244e3f236ec964e9b268cf1141
 - Audit time (UTC): 2026-11-12T08:24:21.432751+00:00
-- License assessment: No public LICENSE file was found at the repository root during this audit. The user previously reported direct permission from the maintainer; the scope of public redistribution and license compatibility still needs a retained written record.
+- License assessment: No public LICENSE file was found at the repository root during this audit. No retained written permission covering public redistribution is recorded in this audit. Do not redistribute unless explicit permission with scope and conditions is obtained and retained.
 
 ## Parser results
 
