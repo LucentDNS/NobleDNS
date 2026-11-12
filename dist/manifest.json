@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0-rc3-20261111-073308-UTC",
+  "version": "1.0.0-rc3-20261112-005109-UTC",
   "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED",
   "release_channel": "candidate",
-  "built_at_utc": "2026-11-11T07:33:08.295881+00:00",
+  "built_at_utc": "2026-11-12T00:51:09.429301+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -35,21 +35,22 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4616261,
-      "sha256": "70912916869e294f866b2dca255a5cca14bf03d1bfbbac2817c73e96155c0ba9",
-      "simple_block_rules": 187941,
+      "bytes": 4658723,
+      "sha256": "2979ecfaf52da96c8235c3d7254a08b82908640284b97822dcb65370c02ff6d5",
+      "simple_block_rules": 189676,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
         "wildcard_syntax": 405,
         "regex_or_path_syntax": 21,
         "other_anchor_syntax": 90,
-        "other_syntax": 81,
         "modifier_important": 5,
         "other_modifier": 7,
         "modifier_badfilter": 5,
+        "other_syntax": 53,
         "single_label_not_fqdn": 1,
-        "other_exception_syntax": 194
+        "invalid_domain_length_or_trailing_dot": 1,
+        "other_exception_syntax": 195
       }
     },
     "hagezi_normal": {
@@ -58,29 +59,28 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
       "license_basis": "upstream project license; third-party input terms may apply",
-      "bytes": 4830614,
-      "sha256": "047dd5451cc6af13bddf5a105a8172c9f141904bae6da86b34cfe994daaead0b",
-      "simple_block_rules": 207080,
+      "bytes": 4861971,
+      "sha256": "36b07747c4df85cf7ad2bddc2d0c47b46aa26640f253592633542c0dcd0ebd8f",
+      "simple_block_rules": 208182,
       "simple_exception_rules": 0,
-      "excluded_lines_by_reason": {
-        "invalid_punycode_label": 1
-      }
+      "excluded_lines_by_reason": {}
     }
   },
-  "blocking_rules": 301928,
-  "common_rules": 93093,
+  "blocking_rules": 303587,
+  "common_rules": 94271,
   "source_only_rules": {
-    "adguard_dns": 94848,
-    "hagezi_normal": 113987
+    "adguard_dns": 95405,
+    "hagezi_normal": 113911
   },
   "exception_rules_separate": 11,
   "max_rules": 500000,
-  "main_subscription_sha256": "308e275604206da72116368dde48664092fce65c44650edc9b43988dde74bdf4",
+  "main_subscription_sha256": "80cad6fca6ff3a57cf4ad064f92974d788241a1c4b897c38f447712b6305d6a2",
   "policy": {
     "main_list": "block-only",
     "exceptions": "separate review artifact; not active in main list",
     "complex_syntax": "excluded unless semantic equivalence is proven",
     "bare_domain_anchor": "preserved unchanged",
+    "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression; broad client compatibility not qualified",
     "source_drift_gate_percent": 15.0
   },
   "qualification": {
