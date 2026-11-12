@@ -162,6 +162,22 @@ git diff --check
 
 所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
 
+#### 添加回归用例
+
+每当确认一个应纳入质量回归的域名时，按以下步骤操作：
+
+1. 将 hostname 追加到 `tests/fixtures/essential-domains.txt`（该域名必须保持可访问、不应被拦截），或追加到 `tests/fixtures/known-ads.txt`（该域名必须继续被拦截）。每行一个唯一 hostname，不添加规则语法。
+2. 同步更新 `tests/quality_gates.py` 中 `test_fixture_sizes_are_explicit_and_stable` 对应 fixture 的数量断言。当前基线为 essential `72`、known ads `20`。
+3. 运行专项质量门禁：
+
+   ```powershell
+   py -3.12 -m unittest discover -s tests -p "quality_gates.py" -v
+   ```
+
+4. 将 fixture 文件和数量断言作为同一变更提交，并在 PR 中说明新增域名及其分类依据。
+
+数量断言是有意固定的：任何 fixture 数量变化都必须在代码审查中显式体现，避免测试样本被无意增删或静默漂移。
+
 ### 4.5 审查规则变化
 
 不要只看规则总数。
