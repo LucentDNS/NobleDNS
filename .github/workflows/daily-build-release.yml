@@ -331,6 +331,8 @@ jobs:
           cp build-output/latest/validation-report.txt dist/validation-report.txt
           cp build-output/latest/whitelist-review.txt dist/whitelist-review.txt
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
+          cp build-output/latest/syntax-audit.json dist/syntax-audit.json
+          cp build-output/latest/syntax-review.csv dist/syntax-review.csv
 
       - name: Commit updated public artifacts
         if: needs.build-test.outputs.publish_update == 'true'
@@ -378,6 +380,8 @@ jobs:
           test -s dist/validation-report.txt
           test -s dist/whitelist-review.txt
           test -s dist/parser-exclusions.csv
+          test -s dist/syntax-audit.json
+          test -s dist/syntax-review.csv
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
@@ -404,6 +408,8 @@ jobs:
             dist/validation-report.txt
             dist/whitelist-review.txt
             dist/parser-exclusions.csv
+            dist/syntax-audit.json
+            dist/syntax-review.csv
             LICENSE
             THIRD-PARTY-NOTICES.md
             licenses/GPL-3.0.txt
