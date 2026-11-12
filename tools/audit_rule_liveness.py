@@ -168,7 +168,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 qtypes_by_pair[(row["resolver"], row["resolver_operator"], row["vantage"])].add(row["qtype"])
             complete_pairs = [pair for pair, qtypes in qtypes_by_pair.items() if qtypes == {"A", "AAAA"}]
             dates = [row["_time"] for row in current]
-            span = (max(dates) - min(dates).replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds() / 86400
+            span = (max(dates) - min(dates)).total_seconds() / 86400
             quorum = (
                 len(operators) >= 3
                 and len(vantages) >= 2
@@ -214,7 +214,11 @@ def audit(rules: dict[str, set[str]], observations: list[dict], provenance: dict
             "source_keys": sorted(provenance.get(hostname, set())),
             "observation_count": len(rows),
             **metrics,
-            "action": "manual_review_only" if status == "stable_nxdomain_candidate_manual_review" else "no_change",
+            "action": (
+                "manual_review_only"
+                if status == "stable_nxdomain_candidate_manual_review" and hostname in rules
+                else "no_change"
+            ),
         })
     counts = defaultdict(int)
     for result in results:
