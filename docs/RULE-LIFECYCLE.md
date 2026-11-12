@@ -88,7 +88,9 @@ After collecting all daily files, merge them without altering individual observa
 
 ```powershell
 $files = Get-ChildItem -LiteralPath .\private-audit -Filter "observations-*.json" -File |
+  Where-Object { $_.Name -ne "observations-merged.json" } |
   Sort-Object Name
+if (-not $files) { throw "No daily observation files found." }
 $all = foreach ($file in $files) {
   $doc = Get-Content -Raw -Encoding UTF8 $file.FullName | ConvertFrom-Json
   if ($doc.schema_version -ne 1) { throw "Unsupported observation schema: $($file.Name)" }
