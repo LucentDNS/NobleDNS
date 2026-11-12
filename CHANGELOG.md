@@ -4,6 +4,9 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+- Clarify the difference between parser/build validation and real-world filtering efficacy.
+- Publish a stable SemVer Release in addition to content-addressed audit Releases.
+
 ## [1.0.0] - 2026-11-12
 
 ### Added
