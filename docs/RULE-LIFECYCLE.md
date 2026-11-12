@@ -11,8 +11,8 @@ This process is a **review aid**, not an automatic rule-removal mechanism. The c
 The offline tool `tools/audit_rule_liveness.py` consumes:
 
 - the exact generated `dns-filter.txt` being reviewed;
-- a versioned JSON file of externally collected DNS observations;
-- the exact source snapshots and `sources-manifest.json` from the same build.
+- a versioned JSON file of externally collected DNS observations, including the exact HTTPS/DoT resolver endpoint for every observation;
+- the exact source snapshots and `sources-manifest.json` from the same build (required by the CLI).
 
 It verifies source snapshot SHA-256 values and records which approved source(s) still contain each observed hostname.
 
