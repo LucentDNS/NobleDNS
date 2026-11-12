@@ -227,6 +227,33 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
             for row in current:
                 qtypes_by_pair[(row["resolver"], row["resolver_operator"], row["vantage"])].add(row["qtype"])
             complete_pairs = [pair for pair, qtypes in qtypes_by_pair.items() if qtypes == {"A", "AAAA"}]
+            # A seven-day span must be demonstrated independently by every
+            # resolver/operator/vantage pair. Do not combine one old result
+            # from pair A with a recent quorum from pairs B/C to manufacture
+            # a long observation window.
+            rounds_by_pair = defaultdict(lambda: defaultdict(set))
+            for row in fresh:
+                if row["rcode"] == "NXDOMAIN":
+                    pair = (
+                        row["resolver"], row["resolver_operator"].lower(),
+                        row["vantage"],
+                    )
+                    rounds_by_pair[pair][row["_time"].date().isoformat()].add(row["qtype"])
+            pair_spans = {}
+            for pair, daily_qtypes in rounds_by_pair.items():
+                complete_days = sorted(
+                    day for day, qtypes in daily_qtypes.items()
+                    if qtypes == {"A", "AAAA"}
+                )
+                if len(complete_days) >= 2:
+                    first = datetime.fromisoformat(complete_days[0]).replace(tzinfo=timezone.utc)
+                    last = datetime.fromisoformat(complete_days[-1]).replace(tzinfo=timezone.utc)
+                    pair_spans[pair] = (last - first).total_seconds() / 86400
+                else:
+                    pair_spans[pair] = 0.0
+            temporal_pairs = {
+                pair for pair, pair_span in pair_spans.items() if pair_span >= 7
+            }
             dates = [row["_time"] for row in fresh if row["rcode"] == "NXDOMAIN"]
             span = (max(dates) - min(dates)).total_seconds() / 86400
             quorum = (
@@ -235,6 +262,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 and len(complete_pairs) >= 3
                 and span >= 7
                 and len(complete_pairs) == len(pairs)
+                and len(temporal_pairs) == len(pairs)
             )
             soa_complete = all(row.get("authority_soa_zones") for row in current)
             soa_zone_sets = {
@@ -263,6 +291,8 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 "resolver_operators": sorted(operators),
                 "vantages": sorted(vantages),
                 "complete_resolver_vantage_pairs": len(complete_pairs),
+                "pairs_with_seven_day_complete_history": len(temporal_pairs),
+                "minimum_pair_observation_span_days": round(min(pair_spans.values(), default=0.0), 2),
                 "observation_span_days": round(span, 2),
             }
         if any(row["rcode"] == "NOERROR" and not row["answers"] for row in current):
