@@ -49,6 +49,18 @@ class EvidenceCorpusTests(unittest.TestCase):
         record["hostname"] = "Ads.example.com"
         self.assertTrue(any("lowercase FQDN" in e for e in validate_corpus(self.corpus([record]), NOW)))
 
+    def test_non_string_enum_values_fail_closed_without_crashing(self):
+        record = copy.deepcopy(VALID)
+        record["classification"] = []
+        record["evidence_type"] = {}
+        record["expected_policy"] = ["blocked"]
+        record["confidence"] = None
+        errors = validate_corpus(self.corpus([record]), NOW)
+        self.assertTrue(any("classification is not an allowed" in e for e in errors))
+        self.assertTrue(any("evidence_type is not an allowed" in e for e in errors))
+        self.assertTrue(any("expected_policy is not an allowed" in e for e in errors))
+        self.assertTrue(any("confidence is not an allowed" in e for e in errors))
+
     def test_unknown_and_missing_fields_are_rejected(self):
         record = copy.deepcopy(VALID)
         del record["review_notes"]
