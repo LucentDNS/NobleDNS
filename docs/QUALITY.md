@@ -100,3 +100,15 @@ Automated checks do not replace testing every app, site, device or DNS client. I
 ## Feedback
 
 If you find a site or app that does not work as expected, a domain that should be blocked but is not, or another rule-related problem, please report it through [GitHub Issues](https://github.com/LucentDNS/NobleDNS/issues). Include the affected hostname, site or app, exact affected function, DNS client and version, reproduction steps, and relevant sanitized DNS evidence. See [Feedback and rule improvement](FEEDBACK.md).
+
+
+## Critical-service and efficacy regression gates
+
+Every generated build is checked against a small, explicit regression corpus before publication:
+
+- `tests/fixtures/essential-domains.txt` records 72 representative financial, payment, carrier, public-service, mainstream-app and device-update hostnames. The gate rejects direct or parent-domain blocking coverage unless an active exception also covers that hostname.
+- `tests/fixtures/known-ads.txt` records 20 representative advertising-infrastructure hostnames. The gate verifies that each remains covered by a blocking rule and is not neutralized by an active exception.
+- The generated subscription is checked for supported syntax only: `||domain^`, `||domain`, and `@@||domain^`. Bare hostname-start anchors are intentionally retained and validated; they are not treated as malformed rules.
+- The existing source-level 15% drift gate remains. In addition, additions and removals are each capped at 3,000 rules per build. The existing explicit `--allow-large-change` workflow override is the only bypass and must follow human review.
+
+These are regression sentinels, not a representative false-positive or true-positive measurement. The 72 service hostnames do not cover every service or app, and the 20 ad hostnames do not prove comprehensive blocking efficacy. Client-specific DNS semantics and real-world traffic still require separate testing.

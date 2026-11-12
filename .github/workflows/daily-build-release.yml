@@ -172,6 +172,11 @@ jobs:
           print("Manifest source count, rule ceiling, and licensing metadata verified.")
           PY
 
+      - name: Run quality regression gates against generated subscription
+        env:
+          NOBLEDNS_FILTER_PATH: build-output/latest/dns-filter.txt
+        run: python -m unittest discover -s tests -p 'quality_gates.py' -v
+
       - name: Compare rules and source fingerprints
         id: compare
         shell: bash

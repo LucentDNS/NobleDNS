@@ -1,0 +1,23 @@
+# Major ad networks — main domains
+doubleclick.net
+googlesyndication.com
+googleadservices.com
+adservice.google.com
+adsrvr.org
+adnxs.com
+pubmatic.com
+criteo.com
+criteo.net
+taboola.com
+outbrain.com
+moatads.com
+adsafeprotected.com
+adcolony.com
+vungle.com
+applovin.com
+chartboost.com
+unityads.unity3d.com
+
+# Networks blocked at specific subdomains upstream
+ads.rubiconproject.com
+b.scorecardresearch.com
