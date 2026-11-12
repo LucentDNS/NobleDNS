@@ -59,7 +59,7 @@ Requirements:
 - Keep a blind holdout subset unavailable to the person tuning rules until an evaluation round is frozen.
 - Never commit private traffic logs, identifiers, credentials or user-specific browsing histories.
 
-The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects stale or non-high-confidence records, and refuses to score unsupported rule syntax. Its `independent=true` field is a reviewer attestation, not cryptographic proof; evidence must be checked by a second reviewer. The scorer models the project's supported hostname-suffix rule subset only. It is not a substitute for a real client or DNS query, and comparator lists must be converted to a semantically equivalent supported subset with all exclusions disclosed before a fair score can be claimed.
+The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects stale or non-high-confidence records, and refuses to score unsupported rule syntax. Its `independent=true` field is a reviewer attestation, not cryptographic proof; evidence must be checked by a second reviewer. The scorer models these documented forms: `||domain^` (domain and subdomains, with hostname-end boundary), `||domain` (hostname-start anchor without an end separator), `.domain^` and `.domain` (subdomains only, not the apex), and `@@||domain^` (exception). It rejects other syntax rather than silently scoring a partial interpretation. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed.
 
 ## 4. Metrics
 
