@@ -22,6 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
 
 jobs:
@@ -37,7 +38,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Confirm audit-only workflow scope
-        run: echo "This workflow only writes direct-fetch audit reports to the isolated audit branch."
+        run: echo "This workflow only writes hash-verified offline audit reports to the isolated audit branch."
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -68,8 +69,16 @@ jobs:
           printf 'BASELINE_MAIN_SHA=%s\nHG_MAIN_SHA=%s\nAWAVENUE_MAIN_SHA=%s\n' \
             "$BASELINE_MAIN_SHA" "$HG_MAIN_SHA" "$AWAVENUE_MAIN_SHA" >> "$GITHUB_ENV"
 
-      - name: Download snapshots and run offline comparison
-        run: python tools/hg_awavenue_audit.py --out audit-output
+      - name: Download previously captured source snapshots
+        uses: actions/download-artifact@v4
+        with:
+          name: nobledns-hg-awavenue-offline-audit
+          run-id: 43184256306
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: audit-input
+
+      - name: Run hash-verified offline source and merge audit
+        run: python tools/hg_awavenue_audit.py --out audit-output --snapshot-dir audit-input/source-snapshots
 
       - name: Verify upstream refs remained stable during snapshot download
         shell: bash
