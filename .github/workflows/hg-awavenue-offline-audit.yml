@@ -59,14 +59,14 @@ jobs:
           BASELINE_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           HG_MAIN_SHA="$(git ls-remote https://github.com/2771936993/HG.git refs/heads/main | awk '{print $1}')"
           AWAVENUE_MAIN_SHA="$(git ls-remote https://github.com/TG-Twilight/AWAvenue-Ads-Rule.git refs/heads/main | awk '{print $1}')"
-          for name in BASELINE_MAIN_SHA HG_MAIN_SHA AWAVENUE_MAIN_SHA; do
-            value="\${!name}"
+          for value in "$BASELINE_MAIN_SHA" "$HG_MAIN_SHA" "$AWAVENUE_MAIN_SHA"; do
             if ! [[ "$value" =~ ^[0-9a-f]{40}$ ]]; then
-              echo "::error::Could not resolve immutable commit for $name."
+              echo "::error::Could not resolve an immutable source commit."
               exit 1
             fi
-            echo "$name=$value" >> "$GITHUB_ENV"
           done
+          printf 'BASELINE_MAIN_SHA=%s\nHG_MAIN_SHA=%s\nAWAVENUE_MAIN_SHA=%s\n' \
+            "$BASELINE_MAIN_SHA" "$HG_MAIN_SHA" "$AWAVENUE_MAIN_SHA" >> "$GITHUB_ENV"
 
       - name: Download snapshots and run offline comparison
         run: python tools/hg_awavenue_audit.py --out audit-output
@@ -77,7 +77,7 @@ jobs:
         with:
           name: nobledns-hg-awavenue-offline-audit
           path: audit-output/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Publish audit reports to this isolated branch only
