@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "resolvers": [
+    {
+      "id": "cloudflare-doh",
+      "operator": "Cloudflare",
+      "endpoint": "https://cloudflare-dns.com/dns-query"
+    },
+    {
+      "id": "google-public-dns",
+      "operator": "Google",
+      "endpoint": "https://dns.google/dns-query"
+    },
+    {
+      "id": "quad9-unfiltered",
+      "operator": "Quad9",
+      "endpoint": "https://dns10.quad9.net/dns-query"
+    }
+  ]
+}
