@@ -24,10 +24,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: nobledns-hg-awavenue-audit
-  cancel-in-progress: false
-
 jobs:
   audit:
     if: github.ref == 'refs/heads/audit/hg-awavenue-offline-2026-11-12' || (github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'audit/hg-awavenue-offline-2026-11-12' && github.event.pull_request.head.repo.full_name == github.repository)
