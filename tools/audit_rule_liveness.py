@@ -328,6 +328,11 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
     return status, {"fresh_observations": len(fresh)}
 
 
+def domain_ancestors(hostname: str) -> list[str]:
+    labels = hostname.split(".")
+    return [".".join(labels[index:]) for index in range(len(labels))]
+
+
 def audit(rules: dict[str, set[str]], observations: list[dict], provenance: dict[str, set[str]],
           now: datetime, max_age_days: int) -> dict:
     grouped = defaultdict(list)
@@ -336,12 +341,20 @@ def audit(rules: dict[str, set[str]], observations: list[dict], provenance: dict
     results = []
     for hostname, rows in sorted(grouped.items()):
         status, metrics = classify(rows, now, max_age_days)
+        ancestors = domain_ancestors(hostname)
+        matched_rules = sorted({
+            rule for ancestor in ancestors for rule in rules.get(ancestor, set())
+        })
+        source_keys = sorted({
+            source for ancestor in ancestors for source in provenance.get(ancestor, set())
+        })
+        in_subscription = bool(matched_rules)
         results.append({
             "hostname": hostname,
             "status": status,
-            "in_current_subscription": hostname in rules,
-            "matched_rules": sorted(rules.get(hostname, set())),
-            "source_keys": sorted(provenance.get(hostname, set())),
+            "in_current_subscription": in_subscription,
+            "matched_rules": matched_rules,
+            "source_keys": source_keys,
             "observation_count": len(rows),
             **metrics,
             "action": (
@@ -350,7 +363,7 @@ def audit(rules: dict[str, set[str]], observations: list[dict], provenance: dict
                     "stable_nxdomain_candidate_manual_review",
                     "nxdomain_without_authority_soa_manual_review",
                     "nxdomain_authority_zone_disagreement_manual_review",
-                } and hostname in rules
+                } and in_subscription
                 else "no_change"
             ),
         })
