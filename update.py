@@ -32,6 +32,7 @@ BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
 LEADING_DOT_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+BADFILTER_RE = re.compile(r"^(?P<rule>.+)\$badfilter$", re.I)
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
@@ -156,14 +157,54 @@ def classify_non_simple(line: str) -> str:
     return "other_syntax"
 
 
+def normalize_badfilter_target(rule: str) -> str | None:
+    """Return a canonical supported rule targeted by an exact $badfilter directive."""
+    match = EXCEPTION_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group(1))
+        return f"@@||{domain}^" if ok else None
+    match = BLOCK_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group(1))
+        return f"||{domain}^" if ok else None
+    match = BARE_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group(1))
+        return f"||{domain}" if ok else None
+    match = LEADING_DOT_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group("domain"))
+        if ok:
+            return "." + domain + ("^" if match.group("caret") else "")
+    return None
+
+
 def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOCKS):
     # Strict decoding: replacement characters could silently corrupt a source.
     text = data.decode("utf-8-sig", errors="strict")
     blocks, exceptions = set(), set()
-    rejected, rows = Counter(), []
+    rejected, rows, badfilters = Counter(), [], []
     for line_no, raw in enumerate(text.splitlines(), 1):
         line = raw.strip().lstrip("\ufeff")
         if not line or line.startswith(("!", "#", "[", "//")):
+            continue
+        badfilter_match = BADFILTER_RE.fullmatch(line)
+        if badfilter_match:
+            target_raw = badfilter_match.group("rule")
+            target = normalize_badfilter_target(target_raw)
+            if target is None:
+                reason = "modifier_badfilter_unsupported_target"
+                rejected[reason] += 1
+                rows.append((source_key, line_no, reason, line))
+                badfilters.append((source_key, line_no, line, target_raw, "unsupported_target_syntax"))
+            else:
+                badfilters.append((source_key, line_no, line, target, "pending"))
+            continue
+        if "$badfilter" in line.lower():
+            reason = "modifier_badfilter"
+            rejected[reason] += 1
+            rows.append((source_key, line_no, reason, line))
+            badfilters.append((source_key, line_no, line, "", "unsupported_modifier_combination"))
             continue
         if line.startswith("."):
             leading_dot = LEADING_DOT_RE.fullmatch(line)
@@ -208,7 +249,34 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         rejected[reason] += 1; rows.append((source_key, line_no, reason, line))
     if len(blocks) < min_blocks:
         raise ValueError(f"{source_key}: parsed {len(blocks):,} block rules; minimum is {min_blocks:,}")
-    return blocks, exceptions, rejected, rows
+    return blocks, exceptions, rejected, rows, badfilters
+
+
+def apply_badfilters(parsed: dict[str, set[str]], exceptions: dict[str, set[str]], directives: list[tuple]):
+    """Apply supported $badfilter directives to exact matching rules across the merged sources."""
+    audit_rows = []
+    applied_targets = set()
+    for source_key, line_no, directive, target, initial_status in directives:
+        affected = []
+        if initial_status != "pending":
+            status = initial_status
+        else:
+            affected = sorted(
+                key for key in parsed
+                if target in parsed[key] or target in exceptions[key]
+            )
+            if affected:
+                for key in parsed:
+                    parsed[key].discard(target)
+                    exceptions[key].discard(target)
+                status = "applied"
+                applied_targets.add(target)
+            elif target in applied_targets:
+                status = "already_applied"
+            else:
+                status = "target_not_found"
+        audit_rows.append((source_key, line_no, directive, target, status, ";".join(affected)))
+    return audit_rows
 
 
 def validate_proxy_url(proxy: str | None) -> str | None:
