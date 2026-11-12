@@ -67,6 +67,7 @@ def load_corpus(path: Path, today: date) -> tuple[list[dict], list[str]]:
                 problems.append("missing evidence reference/summary")
             if row["confidence"] != "high":
                 problems.append("only high-confidence rows are scoreable")
+            reviewed = None
             try:
                 reviewed = date.fromisoformat(row["reviewed_on"])
                 if reviewed > today:
@@ -80,7 +81,7 @@ def load_corpus(path: Path, today: date) -> tuple[list[dict], list[str]]:
                     expires = date.fromisoformat(row["expires_on"])
                     if expires < today:
                         problems.append("evidence expired")
-                    if expires < reviewed:
+                    if reviewed is not None and expires < reviewed:
                         problems.append("expiry date precedes review date")
                 except ValueError:
                     problems.append("expires_on must be YYYY-MM-DD or blank")
