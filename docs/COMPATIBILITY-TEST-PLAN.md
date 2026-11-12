@@ -45,6 +45,10 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ||apex.nobledns.test^
 ||bare.nobledns.test
 .subonly.nobledns.test^
+||exception.nobledns.test^
+@@||exception.nobledns.test^|
+||exact.nobledns.test^
+@@|exact.nobledns.test^|
 ```
 
 Do not add these synthetic rules to the public subscription.
