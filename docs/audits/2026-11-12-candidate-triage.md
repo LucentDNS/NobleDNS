@@ -28,6 +28,10 @@ A deliberately simple hostname-token scan was applied to candidate-unique entrie
 
 These categories overlap. The scan is incomplete by design: mainland services frequently use non-`.cn` hostnames, while legitimate services can contain the same tokens. Do not use these counts as a coverage metric or as an automatic rule-generation input.
 
+### Existing essential-service regression corpus
+
+A suffix-aware check compared every candidate-unique blocking domain against all 72 hostnames in `tests/fixtures/essential-domains.txt`. **No candidate-unique domain currently covers any of those 72 test hostnames.** This is a useful initial safety signal, not proof of compatibility: the corpus is intentionally small and cannot represent every app, subdomain, region, or service function. The check must be repeated for every future candidate snapshot and any accepted increment.
+
 ### High-priority review queues (not approved blocks)
 
 **Advertising clues:** `ad-market.vivo.com.cn`, `open-ad.vivo.com.cn`, `uapi-ads.vivo.com.cn`, `mobads.baidu.cn`, `mobads-logs.baidu.cn`, `adscdn.baidu.cn`, `ad.sina.com.cn`, `ads.uc.cn`, `ad.docer.wps.cn`.
