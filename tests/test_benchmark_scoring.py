@@ -79,6 +79,20 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
 
 
+    def test_cli_refuses_to_score_an_empty_corpus(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            corpus = root / "corpus.csv"
+            rules = root / "rules.txt"
+            output = root / "score.json"
+            corpus.write_text(",".join(scorer.FIELDS) + "\n", encoding="utf-8")
+            rules.write_text("||ads.example.test^\n", encoding="utf-8")
+            with unittest.mock.patch("sys.argv", [
+                "score_benchmark.py", "--rules", str(rules), "--corpus", str(corpus),
+                "--output", str(output), "--today", "2026-11-12",
+            ]):
+                self.assertEqual(scorer.main(), 2)
+            self.assertFalse(output.exists())
     def test_category_policy_mismatch_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "corpus.csv"
@@ -89,7 +103,7 @@ class BenchmarkScorerTests(unittest.TestCase):
                     "hostname": "ads.example.test", "category": "ad", "expected": "allow",
                     "evidence_ref": "test-evidence", "evidence_summary": "reviewed evidence",
                     "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
-                    "independent": "true", "reviewer": "reviewer-a",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-b",
                 })
             rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
             self.assertEqual(rows, [])
