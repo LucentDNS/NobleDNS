@@ -302,6 +302,10 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         effective_baseline_domains.add(baseline_domain)
 
     broadens = defaultdict(set)
+    # Every new bare-anchor rule has unbounded hostname-prefix semantics, even
+    # when the candidate apex happens to be covered by an existing parent rule.
+    for candidate_rule in new_bare_rules:
+        broadens[candidate_rule]
     for baseline_domain in effective_baseline_domains:
         for suffix in suffixes(baseline_domain):
             if suffix in new_caret_domains:
@@ -339,6 +343,7 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
         "unique_but_already_covered_by_baseline_parent": len(parent_covered_domains),
         "unique_not_covered_by_baseline_parent": len(unique_not_parent_covered),
         "candidate_rules_broadening_existing_baseline_scope": len(broadens),
+        "new_bare_anchor_rules_with_unbounded_matching": len(new_bare_rules),
         "baseline_block_domains_affected_by_candidate_parent_rules": len(affected_baseline_domains),
         "candidate_blocks_overlapping_baseline_exceptions": len(block_exception_conflicts),
         "new_candidate_blocks_overlapping_baseline_exceptions": len(new_block_exception_conflicts),
@@ -422,7 +427,8 @@ def render_source_report(title: str, source_name: str, source_url: str, parsed: 
 | Unique but already covered by a baseline parent rule | {metrics['unique_but_already_covered_by_baseline_parent']:,} |
 | Unique domains not covered by a baseline parent rule | {metrics['unique_not_covered_by_baseline_parent']:,} |
 | Candidate rules that broaden existing baseline scope | {metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
-| Baseline block domains affected by candidate parent rules | {metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
+| New bare-anchor rules with unbounded matching | {metrics['new_bare_anchor_rules_with_unbounded_matching']:,} |
+| Baseline block domains newly covered by candidate parent rules | {metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
 | Candidate blocks overlapping baseline exceptions (all source rules) | {metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
 | New candidate blocks overlapping baseline exceptions | {metrics['new_candidate_blocks_overlapping_baseline_exceptions']:,} |
 | Candidate exceptions overlapping baseline blocks | {metrics['candidate_exceptions_overlapping_baseline_blocks']:,} |
@@ -488,8 +494,8 @@ def self_test() -> None:
     metrics = source_metrics(candidate, baseline, [], [])
     if metrics["candidate_rules_broadening_existing_baseline_scope"] != 2:
         raise AssertionError("scope-expansion metric must count a new bare-anchor scope and a new parent rule")
-    if metrics["baseline_block_domains_affected_by_candidate_parent_rules"] != 2:
-        raise AssertionError("scope-expansion metric must count only newly affected baseline domains")
+    if metrics["baseline_block_domains_affected_by_candidate_parent_rules"] != 1:
+        raise AssertionError("scope-expansion metric must count only baseline domains not already covered by baseline parents")
 
 
 def main() -> int:
@@ -630,6 +636,7 @@ def main() -> int:
             "effective_new_domains_vs_baseline": merged_metrics["effective_new_domains_vs_baseline"],
             "new_domains_not_covered_by_baseline_parent": merged_metrics["unique_not_covered_by_baseline_parent"],
             "candidate_rules_broadening_existing_baseline_scope": merged_metrics["candidate_rules_broadening_existing_baseline_scope"],
+            "new_bare_anchor_rules_with_unbounded_matching": merged_metrics["new_bare_anchor_rules_with_unbounded_matching"],
             "baseline_block_domains_affected_by_candidate_parent_rules": merged_metrics["baseline_block_domains_affected_by_candidate_parent_rules"],
             "new_candidate_blocks_overlapping_baseline_exceptions": merged_metrics["new_candidate_blocks_overlapping_baseline_exceptions"],
             "essential_fixture_hits": merged_metrics["essential_fixture_hits"],
@@ -730,7 +737,8 @@ def main() -> int:
 | Effective new domains after baseline coverage | {merged_metrics['effective_new_domains_vs_baseline']:,} |
 | New domains not already covered by a baseline parent rule | {merged_metrics['unique_not_covered_by_baseline_parent']:,} |
 | Candidate rules that broaden existing baseline scope | {merged_metrics['candidate_rules_broadening_existing_baseline_scope']:,} |
-| Baseline block domains affected by candidate parent rules | {merged_metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
+| New bare-anchor rules with unbounded matching | {merged_metrics['new_bare_anchor_rules_with_unbounded_matching']:,} |
+| Baseline block domains newly covered by candidate parent rules | {merged_metrics['baseline_block_domains_affected_by_candidate_parent_rules']:,} |
 | Candidate blocks overlapping baseline exceptions (all source rules) | {merged_metrics['candidate_blocks_overlapping_baseline_exceptions']:,} |
 | New candidate blocks overlapping baseline exceptions | {merged_metrics['new_candidate_blocks_overlapping_baseline_exceptions']:,} |
 | Candidate exceptions overlapping baseline blocks | {merged_metrics['candidate_exceptions_overlapping_baseline_blocks']:,} |
