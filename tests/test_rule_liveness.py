@@ -352,6 +352,20 @@ class RuleLivenessTests(unittest.TestCase):
             )
 
 
+    def test_resolver_endpoint_rejects_invalid_doh_and_dot_shapes(self):
+        for endpoint in (
+            "https://dns.example.test",
+            "tls://dns.example.test:853/dns-query",
+            "tls://dns.example.test:99999",
+        ):
+            with self.subTest(endpoint=endpoint):
+                row = observation()
+                row["resolver_endpoint"] = endpoint
+                with self.assertRaisesRegex(ValueError, "safe HTTPS DoH or pathless TLS DoT"):
+                    mod.validate_observations(
+                        {"schema_version": 1, "observations": [row]}, NOW
+                    )
+
     def test_resolver_endpoint_must_be_safe_tls_url(self):
         row = observation()
         row["resolver_endpoint"] = "https://user:pass@dns.example.test/dns-query"
