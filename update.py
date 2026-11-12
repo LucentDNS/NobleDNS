@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.0"
+VERSION_BASE = "1.1.0"
 MAX_RULES = 500_000
 def filter_header(version: str) -> str:
     """AdGuard-compatible metadata tied to the build version."""
