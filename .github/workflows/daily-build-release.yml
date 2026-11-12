@@ -121,6 +121,7 @@ jobs:
           test -s "$OUT/validation-report.txt"
           test -s "$OUT/allowlist-active.txt"
           test -s "$OUT/parser-exclusions.csv"
+          test -s "$OUT/badfilter-audit.csv"
           test -s "$OUT/LICENSE"
           test -s "$OUT/THIRD-PARTY-NOTICES.md"
           test -s "$OUT/licenses/GPL-3.0.txt"
@@ -159,6 +160,20 @@ jobs:
               "preserved; matches subdomains only, not the apex domain"
           ), "Leading-dot DNS semantics missing from manifest policy"
           assert manifest.get("syntax_audit", {}).get("total") == manifest.get("blocking_rules"), "Syntax audit total differs from blocking rule count"
+          badfilter = manifest.get("badfilter_audit", {})
+          badfilter_status_total = sum(
+              badfilter.get(key, 0)
+              for key in ("applied", "already_applied", "target_not_found", "unsupported")
+          )
+          assert badfilter.get("directives") == badfilter_status_total, "Badfilter audit counts are inconsistent"
+          import csv
+          with Path("build-output/latest/badfilter-audit.csv").open(encoding="utf-8-sig", newline="") as handle:
+              badfilter_rows = list(csv.DictReader(handle))
+          assert len(badfilter_rows) == badfilter.get("directives"), "Badfilter audit artifact count differs from manifest"
+          for row in badfilter_rows:
+              if row["status"] == "applied":
+                  assert row["target_rule"] not in published_rules, "Applied badfilter target remains in subscription"
+
           assert manifest.get("active_exception_rules", 0) == len([line for line in subscription.splitlines() if line.startswith("@@")]), "Active exception count differs from manifest"
           assert manifest.get("main_subscription_rules") == manifest.get("blocking_rules", 0) + manifest.get("active_exception_rules", 0), "Main subscription rule counts are inconsistent"
           active_allowlist = Path("build-output/latest/allowlist-active.txt").read_text(encoding="utf-8").splitlines()
@@ -218,7 +233,7 @@ jobs:
               else ""
           )
 
-          audit_paths = ("syntax-audit.json", "syntax-review.csv")
+          audit_paths = ("syntax-audit.json", "syntax-review.csv", "badfilter-audit.csv")
           audit_changed = any(
               not (Path("dist") / name).exists()
               or hashlib.sha256((Path("build-output/latest") / name).read_bytes()).hexdigest()
