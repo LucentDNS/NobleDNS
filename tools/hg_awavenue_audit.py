@@ -336,14 +336,12 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
     parent_covered_rules = {}
     effective_new_rules = set()
     for rule in candidate_rules - exact_rule_overlap:
-        match = RULE_RE.fullmatch(rule)
-        if match.group("caret"):
-            parents = baseline_parent_matches(rule, baseline, baseline_index["bare_matcher"])
-            if parents:
-                parent_covered_rules[rule] = parents
-                continue
-        # Bare anchors have no hostname-end boundary. A caret-bounded rule at
-        # the same domain does not cover their prefix-collision scope.
+        parents = baseline_parent_matches(rule, baseline, baseline_index["bare_matcher"])
+        if parents:
+            parent_covered_rules[rule] = parents
+            continue
+        # A caret-bounded baseline rule cannot cover a bare candidate's
+        # prefix-collision scope; only a matching baseline bare anchor can.
         effective_new_rules.add(rule)
 
     effective_new_domains = {rule_domain(rule) for rule in effective_new_rules}
@@ -555,15 +553,17 @@ def self_test() -> None:
 
     baseline = parse_snapshot(
         "baseline-test",
-        b"||example.com^\n||x.newparent.example.net^\n||bare.example.com^\n"
+        b"||example.com^\n||x.newparent.example.net^\n||bare.example.com^\n||parent.example.org\n"
     )
     candidate = parse_snapshot(
         "candidate-test",
-        b"||example.com^\n||newparent.example.net^\n||redundant.example.com^\n||bare.example.com\n"
+        b"||example.com^\n||newparent.example.net^\n||redundant.example.com^\n||bare.example.com\n||child.parent.example.org\n"
     )
     metrics = source_metrics(candidate, baseline, [], [])
     if metrics["candidate_rules_broadening_existing_baseline_scope"] != 2:
         raise AssertionError("scope-expansion metric must count a new bare-anchor scope and a new parent rule")
+    if metrics["effective_new_rules_vs_baseline"] != 2:
+        raise AssertionError("baseline bare parents must cover descendant bare anchors, but caret rules must not")
     if metrics["baseline_block_domains_affected_by_candidate_parent_rules"] != 1:
         raise AssertionError("scope-expansion metric must count only baseline domains not already covered by baseline parents")
 
