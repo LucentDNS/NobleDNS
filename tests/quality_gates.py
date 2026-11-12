@@ -26,6 +26,8 @@ RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)
 LEADING_DOT_RULE_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 EXCEPTION_SUBDOMAIN_END_RE = re.compile(r"^@@\|\|(?P<domain>[^\^/$|]+)\^\|$")
 EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
+BLOCK_SUBDOMAIN_END_RE = re.compile(r"^\|\|(?P<domain>[^\^/$|]+)\^\|$")
+BLOCK_EXACT_HOST_RE = re.compile(r"^\|(?P<domain>[^\^/$|]+)\^(?P<end>\|)?$")
 
 
 def read_domains(path: Path) -> list[str]:
@@ -59,6 +61,15 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             match = EXCEPTION_EXACT_END_RE.fullmatch(line)
             if match:
                 exception_form = "exact_hostname"
+        block_form = None
+        if not match:
+            match = BLOCK_SUBDOMAIN_END_RE.fullmatch(line)
+            if match:
+                block_form = "domain_and_subdomains_end"
+        if not match:
+            match = BLOCK_EXACT_HOST_RE.fullmatch(line)
+            if match:
+                block_form = "exact_hostname"
         if not match:
             match = LEADING_DOT_RULE_RE.fullmatch(line)
             leading_dot = bool(match)
@@ -83,6 +94,10 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             exceptions.add("|" + domain + "^|")
         elif is_exception:
             exceptions.add(domain + "^")
+        elif block_form == "domain_and_subdomains_end":
+            blocks.add("||" + domain + "^|")
+        elif block_form == "exact_hostname":
+            blocks.add("|" + domain + "^" + ("|" if match.groupdict().get("end") else ""))
         elif leading_dot:
             blocks.add("." + domain + ("^" if has_caret else ""))
         else:
@@ -98,6 +113,8 @@ def covers(rule: str, hostname: str) -> bool:
         return hostname == domain or hostname.endswith("." + domain)
     if rule.startswith("|") and not rule.startswith("||") and rule.endswith("^|"):
         return hostname == rule[1:-2]
+    if rule.startswith("|") and not rule.startswith("||") and rule.endswith("^"):
+        return hostname == rule[1:-1]
     if rule.startswith("."):
         domain = rule[1:].removesuffix("^")
         return hostname != domain and hostname.endswith("." + domain)
@@ -149,6 +166,14 @@ class QualityGateTests(unittest.TestCase):
         self.assertTrue(is_blocked("www.example.com", blocks, set()))
         self.assertTrue(is_blocked("deep.www.example.com", blocks, set()))
         self.assertFalse(is_blocked("notexample.com", blocks, set()))
+
+    def test_documented_end_anchored_block_forms_keep_exact_scope(self) -> None:
+        blocks = {"||sub.example.com^|", "|exact.example.com^"}
+        self.assertTrue(is_blocked("sub.example.com", blocks, set()))
+        self.assertTrue(is_blocked("www.sub.example.com", blocks, set()))
+        self.assertFalse(is_blocked("sub.example.com.evil.test", blocks, set()))
+        self.assertTrue(is_blocked("exact.example.com", blocks, set()))
+        self.assertFalse(is_blocked("www.exact.example.com", blocks, set()))
 
     def test_active_exception_count_stays_bounded(self) -> None:
         """Documented upstream exceptions are retained, with headroom for abnormal surges."""
