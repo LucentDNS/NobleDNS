@@ -11,6 +11,7 @@ class ConfigTests(unittest.TestCase):
     def test_project_version_is_stable_semver(self):
         import re
         self.assertRegex(mod.VERSION_BASE, r"^\d+\.\d+\.\d+$")
+        self.assertIn(f"! Version: {mod.VERSION_BASE}", mod.FILTER_HEADER)
 
     def test_exactly_two_approved_sources(self):
         cfg = mod.load_config()
