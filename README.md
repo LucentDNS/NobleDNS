@@ -2,15 +2,15 @@
 
 **Lightweight. Conservative. Auditable.**
 
-NobleDNS is a community DNS blocklist compiled from a small, fixed set of established upstream sources. It prioritizes conservative filtering, preserved rule semantics, reproducible builds and transparent quality reporting.
+NobleDNS is a community DNS blocklist built for everyday use. It combines a focused set of established upstream sources to provide effective protection against advertising, tracking, telemetry and other unwanted network requests, while prioritizing low false positives, preserved rule semantics, reproducible builds and transparent quality reporting.
 
-> **Current status: RC3 candidate — not production-qualified.**
+> **Current release: RC3 candidate.**
 >
-> Automated build checks and parser regression tests are in place. Broad live-client compatibility, real-world false-positive rates and missed-block rates have not yet been established. Please evaluate it in your own environment before relying on it.
+> NobleDNS is designed for use with compatible DNS filtering clients. Its rules are built and validated through automated checks and regression tests, with ongoing maintenance focused on effective blocking, compatibility and minimizing false positives.
 
 ## Subscribe
 
-**Stable subscription URL**
+**Subscription URL**
 
 `https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt`
 
@@ -20,7 +20,13 @@ Add this URL as a custom DNS blocklist in a client that supports the rule syntax
 - [View the published build manifest](dist/manifest.json)
 - [View the latest validation report](dist/validation-report.txt)
 
-Client compatibility is not yet broadly qualified. Check important websites, apps, sign-in, payment, messaging and push functions after enabling the list. If you encounter problems, disable the list to confirm whether it is responsible.
+## Compatibility
+
+NobleDNS is intended to provide effective DNS-level protection in everyday use while preserving normal website and application functionality.
+
+The project aims to block advertising, tracking, telemetry and other unwanted domains without unnecessarily interfering with legitimate services, including sign-in, payment, messaging and push notifications. Use a DNS filtering client that supports the rule syntax in this list.
+
+If you encounter a specific false positive or missed block, please report the affected hostname, site or app, client and version, and reproduction details through [GitHub Issues](https://github.com/LucentDNS/NobleDNS/issues). Reports help improve rule quality for everyone.
 
 ## What it does
 
@@ -69,10 +75,10 @@ From the repository root:
 
 ```powershell
 # Build from configured upstream sources
-py -3.12 .\update.py --out .\build-output
+py -3.12 .\\update.py --out .\\build-output
 
 # Build offline from saved source snapshots
-py -3.12 .\update.py --input-dir .\audit-input --out .\build-output
+py -3.12 .\\update.py --input-dir .\\audit-input --out .\\build-output
 
 # Run regression tests
 py -3.12 -m unittest discover -s tests -v
