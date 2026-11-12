@@ -110,6 +110,14 @@ It does **not** map `splash-ads.cdn.unity.cn` or `splash-ads.unitychina.cn` to a
 
 This search pass did not locate first-party technical documentation that maps the specific candidate hosts `bm.alimama.cn`, `bmvip.alimama.cn`, `cb.alimama.cn`, `ad.docer.wps.cn`, `push.wps.cn` or `notify.wps.cn` to current client-side request functions. Do not treat historical community lists, hostnames, or the general existence of an advertising/push product as proof for those exact hosts. Continue to require exact endpoint observations and app-function regression evidence.
 
+## 4.6 Official WPS advertising business evidence, without endpoint attribution
+
+Kingsoft's official 2023 annual report describes its internet promotion services as displaying advertisements or clickable advertising/hyperlinks in designated areas of its websites or software, with revenue based on clicks, impressions or sales: https://ir.kingsoft.com/static-files/929cbd82-e55b-4291-b445-fce06843514f . This establishes that advertising/promotion inventory exists in the WPS software business.
+
+Kingsoft's official privacy materials also point users to a WPS Office third-party SDK sharing list: https://privacy.wps.cn/policies/sdklists/wps-office . However, the currently retrieved public text does not establish that `ad.docer.wps.cn` is a current client-side ad-delivery endpoint, nor does it map `push.wps.cn` or `notify.wps.cn` to advertising rather than notifications or document/service messaging.
+
+**Decision:** all three exact hostnames remain unapproved. The generic existence of WPS advertising inventory cannot justify blocking a broad WPS service namespace, and push/notification hostnames are especially compatibility-sensitive. Require exact client traffic capture, request-path/function attribution, and WPS document open/save, cloud sync, login, template and update regression tests before any decision.
+
 ## 5. License and provenance gate
 
 - OISD declares GPL-3.0 for its list. It is the clearest candidate source for a controlled technical evaluation, but any reused rule still needs required attribution/notices and review of third-party inputs.
