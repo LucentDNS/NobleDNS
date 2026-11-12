@@ -24,6 +24,8 @@ KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 LEADING_DOT_RULE_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+EXCEPTION_SUBDOMAIN_END_RE = re.compile(r"^@@\|\|(?P<domain>[^\^/$|]+)\^\|$")
+EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
 
 
 def read_domains(path: Path) -> list[str]:
@@ -48,6 +50,15 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             continue
         match = RULE_RE.fullmatch(line)
         leading_dot = False
+        exception_form = None
+        if not match:
+            match = EXCEPTION_SUBDOMAIN_END_RE.fullmatch(line)
+            if match:
+                exception_form = "domain_and_subdomains_end"
+        if not match:
+            match = EXCEPTION_EXACT_END_RE.fullmatch(line)
+            if match:
+                exception_form = "exact_hostname"
         if not match:
             match = LEADING_DOT_RULE_RE.fullmatch(line)
             leading_dot = bool(match)
@@ -56,9 +67,9 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             continue
 
         domain = match.group("domain").lower()
-        is_exception = bool(match.groupdict().get("exception"))
+        is_exception = bool(match.groupdict().get("exception")) or exception_form is not None
         has_caret = bool(match.group("caret"))
-        if is_exception and (not has_caret or leading_dot):
+        if is_exception and exception_form is None and not has_caret:
             invalid.append(line)
             continue
         valid, _reason = mod.valid_domain(domain)
@@ -66,7 +77,11 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             invalid.append(line)
             continue
 
-        if is_exception:
+        if exception_form == "domain_and_subdomains_end":
+            exceptions.add("||" + domain + "^|")
+        elif exception_form == "exact_hostname":
+            exceptions.add("|" + domain + "^|")
+        elif is_exception:
             exceptions.add(domain + "^")
         elif leading_dot:
             blocks.add("." + domain + ("^" if has_caret else ""))
@@ -78,6 +93,11 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
 
 def covers(rule: str, hostname: str) -> bool:
     """Model the documented DNS hostname-pattern semantics for supported rules."""
+    if rule.startswith("||") and rule.endswith("^|"):
+        domain = rule[2:-2]
+        return hostname == domain or hostname.endswith("." + domain)
+    if rule.startswith("|") and not rule.startswith("||") and rule.endswith("^|"):
+        return hostname == rule[1:-2]
     if rule.startswith("."):
         domain = rule[1:].removesuffix("^")
         return hostname != domain and hostname.endswith("." + domain)
@@ -130,11 +150,11 @@ class QualityGateTests(unittest.TestCase):
         self.assertTrue(is_blocked("deep.www.example.com", blocks, set()))
         self.assertFalse(is_blocked("notexample.com", blocks, set()))
 
-    def test_exception_count_stays_small(self) -> None:
-        """Exceptions are allow-rules; a sudden surge means the list is leaking."""
+    def test_active_exception_count_stays_bounded(self) -> None:
+        """Documented upstream exceptions are retained, with headroom for abnormal surges."""
         self.assertLessEqual(
             len(self.exceptions),
-            50,
+            250,
             f"{len(self.exceptions)} exceptions active — review upstream before publishing",
         )
 
