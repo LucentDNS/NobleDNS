@@ -38,7 +38,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Confirm audit-only workflow scope
-        run: echo "This workflow only writes bounded blob-verified offline audit reports to the isolated audit branch."
+        run: echo "This workflow only writes cached-parent offline audit reports to the isolated audit branch."
 
       - name: Set up Python
         uses: actions/setup-python@v5
