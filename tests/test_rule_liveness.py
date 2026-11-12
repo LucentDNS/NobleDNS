@@ -124,6 +124,27 @@ class RuleLivenessTests(unittest.TestCase):
         status, _ = mod.classify(rows, NOW, 30)
         self.assertEqual(status, "insufficient_nxdomain_evidence")
 
+    def test_old_nxdomain_from_one_pair_cannot_extend_recent_quorum_span(self):
+        rows = stable_nxdomain_observations()
+        rows = [
+            row for row in rows
+            if row["observed_at_utc"].startswith("2026-11-10")
+            or (
+                row["resolver"] == "cf1"
+                and row["vantage"] == "us-west"
+                and row["observed_at_utc"].startswith("2026-11-01")
+            )
+        ]
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertEqual(metrics["complete_resolver_vantage_pairs"], 6)
+        self.assertEqual(metrics["pairs_with_seven_day_complete_history"], 1)
+        self.assertEqual(metrics["observation_span_days"], 9.0)
+
     def test_nxdomain_short_window_is_not_stable(self):
         rows = mod.validate_observations({
             "schema_version": 1,
