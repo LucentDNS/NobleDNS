@@ -86,6 +86,7 @@ jobs:
           cp audit-output/candidate-domain-inventory.csv "$TARGET/"
           cp audit-output/unsupported-source-lines.csv "$TARGET/"
           cp audit-output/effective-incremental-rules.csv "$TARGET/"
+          cp audit-output/suspected-source-anomalies.csv "$TARGET/"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
