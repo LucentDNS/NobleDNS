@@ -94,13 +94,13 @@ def validate_record(record: Any, index: int, now: datetime) -> list[str]:
         if not valid:
             errors.append(f"{prefix}.hostname is invalid: {reason}")
 
-    if record["classification"] not in CLASSIFICATIONS:
+    if not isinstance(record["classification"], str) or record["classification"] not in CLASSIFICATIONS:
         errors.append(f"{prefix}.classification is not an allowed classification")
-    if record["evidence_type"] not in EVIDENCE_TYPES:
+    if not isinstance(record["evidence_type"], str) or record["evidence_type"] not in EVIDENCE_TYPES:
         errors.append(f"{prefix}.evidence_type is not an allowed evidence type")
-    if record["expected_policy"] not in POLICIES:
+    if not isinstance(record["expected_policy"], str) or record["expected_policy"] not in POLICIES:
         errors.append(f"{prefix}.expected_policy is not an allowed policy")
-    if record["confidence"] not in CONFIDENCE:
+    if not isinstance(record["confidence"], str) or record["confidence"] not in CONFIDENCE:
         errors.append(f"{prefix}.confidence is not an allowed confidence")
     for field in ("evidence_reference", "service", "affected_function", "review_notes"):
         value = record[field]
@@ -138,10 +138,10 @@ def validate_record(record: Any, index: int, now: datetime) -> list[str]:
     if expires and expires <= now:
         errors.append(f"{prefix} evidence has expired; revalidate before using this record")
 
-    classification = record["classification"]
-    evidence_type = record["evidence_type"]
-    policy = record["expected_policy"]
-    confidence = record["confidence"]
+    classification = record["classification"] if isinstance(record["classification"], str) else ""
+    evidence_type = record["evidence_type"] if isinstance(record["evidence_type"], str) else ""
+    policy = record["expected_policy"] if isinstance(record["expected_policy"], str) else ""
+    confidence = record["confidence"] if isinstance(record["confidence"], str) else ""
 
     if classification == "unresolved" and policy != "observe_only":
         errors.append(f"{prefix}: unresolved records must use observe_only policy")
