@@ -410,7 +410,7 @@ Actions 结果：
 
 每日 CI 会使用空的 `tests/fixtures/dns-liveness-observations.json` 运行离线审计，以验证工具和来源快照哈希检查。它不执行 DNS 查询，也不代表已经检查了所有规则的实时状态。当前没有经过审核的真实 DNS 观测语料，因此不能声称已发现或清理了多少死域。
 
-如需进行受控审查，必须从至少三个独立 DNS 运营方、至少两个真实不同的网络观测点采集 A/AAAA 结果，并覆盖至少七天；只允许使用脱敏、最小化的受控观测，不得上传家庭、客户、员工或设备 DNS 日志。使用同一次构建产生的规则文件和 source snapshots：
+如需进行受控审查，先用 `tools/collect_dns_liveness.py` 对明确列出的少量样本采集 A/AAAA、CNAME、DNSSEC AD 和响应码。工具默认最多 20 个域名、硬上限 50 个；不会扫描完整订阅。示例解析器配置为 Cloudflare、Google Public DNS 和 Quad9 无威胁拦截服务。必须从至少两个真实不同的网络观测点分别运行，且独立核验运营方与地域；工具中的标签是自报信息，不能证明独立性。观测应覆盖至少七天；只允许使用脱敏、最小化的受控观测，不得上传家庭、客户、员工或设备 DNS 日志。具体命令和隐私限制见 [规则生命周期与死域审查](RULE-LIFECYCLE.md)。然后使用同一次构建产生的规则文件和 source snapshots：
 
 ```powershell
 py -3.12 .\tools\audit_rule_liveness.py `
