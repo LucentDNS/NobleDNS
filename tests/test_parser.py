@@ -125,7 +125,7 @@ class ParserTests(unittest.TestCase):
 
     def test_badfilter_directive_targets_exact_supported_rule(self):
         blocks, exceptions, rejected, rows, directives = mod.parse_source(
-            b"||linksprf.com^\\n||linksprf.com^$badfilter\\n||linksprf.com\\n",
+            b"||linksprf.com^\n||linksprf.com^$badfilter\n||linksprf.com\n",
             "adguard_dns",
             min_blocks=1,
         )
@@ -140,7 +140,7 @@ class ParserTests(unittest.TestCase):
 
     def test_badfilter_unsupported_target_is_audited_and_excluded(self):
         blocks, exceptions, rejected, rows, directives = mod.parse_source(
-            b"||keep.example.com^\\nwykop.pl$badfilter\\n",
+            b"||keep.example.com^\nwykop.pl$badfilter\n",
             "adguard_dns",
             min_blocks=1,
         )
