@@ -166,7 +166,6 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         if not line or line.startswith(("!", "#", "[", "//")):
             continue
         kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
-        leading_dot = False
         if not match:
             if line.startswith("."):
                 rejected["unsupported_leading_dot_dns_syntax"] += 1
