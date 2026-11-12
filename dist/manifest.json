@@ -3,7 +3,8 @@
   "version": "1.0.3",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-12T05:07:02.969111+00:00",
+  "built_at_utc": "2026-11-12T05:21:23.048147+00:00",
+  "subscription_last_modified": "2026-11-12",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -80,7 +81,7 @@
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "341d5b697b83030b68ed72290115c4084706fbb614b5352643720c783dee579e",
+  "main_subscription_sha256": "f21b0773dec58ae69e9e71111141525a8f8388e36cb53ba585b024b400052cc8",
   "syntax_audit": {
     "total": 303625,
     "forms": {

@@ -8,8 +8,9 @@ Merged block rules: 303,625
 Common rules: 94,273
 Active exception rules: 11
 Main subscription rules: 303,636
+Subscription last modified (UTC): 2026-11-12
 Rule cap: 303,636/500,000
-Main SHA256: 341d5b697b83030b68ed72290115c4084706fbb614b5352643720c783dee579e
+Main SHA256: f21b0773dec58ae69e9e71111141525a8f8388e36cb53ba585b024b400052cc8
 
 Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.
 Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests.

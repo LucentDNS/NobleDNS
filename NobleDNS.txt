@@ -4,6 +4,10 @@
 ! Version: 1.0.3
 ! Expires: 1 day
 ! Sources: AdGuard DNS Filter, HaGeZi Multi Normal
+! Content: Listed domains are included as blocking targets only.
+! Last modified: 2026-11-12 (UTC)
+! Blocked domains: 303,625
+
 @@||ad.10010.com^
 @@||ad.abchina.com^
 @@||ad.kazakinfo.com^
