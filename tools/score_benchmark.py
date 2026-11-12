@@ -2,7 +2,7 @@
 """Score a reviewed hostname corpus against a simple AdGuard DNS subscription.
 
 This is an offline rule-semantics evaluator, not a live DNS/client test.
-Only ||domain^, ||domain and @@||domain^ are accepted.
+Supported forms: ||domain^, ||domain, .domain^, .domain and @@||domain^.
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from datetime import date
 from pathlib import Path
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+LEADING_DOT_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 CATEGORIES = {"ad", "tracking", "telemetry", "threat", "essential", "legitimate"}
 FIELDS = [
     "hostname", "category", "expected", "evidence_ref", "evidence_summary",
@@ -105,6 +106,10 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
         if not line or line.startswith(("!", "#")):
             continue
         match = RULE_RE.fullmatch(line)
+        leading_dot = False
+        if not match:
+            match = LEADING_DOT_RE.fullmatch(line)
+            leading_dot = bool(match)
         if not match:
             unsupported.append(f"line {line_no}: {line}")
             continue
@@ -112,20 +117,38 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
         if not valid_hostname(domain):
             unsupported.append(f"line {line_no}: invalid hostname in {line}")
             continue
-        is_exception = bool(match.group("exception"))
+        is_exception = bool(match.groupdict().get("exception"))
         has_caret = bool(match.group("caret"))
         if is_exception and not has_caret:
             unsupported.append(f"line {line_no}: unsupported exception {line}")
         elif is_exception:
-            exceptions.add(domain)
+            exceptions.add("@@||" + domain + "^")
+        elif leading_dot:
+            blocks.add("." + domain + ("^" if has_caret else ""))
         else:
-            blocks.add(domain)
+            blocks.add("||" + domain + ("^" if has_caret else ""))
     return blocks, exceptions, unsupported
 
 
+def rule_matches(hostname: str, rule: str) -> bool:
+    if rule.startswith("@@"):
+        rule = rule[2:]
+    if rule.startswith("."):
+        domain = rule[1:].removesuffix("^")
+        return hostname != domain and hostname.endswith("." + domain)
+    if not rule.startswith("||"):
+        return False
+    pattern = rule[2:]
+    if pattern.endswith("^"):
+        domain = pattern[:-1]
+        return hostname == domain or hostname.endswith("." + domain)
+    # Without ^, || anchors the pattern at a hostname label start but does
+    # not assert the end of the hostname.
+    return hostname.startswith(pattern) or ("." + pattern) in hostname
+
+
 def matches(hostname: str, rules: set[str]) -> list[str]:
-    labels = hostname.split(".")
-    return sorted({".".join(labels[i:]) for i in range(len(labels))} & rules)
+    return sorted(rule for rule in rules if rule_matches(hostname, rule))
 
 
 def decide(hostname: str, blocks: set[str], exceptions: set[str]) -> tuple[str, list[str]]:
