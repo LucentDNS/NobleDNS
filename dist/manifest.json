@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-12T04:14:28.991200+00:00",
+  "built_at_utc": "2026-11-12T04:22:54.759207+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -67,14 +67,20 @@
     }
   },
   "blocking_rules": 303652,
+  "active_exception_rules": 11,
+  "active_exception_rules_by_source": {
+    "adguard_dns": 11,
+    "hagezi_normal": 0
+  },
+  "main_subscription_rules": 303663,
   "common_rules": 94273,
   "source_only_rules": {
     "adguard_dns": 95470,
     "hagezi_normal": 113909
   },
-  "exception_rules_separate": 11,
+  "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "013b616f743b03a4e7f200a9f952cdcafc9b3389a78a7362f0587c6a8dd0d3be",
+  "main_subscription_sha256": "35ecfa6188c41f7db808d3c42c9b3c279d1fe7535059be5466157a0385056042",
   "syntax_audit": {
     "total": 303652,
     "forms": {
@@ -136,8 +142,8 @@
     }
   },
   "policy": {
-    "main_list": "block-only",
-    "exceptions": "separate review artifact; not active in main list",
+    "main_list": "blocking-and-exception",
+    "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review",
     "complex_syntax": "excluded unless semantic equivalence is proven",
     "bare_domain_anchor": "preserved unchanged",
     "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression",

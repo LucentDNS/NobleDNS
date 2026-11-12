@@ -1,4 +1,5 @@
-! Source exceptions for manual review only; not active in dns-filter.txt
+! Simple upstream exception rules active in dns-filter.txt; complex exception syntax remains excluded.
+! Source: adguard_dns
 @@||ad.10010.com^
 @@||ad.abchina.com^
 @@||ad.kazakinfo.com^
