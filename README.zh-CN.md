@@ -43,6 +43,7 @@ v1.0.3 基线快照，核验日期：**2026-11-12（UTC）**。
 - [查看旧地址兼容文件](https://github.com/LucentDNS/NobleDNS/blob/main/NobleDNS.txt)
 - [构建清单](dist/manifest.json)
 - [最新验证报告](dist/validation-report.txt)
+- [上游停用规则指令审计](dist/badfilter-audit.csv)
 - [当前生效的上游例外规则](dist/allowlist-active.txt)
 - [正式版本发布页](https://github.com/LucentDNS/NobleDNS/releases)
 
