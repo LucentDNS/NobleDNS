@@ -244,6 +244,9 @@ def fetch(url: str, proxy: str | None) -> bytes:
     raise RuntimeError(f"Download failed after 5 attempts: {url}; last error: {last}")
 
 
+MAX_ABSOLUTE_RULE_DELTA = 3000
+
+
 def check_drift(current: dict, current_rules: set[str], previous_manifest: Path | None, max_percent: float, allow_large: bool = False):
     if allow_large or not previous_manifest or not previous_manifest.exists():
         return []
@@ -265,7 +268,13 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
             removed = len(old_rules - current_rules)
             add_pct = added * 100.0 / len(old_rules)
             remove_pct = removed * 100.0 / len(old_rules)
-            if add_pct > max_percent or remove_pct > max_percent:
+            if added > MAX_ABSOLUTE_RULE_DELTA or removed > MAX_ABSOLUTE_RULE_DELTA:
+                changes.append(
+                    f"main rules changed: +{added:,} ({add_pct:.2f}%), "
+                    f"-{removed:,} ({remove_pct:.2f}%); absolute limit "
+                    f"{MAX_ABSOLUTE_RULE_DELTA:,} additions/removals"
+                )
+            elif add_pct > max_percent or remove_pct > max_percent:
                 changes.append(f"main rules changed: +{added:,} ({add_pct:.2f}%), -{removed:,} ({remove_pct:.2f}%); limit {max_percent:.2f}%")
     if changes:
         raise RuntimeError("Source/rule drift gate failed; inspect upstream changes before publishing:\n" + "\n".join(changes))
