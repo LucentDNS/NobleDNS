@@ -108,9 +108,9 @@ class ParserTests(unittest.TestCase):
 
     def test_leading_dot_rules_are_rejected(self):
         blocks, _, rejected, rows = self.parse(
-            ".ads.example.com^\\n"
-            ".bare.example.com\\n"
-            "||ok.example.com^\\n"
+            ".ads.example.com^\n"
+            ".bare.example.com\n"
+            "||ok.example.com^\n"
         )
         self.assertEqual(blocks, {"||ok.example.com^"})
         self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 2)
