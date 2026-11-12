@@ -7,6 +7,7 @@ Supported forms: ||domain^, ||domain and @@||domain^.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import csv
 import json
 import re
@@ -32,6 +33,16 @@ def valid_hostname(value: str) -> bool:
         and re.fullmatch(r"[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?", label)
         for label in labels
     )
+
+
+def file_identity(path: Path) -> dict[str, str | int]:
+    """Return immutable identity metadata for a benchmark input artifact."""
+    data = path.read_bytes()
+    return {
+        "path": str(path),
+        "bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+    }
 
 
 def load_corpus(path: Path, today: date) -> tuple[list[dict], list[str]]:
@@ -228,8 +239,11 @@ def main() -> int:
             print("No independently reviewed, current, high-confidence corpus records; refusing to produce a score.", file=sys.stderr)
             return 2
         result = score(rows, blocks, exceptions)
-        result["rules_file"] = str(args.rules)
-        result["corpus_file"] = str(args.corpus)
+        result["artifacts"] = {
+            "rules": file_identity(args.rules),
+            "corpus": file_identity(args.corpus),
+            "scorer": file_identity(Path(__file__).resolve()),
+        }
         result["evaluation_date"] = today.isoformat()
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
