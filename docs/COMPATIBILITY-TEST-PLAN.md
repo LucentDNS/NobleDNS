@@ -67,8 +67,8 @@ Do not add these synthetic rules to the public subscription.
 | `||apex.nobledns.test^` | apex | Block |
 | `||apex.nobledns.test^` | `www.apex.nobledns.test` | Block |
 | `||apex.nobledns.test^` | `deep.www.apex.nobledns.test` | Block |
-| `||bare.nobledns.test` | apex | Record observed result |
-| `||bare.nobledns.test` | `child.bare.nobledns.test` | Record observed result |
+| `||bare.nobledns.test` | apex | Block |
+| `||bare.nobledns.test` | `child.bare.nobledns.test` | Block |
 | `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Expected to match: the hostname starts with the anchored pattern and no `^` end separator is present; verify in client |
 | `||bare.nobledns.test` | `notbare.nobledns.test` | Must not be blocked by a hostname-start anchor |
 | `.subonly.nobledns.test^` | apex | Allow |
