@@ -23,6 +23,8 @@ def filter_header(version: str) -> str:
         "! Expires: 1 day\n"
         "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
     )
+
+
 MIN_SOURCE_BYTES = 100_000
 MIN_SOURCE_BLOCKS = 10_000
 MAX_SOURCE_BYTES = 50 * 1024 * 1024
@@ -30,8 +32,6 @@ TIMEOUT = 120
 BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
-LEADING_DOT_CARET_RE = re.compile(r"^\.([^\^/$|]+)\^$")
-LEADING_DOT_BARE_RE = re.compile(r"^\.([^\^/$|]+)$")
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
