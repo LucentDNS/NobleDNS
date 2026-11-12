@@ -60,7 +60,8 @@ The project enforces a 500,000-rule ceiling, source-drift checks and automated r
 
 ## Quality and documentation
 
-- [Exception rule review register](docs/EXCEPTION-REVIEW.md)- [Quality and maintenance policy](docs/QUALITY.md)
+- [Exception rule review register](docs/EXCEPTION-REVIEW.md)
+- [Quality and maintenance policy](docs/QUALITY.md)
 - [DNS client compatibility test plan](docs/COMPATIBILITY-TEST-PLAN.md)
 - [Real-world benchmark protocol](docs/REAL-WORLD-BENCHMARK-PLAN.md)
 - [Single-edition policy](docs/EDITION-POLICY.md)
