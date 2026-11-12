@@ -38,6 +38,23 @@ def response(host="ads.example.com", qtype="A", answer=None, rcode=0, cname=None
     return struct.pack("!HHHHHH", query_id, flags, 1, answer_count, authority_count, 0) + question + records + authority
 
 
+def response_records(records, host="ads.example.com", qtype="A"):
+    query_id = 0x1234
+    question = mod.encode_qname(host) + struct.pack("!HH", mod.QTYPE[qtype], 1)
+    encoded = b""
+    for owner, rrtype, value in records:
+        if rrtype in (1, 28):
+            raw = __import__("ipaddress").ip_address(value).packed
+        else:
+            raw = mod.encode_qname(value)
+        encoded += (
+            mod.encode_qname(owner)
+            + struct.pack("!HHIH", rrtype, 1, 60, len(raw))
+            + raw
+        )
+    return struct.pack("!HHHHHH", query_id, 0x8180, 1, len(records), 0, 0) + question + encoded
+
+
 class DNSLivenessCollectorTests(unittest.TestCase):
     def test_build_query_sets_dnssec_ok_edns_flag(self):
         query_id, packet = mod.build_query("ads.example.com", "A", 0x1234)
@@ -56,6 +73,22 @@ class DNSLivenessCollectorTests(unittest.TestCase):
             response(qtype="AAAA", answer="2001:db8::8"), 0x1234, "AAAA", "ads.example.com"
         )
         self.assertEqual(parsed["answers"], ["2001:db8::8"])
+
+    def test_follow_only_cname_chain_reachable_from_query(self):
+        packet = response_records([
+            ("ads.example.com", 5, "edge.example.net"),
+            ("edge.example.net", 1, "192.0.2.22"),
+        ])
+        parsed = mod.parse_response(packet, 0x1234, "A", "ads.example.com")
+        self.assertEqual(parsed["cname_chain"], ["edge.example.net"])
+        self.assertEqual(parsed["answers"], ["192.0.2.22"])
+
+    def test_ignore_unrelated_address_records_in_answer_section(self):
+        packet = response_records([
+            ("other.example.com", 1, "192.0.2.99"),
+        ])
+        parsed = mod.parse_response(packet, 0x1234, "A", "ads.example.com")
+        self.assertEqual(parsed["answers"], [])
 
     def test_parse_cname_without_address(self):
         parsed = mod.parse_response(
