@@ -158,6 +158,18 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
                 authority_soa_zones.append(owner)
         offset = end
 
+    cname_targets: dict[str, set[str]] = {}
+    address_owners: set[str] = set()
+    for owner, rrtype, value in answer_records:
+        if rrtype == 5:
+            cname_targets.setdefault(owner, set()).add(value)
+        else:
+            address_owners.add(owner)
+    if any(len(targets) > 1 for targets in cname_targets.values()):
+        raise ValueError("DNS response contains conflicting CNAME targets")
+    if set(cname_targets) & address_owners:
+        raise ValueError("DNS response owner contains both CNAME and address data")
+
     # Only follow CNAMEs reachable from the queried owner; unrelated records
     # in the answer section must never be attributed to the requested hostname.
     reachable = {hostname}
