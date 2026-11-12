@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "resolvers": [
+    {
+      "id": "dnspod-public-dns",
+      "operator": "Tencent-DNSPod",
+      "transport": "doh",
+      "endpoint": "https://doh.pub/dns-query"
+    },
+    {
+      "id": "cloudflare-doh",
+      "operator": "Cloudflare",
+      "transport": "doh",
+      "endpoint": "https://cloudflare-dns.com/dns-query"
+    },
+    {
+      "id": "google-public-dns",
+      "operator": "Google",
+      "transport": "doh",
+      "endpoint": "https://dns.google/dns-query"
+    },
+    {
+      "id": "quad9-unfiltered-dot",
+      "operator": "Quad9",
+      "transport": "dot",
+      "endpoint": "tls://dns10.quad9.net:853"
+    }
+  ]
+}

@@ -155,12 +155,13 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 ```powershell
 py -3.12 -m py_compile .\update.py
 py -3.12 -m unittest discover -s tests -v
+py -3.12 .\tools\validate_evidence_corpus.py
 git diff --check
 ```
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
+证据语料验证器必须通过；语料为空是当前预期状态，不代表已完成真实域名分类。新增或更新记录时，必须附带可追溯证据、审查日期、置信度和预期策略。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
 
 #### 添加回归用例
 
@@ -402,6 +403,24 @@ Actions 结果：
 发布情况：
 备注：
 ```
+
+## 13. 规则死域与生命周期审查
+
+规则返回 NXDOMAIN 不等于可以删除。可能原因包括区域 DNS 差异、短期解析故障、NODATA、sinkhole、域名过期或重新注册。具体状态和处理门槛见 [规则生命周期与死域审查](RULE-LIFECYCLE.md)。
+
+每日 CI 会使用空的 `tests/fixtures/dns-liveness-observations.json` 运行离线审计，以验证工具和来源快照哈希检查。它不执行 DNS 查询，也不代表已经检查了所有规则的实时状态。当前没有经过审核的真实 DNS 观测语料，因此不能声称已发现或清理了多少死域。
+
+如需进行受控审查，先用 `tools/collect_dns_liveness.py` 对明确列出的少量样本采集 A/AAAA、CNAME、DNSSEC AD 和响应码。工具默认最多 20 个域名、硬上限 50 个；不会扫描完整订阅。示例解析器配置为 Cloudflare、Google Public DNS 和 Quad9 无威胁拦截服务。必须从至少两个真实不同的网络观测点分别运行，且独立核验运营方与地域；工具中的标签是自报信息，不能证明独立性。观测应覆盖至少七天；只允许使用脱敏、最小化的受控观测，不得上传家庭、客户、员工或设备 DNS 日志。具体命令和隐私限制见 [规则生命周期与死域审查](RULE-LIFECYCLE.md)。然后使用同一次构建产生的规则文件和 source snapshots：
+
+```powershell
+py -3.12 .\tools\audit_rule_liveness.py `
+  --rules .\build-output\latest\dns-filter.txt `
+  --observations .\private-audit\dns-liveness-observations.json `
+  --source-dir .\build-output\latest\sources `
+  --output-dir .\private-audit\liveness-report
+```
+
+重点审查 `stable_nxdomain_candidate_manual_review`，但它只代表满足筛查门槛，不代表域名无害或应当放行。工具固定报告 `automatic_removals=0`；任何移除必须经过来源、域名状态、sinkhole/重新注册风险、业务影响、第二维护者复核、回归测试和回滚审查。
 
 ## 12. 项目质量声明
 

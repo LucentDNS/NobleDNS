@@ -27,9 +27,18 @@ Create controlled records for:
 - `bare.nobledns.test`
 - `child.bare.nobledns.test`
 - `bare.nobledns.test.evil.test`
+- `x.bare.nobledns.test.evil.test`
 - `notbare.nobledns.test`
+- `exception-parent.nobledns.test`
+- `allow.exception-parent.nobledns.test`
+- `deep.allow.exception-parent.nobledns.test`
+- `allowed.nobledns.test`
+- `child.allowed.nobledns.test`
 - `subonly.nobledns.test`
 - `child.subonly.nobledns.test`
+- `subonly-bare.nobledns.test`
+- `child.subonly-bare.nobledns.test`
+- `child.subonly-bare.nobledns.test.evil.test`
 
 The authoritative server should return a known test address for every name in both zones. This separates filtering behavior from upstream resolution failures.
 
@@ -40,8 +49,17 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ```text
 ||apex.nobledns.test^
 ||bare.nobledns.test
+||exception-parent.nobledns.test^
+@@||allow.exception-parent.nobledns.test^
+||child.allowed.nobledns.test^
+@@||allowed.nobledns.test^
 .subonly.nobledns.test^
+.subonly-bare.nobledns.test
 ```
+
+The exception cases deliberately use only the project's currently supported simple exception form, `@@||domain^`. Do not add modifiers such as `$important`; the production parser excludes them, and AdGuard documents that `$important` can override ordinary exception rules. See the [AdGuard DNS filtering syntax reference](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
+
+The two leading-dot rules are compatibility probes only, not production syntax. An archived 2023 AdGuard Android/AdGuard Home article documents `.example.org` as subdomains-only, while the current DNS-specific reference no longer lists that pattern. Test both caret and non-caret variants on the exact supported client versions before considering any parser change. See the [archived AdGuard KB](https://github.com/AdguardTeam/AdguardKnowledgeBase/blob/master/01.general/19.dns-filtering-syntax/docs.en.md).
 
 Do not add these synthetic rules to the public subscription.
 
@@ -52,16 +70,28 @@ Do not add these synthetic rules to the public subscription.
 | `||apex.nobledns.test^` | apex | Block |
 | `||apex.nobledns.test^` | `www.apex.nobledns.test` | Block |
 | `||apex.nobledns.test^` | `deep.www.apex.nobledns.test` | Block |
-| `||bare.nobledns.test` | apex | Record observed result |
-| `||bare.nobledns.test` | `child.bare.nobledns.test` | Record observed result |
-| `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Must not be assumed safe; record observed result |
+| `||bare.nobledns.test` | apex | Block |
+| `||bare.nobledns.test` | `child.bare.nobledns.test` | Block |
+| `||bare.nobledns.test` | `bare.nobledns.test.evil.test` | Potential match: no explicit hostname-end boundary; record actual client result |
+| `||bare.nobledns.test` | `x.bare.nobledns.test.evil.test` | Potential match after a subdomain label; record actual client result |
 | `||bare.nobledns.test` | `notbare.nobledns.test` | Must not be blocked by a hostname-start anchor |
+| `||exception-parent.nobledns.test^` | apex | Block |
+| `||exception-parent.nobledns.test^` | `allow.exception-parent.nobledns.test` | Would block in isolation; expected final result is Allow after the narrower exception |
+| `@@||allow.exception-parent.nobledns.test^` | `deep.allow.exception-parent.nobledns.test` | Allow |
+| `||child.allowed.nobledns.test^` | `child.allowed.nobledns.test` | Would block in isolation; expected final result is Allow after the parent exception |
+| `@@||allowed.nobledns.test^` | apex | Allow |
+| `@@||allowed.nobledns.test^` | `child.allowed.nobledns.test` | Allow; the parent exception overrides the child block |
 | `.subonly.nobledns.test^` | apex | Allow |
 | `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
+| `.subonly-bare.nobledns.test` | apex | Allow |
+| `.subonly-bare.nobledns.test` | `child.subonly-bare.nobledns.test` | Block if legacy leading-dot behavior remains supported |
+| `.subonly-bare.nobledns.test` | `child.subonly-bare.nobledns.test.evil.test` | Record observed result; no explicit hostname-end boundary |
 
 For each query, record the DNS response, client filtering log, authoritative-server log and whether the result matches the documented semantics. A timeout or missing authoritative response is an invalid test, not a successful block.
 
-The bare-anchor cases are intentionally observation-driven: the rule is preserved from upstream, but its lack of an explicit end separator makes client-specific matching behavior important. Do not rewrite it based on a single client result.
+The bare-anchor cases distinguish two concepts: `||` anchors a match at the hostname start or a subdomain boundary, while the absence of `^` means there is no explicit hostname-end boundary. AdGuard's syntax reference defines `||` as a hostname anchor and `^` as the hostname-end separator. Therefore the synthetic cases containing an additional suffix are treated as potential matches, not assumed safe. Record actual behavior on each supported client and do not rewrite upstream rules based on a single client result.
+
+The exception cases verify the documented basic exception form against both an exact hostname and its descendants. They do not verify precedence involving modifiers, because modified exceptions are not part of the published NobleDNS syntax.
 
 ## Execution procedure
 

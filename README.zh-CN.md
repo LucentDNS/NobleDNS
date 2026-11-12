@@ -75,6 +75,7 @@ NobleDNS 在 DNS 层面过滤来源规则所覆盖的广告、跟踪、遥测及
 我们重视国内网站和应用的正常使用体验，也公开项目采用的质量标准、测试方法和验证进展。
 
 - [质量与维护策略](docs/QUALITY.md)
+- [证据化回归语料规范](docs/EVIDENCE-CORPUS.md)
 - [DNS 客户端兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md)
 - [单一均衡版政策](docs/EDITION-POLICY.md)
 - [最新验证报告](dist/validation-report.txt)
@@ -82,6 +83,10 @@ NobleDNS 在 DNS 层面过滤来源规则所覆盖的广告、跟踪、遥测及
 - [第三方来源与许可说明](THIRD-PARTY-NOTICES.md)
 
 项目不会把自动构建成功等同于所有应用均已实测，也不会在缺乏代表性测试样本时宣称已经测得某个国内误杀率。我们更看重可核验的依据和持续改进。
+
+## 规则生命周期
+
+死域识别、复核门槛和维护流程见[规则生命周期与死域审查](docs/RULE-LIFECYCLE.md)。DNS 暂时 NXDOMAIN 不会自动触发规则删除。
 
 ## 反馈与规则修正
 

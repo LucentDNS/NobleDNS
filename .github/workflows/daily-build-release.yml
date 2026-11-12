@@ -22,6 +22,7 @@ on:
       - '.github/workflows/**'
       - 'config/**'
       - 'tests/**'
+      - 'tools/**'
       - 'docs/**'
       - 'update.py'
       - 'README.md'
@@ -83,6 +84,9 @@ jobs:
       - name: Run regression tests
         run: python -m unittest discover -s tests -v
 
+      - name: Validate evidence corpus
+        run: python tools/validate_evidence_corpus.py
+
       - name: Build from upstream sources with drift protection
         shell: bash
         env:
@@ -107,6 +111,16 @@ jobs:
               "${EXTRA_ARGS[@]}"
           fi
 
+      - name: Audit DNS rule liveness from reviewed observations
+        run: |
+          set -euo pipefail
+
+          python tools/audit_rule_liveness.py \
+            --rules build-output/latest/dns-filter.txt \
+            --observations tests/fixtures/dns-liveness-observations.json \
+            --source-dir build-output/latest/sources \
+            --output-dir build-output/latest/rule-liveness-audit
+
       - name: Verify generated artifacts and manifest
         shell: bash
         run: |
@@ -125,6 +139,8 @@ jobs:
           test -s "$OUT/THIRD-PARTY-NOTICES.md"
           test -s "$OUT/licenses/GPL-3.0.txt"
           test -s "$OUT/sources/sources-manifest.json"
+          test -s "$OUT/rule-liveness-audit/report.json"
+          test -s "$OUT/rule-liveness-audit/candidates.csv"
 
           cmp -s LICENSE "$OUT/LICENSE"
           cmp -s THIRD-PARTY-NOTICES.md "$OUT/THIRD-PARTY-NOTICES.md"
@@ -136,6 +152,12 @@ jobs:
 
           manifest_path = Path("build-output/latest/manifest.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+          liveness = json.loads(
+              Path("build-output/latest/rule-liveness-audit/report.json").read_text(encoding="utf-8")
+          )
+          assert liveness.get("automatic_removals") == 0, "Liveness audit must never remove rules"
+          assert liveness.get("observed_hostnames") == 0, "Canonical CI liveness fixture must remain empty"
 
           assert manifest.get("blocking_rules", 0) <= 500_000, \
               "Blocking rule count exceeds the project ceiling"
