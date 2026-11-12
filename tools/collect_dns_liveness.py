@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect a small, explicit DNS liveness sample over DNS-over-HTTPS (RFC 8484).
+"""Collect a small, explicit DNS liveness sample over DNS-over-HTTPS/TLS (RFC 8484).
 
 This tool never reads the subscription automatically. It only queries hostnames
 listed in an operator-supplied sample file and emits minimized DNS observations.
@@ -11,6 +11,7 @@ import ipaddress
 import json
 import secrets
 import socket
+import ssl
 import struct
 import sys
 import time
@@ -93,7 +94,7 @@ def decode_name(packet: bytes, offset: int) -> tuple[str, int]:
     return ".".join(labels), consumed
 
 
-def parse_response(packet: bytes, query_id: int, qtype: str) -> dict:
+def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> dict:
     if len(packet) < 12:
         raise ValueError("DNS response shorter than header")
     ident, flags, qdcount, ancount, nscount, arcount = struct.unpack("!HHHHHH", packet[:12])
@@ -111,7 +112,7 @@ def parse_response(packet: bytes, query_id: int, qtype: str) -> dict:
         raise ValueError("truncated DNS question")
     question_type, question_class = struct.unpack("!HH", packet[offset:offset + 4])
     offset += 4
-    if question_class != 1 or question_type != QTYPE[qtype]:
+    if question_name != hostname or question_class != 1 or question_type != QTYPE[qtype]:
         raise ValueError("DNS response question does not match request")
 
     addresses: list[str] = []
@@ -165,8 +166,8 @@ def validate_config(document: object) -> list[dict]:
     seen_ids: set[str] = set()
     seen_operators: set[str] = set()
     for index, resolver in enumerate(resolvers):
-        if not isinstance(resolver, dict) or set(resolver) != {"id", "operator", "endpoint"}:
-            raise ValueError(f"resolver[{index}] must contain exactly id, operator and endpoint")
+        if not isinstance(resolver, dict) or set(resolver) != {"id", "operator", "transport", "endpoint"}:
+            raise ValueError(f"resolver[{index}] must contain exactly id, operator, transport and endpoint")
         for field in ("id", "operator", "endpoint"):
             if not isinstance(resolver[field], str) or not resolver[field].strip():
                 raise ValueError(f"resolver[{index}].{field} must be a non-empty string")
@@ -174,12 +175,15 @@ def validate_config(document: object) -> list[dict]:
             raise ValueError("resolver IDs and operator names must be unique")
         seen_ids.add(resolver["id"])
         seen_operators.add(resolver["operator"].lower())
+        transport = resolver["transport"]
         parsed = urlsplit(resolver["endpoint"])
+        valid_doh = transport == "doh" and parsed.scheme == "https" and bool(parsed.path)
+        valid_dot = transport == "dot" and parsed.scheme == "tls" and parsed.path in {"", "/"}
         if (
-            parsed.scheme != "https" or not parsed.hostname
-            or parsed.username or parsed.password or parsed.query or parsed.fragment
+            not parsed.hostname or parsed.username or parsed.password
+            or parsed.query or parsed.fragment or not (valid_doh or valid_dot)
         ):
-            raise ValueError(f"resolver[{index}].endpoint must be a clean HTTPS DoH URL")
+            raise ValueError(f"resolver[{index}] endpoint scheme/path does not match doh or dot transport")
     return resolvers
 
 
@@ -200,11 +204,47 @@ def query_doh(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
             if response.status != 200 or response.headers.get_content_type() != "application/dns-message":
                 return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
             body = response.read(65536)
-        return parse_response(body, query_id, qtype)
+        return parse_response(body, query_id, qtype, hostname)
     except (TimeoutError, socket.timeout):
         return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "dnssec_ad": False}
     except (HTTPError, URLError, OSError, ValueError):
         return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
+
+
+def _recv_exact(connection: ssl.SSLSocket, length: int) -> bytes:
+    chunks = bytearray()
+    while len(chunks) < length:
+        part = connection.recv(length - len(chunks))
+        if not part:
+            raise OSError("unexpected EOF on DNS-over-TLS connection")
+        chunks.extend(part)
+    return bytes(chunks)
+
+
+def query_dot(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
+    query_id, payload = build_query(hostname, qtype)
+    parsed = urlsplit(endpoint)
+    port = parsed.port or 853
+    try:
+        with socket.create_connection((parsed.hostname, port), timeout=timeout) as raw:
+            raw.settimeout(timeout)
+            with ssl.create_default_context().wrap_socket(raw, server_hostname=parsed.hostname) as tls:
+                tls.sendall(struct.pack("!H", len(payload)) + payload)
+                response_length = struct.unpack("!H", _recv_exact(tls, 2))[0]
+                if response_length < 12:
+                    raise ValueError("DNS-over-TLS response is too short")
+                response = _recv_exact(tls, response_length)
+        return parse_response(response, query_id, qtype, hostname)
+    except (TimeoutError, socket.timeout):
+        return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "dnssec_ad": False}
+    except (OSError, ssl.SSLError, ValueError):
+        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
+
+
+def query_resolver(resolver: dict, hostname: str, qtype: str, timeout: int) -> dict:
+    if resolver["transport"] == "doh":
+        return query_doh(resolver["endpoint"], hostname, qtype, timeout)
+    return query_dot(resolver["endpoint"], hostname, qtype, timeout)
 
 
 def load_sample(path: Path, max_hostnames: int) -> list[str]:
@@ -234,7 +274,7 @@ def collect(hostnames: list[str], resolvers: list[dict], vantage: str,
     for resolver in resolvers:
         for hostname in hostnames:
             for qtype in ("A", "AAAA"):
-                result = query_doh(resolver["endpoint"], hostname, qtype, timeout)
+                result = query_resolver(resolver, hostname, qtype, timeout)
                 observations.append({
                     "hostname": hostname,
                     "observed_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
