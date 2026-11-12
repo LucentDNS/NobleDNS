@@ -61,7 +61,7 @@ class BenchmarkScorerTests(unittest.TestCase):
     def test_rule_loader_rejects_trailing_dot_patterns(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"
-            path.write_text("||valid.example.test^\\n.invalid.example.test.\\n", encoding="utf-8")
+            path.write_text("||valid.example.test^\n.invalid.example.test.\n", encoding="utf-8")
             blocks, exceptions, unsupported = scorer.load_rules(path)
             self.assertEqual(blocks, {"||valid.example.test^"})
             self.assertEqual(exceptions, set())
