@@ -81,7 +81,8 @@ class RuleLivenessTests(unittest.TestCase):
 
     def test_resolver_quorum_with_different_soa_zones_is_manual_review(self):
         rows = stable_nxdomain_observations()
-        rows[0]["authority_soa_zones"] = ["ads.example.com"]
+        latest = next(row for row in rows if row["observed_at_utc"].startswith("2026-11-10"))
+        latest["authority_soa_zones"] = ["ads.example.com"]
         validated = mod.validate_observations({
             "schema_version": 1,
             "observations": rows,
@@ -91,7 +92,8 @@ class RuleLivenessTests(unittest.TestCase):
 
     def test_multiple_soa_zones_in_one_response_are_manual_review(self):
         rows = stable_nxdomain_observations()
-        rows[0]["authority_soa_zones"] = ["example.com", "ads.example.com"]
+        latest = next(row for row in rows if row["observed_at_utc"].startswith("2026-11-10"))
+        latest["authority_soa_zones"] = ["example.com", "ads.example.com"]
         validated = mod.validate_observations({
             "schema_version": 1,
             "observations": rows,
