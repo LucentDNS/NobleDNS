@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-12T04:22:54.759207+00:00",
+  "built_at_utc": "2026-11-12T04:31:03.892009+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -37,19 +37,19 @@
       "license_basis": "upstream project license; third-party rights may apply",
       "bytes": 4660255,
       "sha256": "c865b27792e275335a6c0e66e03c356029519015048d4e5f82592ad00fcfe39b",
-      "simple_block_rules": 189743,
+      "simple_block_rules": 189716,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
         "wildcard_syntax": 405,
         "regex_or_path_syntax": 21,
         "other_anchor_syntax": 90,
+        "unsupported_leading_dot_dns_syntax": 28,
         "modifier_important": 5,
         "other_modifier": 7,
         "modifier_badfilter": 5,
         "other_syntax": 53,
         "single_label_not_fqdn": 1,
-        "invalid_domain_length_or_trailing_dot": 1,
         "other_exception_syntax": 195
       }
     },
@@ -66,34 +66,30 @@
       "excluded_lines_by_reason": {}
     }
   },
-  "blocking_rules": 303652,
+  "blocking_rules": 303625,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
     "hagezi_normal": 0
   },
-  "main_subscription_rules": 303663,
+  "main_subscription_rules": 303636,
   "common_rules": 94273,
   "source_only_rules": {
-    "adguard_dns": 95470,
+    "adguard_dns": 95443,
     "hagezi_normal": 113909
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "35ecfa6188c41f7db808d3c42c9b3c279d1fe7535059be5466157a0385056042",
+  "main_subscription_sha256": "341d5b697b83030b68ed72290115c4084706fbb614b5352643720c783dee579e",
   "syntax_audit": {
-    "total": 303652,
+    "total": 303625,
     "forms": {
       "domain_and_subdomains": 303556,
-      "domain_anchor_without_end_boundary": 69,
-      "subdomains_only_with_end_boundary": 23,
-      "subdomains_only": 4
+      "domain_anchor_without_end_boundary": 69
     },
     "semantics": {
       "domain_and_subdomains": "Blocks the domain and all subdomains.",
-      "domain_anchor_without_end_boundary": "Hostname-start anchor without explicit end boundary; retain source form and review client matching semantics.",
-      "subdomains_only_with_end_boundary": "Blocks subdomains only; does not block the apex domain.",
-      "subdomains_only": "Blocks subdomains only; does not block the apex domain."
+      "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains."
     },
     "review_required": 69,
     "examples": {
@@ -120,24 +116,6 @@
         "||banner-in.net",
         "||banner.kiev.ua",
         "||c.bigmir.net"
-      ],
-      "subdomains_only_with_end_boundary": [
-        ".1.1.1.l80.js^",
-        ".adonweb.ru^",
-        ".allalla.com^",
-        ".ay.delivery^",
-        ".bbelements.com^",
-        ".cpa1.ru^",
-        ".doublepimp.com^",
-        ".ecommtools.com^",
-        ".gameleads.ru^",
-        ".infox.sg^"
-      ],
-      "subdomains_only": [
-        ".3.n.2.1.l50.js",
-        ".3.n.2.2.l30.js",
-        ".prod.pr.analytics.console.aws.a2z.com",
-        ".stape.net"
       ]
     }
   },
@@ -146,7 +124,7 @@
     "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review",
     "complex_syntax": "excluded unless semantic equivalence is proven",
     "bare_domain_anchor": "preserved unchanged",
-    "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression",
+    "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax",
     "source_drift_gate_percent": 15.0
   }
 }

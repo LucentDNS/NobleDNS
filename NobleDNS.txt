@@ -1,36 +1,9 @@
 ! Title: NobleDNS Filter
 ! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.
 ! Homepage: https://github.com/LucentDNS/NobleDNS
-! Version: 1.0.2
+! Version: 1.0.3
 ! Expires: 1 day
 ! Sources: AdGuard DNS Filter, HaGeZi Multi Normal
-.1.1.1.l80.js^
-.3.n.2.1.l50.js
-.3.n.2.2.l30.js
-.adonweb.ru^
-.allalla.com^
-.ay.delivery^
-.bbelements.com^
-.cpa1.ru^
-.doublepimp.com^
-.ecommtools.com^
-.gameleads.ru^
-.infox.sg^
-.is.traff-numerical.info^
-.libaishuo.com^
-.n.2.1.js^
-.n.2.1.l60.js^
-.piccash.net^
-.potopy.ru^
-.prod.pr.analytics.console.aws.a2z.com
-.sexplaycam.com^
-.skadsdkless.appsflyersdk.com^
-.stape.net
-.tovarro.com^
-.tpm.pw^
-.tvp.tv^
-.vipko.ru^
-.webhop.net^
 @@||ad.10010.com^
 @@||ad.abchina.com^
 @@||ad.kazakinfo.com^

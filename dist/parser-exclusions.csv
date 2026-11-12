@@ -22,6 +22,8 @@ adguard_dns,798,other_anchor_syntax,||rgfftupf.
 adguard_dns,864,wildcard_syntax,||clk.rtpdn*.com^
 adguard_dns,1050,wildcard_syntax,||teleriumads-*.netdna-ssl.com^
 adguard_dns,1090,wildcard_syntax,||putrr*.com^
+adguard_dns,1093,unsupported_leading_dot_dns_syntax,.bbelements.com^
+adguard_dns,1094,unsupported_leading_dot_dns_syntax,.doublepimp.com^
 adguard_dns,1099,modifier_important,||adsrvmedia.adk2.co^$important
 adguard_dns,1108,wildcard_syntax,||block.s*block.com^
 adguard_dns,1131,wildcard_syntax,||mf*.advantage.as^
@@ -79,6 +81,11 @@ adguard_dns,8329,modifier_badfilter,||pl.ua^$badfilter
 adguard_dns,8331,modifier_badfilter,||linksprf.com^$badfilter
 adguard_dns,8337,modifier_badfilter,||fixtures.onet.pl^$badfilter
 adguard_dns,8341,modifier_badfilter,wykop.pl$badfilter
+adguard_dns,8392,unsupported_leading_dot_dns_syntax,.n.2.1.js^
+adguard_dns,8393,unsupported_leading_dot_dns_syntax,.n.2.1.l60.js^
+adguard_dns,8394,unsupported_leading_dot_dns_syntax,.1.1.1.l80.js^
+adguard_dns,8395,unsupported_leading_dot_dns_syntax,.3.n.2.1.l50.js
+adguard_dns,8396,unsupported_leading_dot_dns_syntax,.3.n.2.2.l30.js
 adguard_dns,8397,ip_literal_not_domain,||109.123.233.251^
 adguard_dns,8406,regex_or_path_syntax,://mine.torrent.pw^
 adguard_dns,8407,wildcard_syntax,||hostingcloud.*.wasm^
@@ -95,9 +102,23 @@ adguard_dns,8724,wildcard_syntax,||ad*.on.cc^
 adguard_dns,8902,wildcard_syntax,||broredir*s.site^
 adguard_dns,8962,other_anchor_syntax,||vst.videolink.
 adguard_dns,9040,wildcard_syntax,||orbit*.lun.ua^
+adguard_dns,9056,unsupported_leading_dot_dns_syntax,.infox.sg^
+adguard_dns,9287,unsupported_leading_dot_dns_syntax,.potopy.ru^
+adguard_dns,9288,unsupported_leading_dot_dns_syntax,.vipko.ru^
 adguard_dns,9341,wildcard_syntax,||q*-publick.club^
 adguard_dns,9361,wildcard_syntax,||v.tzbox*.xyz^
 adguard_dns,9464,wildcard_syntax,||cdn*.swaxis.com^
+adguard_dns,9508,unsupported_leading_dot_dns_syntax,.adonweb.ru^
+adguard_dns,9509,unsupported_leading_dot_dns_syntax,.allalla.com^
+adguard_dns,9510,unsupported_leading_dot_dns_syntax,.cpa1.ru^
+adguard_dns,9511,unsupported_leading_dot_dns_syntax,.ecommtools.com^
+adguard_dns,9512,unsupported_leading_dot_dns_syntax,.gameleads.ru^
+adguard_dns,9513,unsupported_leading_dot_dns_syntax,.is.traff-numerical.info^
+adguard_dns,9514,unsupported_leading_dot_dns_syntax,.piccash.net^
+adguard_dns,9515,unsupported_leading_dot_dns_syntax,.sexplaycam.com^
+adguard_dns,9516,unsupported_leading_dot_dns_syntax,.tovarro.com^
+adguard_dns,9517,unsupported_leading_dot_dns_syntax,.tpm.pw^
+adguard_dns,9518,unsupported_leading_dot_dns_syntax,.webhop.net^
 adguard_dns,9519,wildcard_syntax,://*.a-akamaihd.com^
 adguard_dns,9520,regex_or_path_syntax,://jhf.ru^
 adguard_dns,9521,regex_or_path_syntax,://kma.biz^
@@ -164,6 +185,7 @@ adguard_dns,11263,wildcard_syntax,||adv0*.msa.cdn.mediaset.net^
 adguard_dns,11310,other_modifier,/^https:\/\/(a|c)\.[0-9a-f]{56}\.com$/
 adguard_dns,11312,other_modifier,/^(a|c)\.[0-9a-f]{56}\.com$/
 adguard_dns,11338,ip_literal_not_domain,||54.222.186.106^
+adguard_dns,11365,unsupported_leading_dot_dns_syntax,.libaishuo.com^
 adguard_dns,11385,wildcard_syntax,||adapi*.boomplaymusic.com^
 adguard_dns,11436,wildcard_syntax,||nelonenmedia-pmd-ads-*.nm-stream.nelonenmedia.fi^
 adguard_dns,11446,ip_literal_not_domain,||23.224.199.96^
@@ -266,6 +288,7 @@ adguard_dns,15848,wildcard_syntax,||collector-*.px-client.net^
 adguard_dns,15849,wildcard_syntax,||collector-*.px-cdn.net^
 adguard_dns,15853,wildcard_syntax,||clickstream-*.homedepot.com^
 adguard_dns,15861,wildcard_syntax,||acr-*-prd.samsungcloud.tv^
+adguard_dns,15878,unsupported_leading_dot_dns_syntax,.prod.pr.analytics.console.aws.a2z.com
 adguard_dns,15881,wildcard_syntax,||trck.*.prod-na.turntable.sonic.advertising.amazon.dev^
 adguard_dns,15927,wildcard_syntax,||cza*.crazygames.com^
 adguard_dns,15931,other_anchor_syntax,||analytics.ahrefs.
@@ -364,6 +387,7 @@ adguard_dns,18709,wildcard_syntax,||tracking.*.miui.com^
 adguard_dns,18727,wildcard_syntax,||datacollector-*.dt.hicloud.com^
 adguard_dns,18756,other_syntax,dynamic-report-api.appsflyersdk.com^
 adguard_dns,18758,other_syntax,-pia.appsflyersdk.com^
+adguard_dns,18759,unsupported_leading_dot_dns_syntax,.skadsdkless.appsflyersdk.com^
 adguard_dns,18760,other_syntax,-skadsdkless.appsflyersdk.com^
 adguard_dns,18761,other_syntax,-adrevenue.appsflyersdk.com^
 adguard_dns,18762,other_syntax,-attr.appsflyersdk.com^
@@ -490,6 +514,7 @@ adguard_dns,20329,wildcard_syntax,||*-default-cn.rum.aliyuncs.com^
 adguard_dns,20337,wildcard_syntax,||*-sdk.rum.aliyuncs.com^
 adguard_dns,20459,wildcard_syntax,||ecommerce-events*.adscale.com^
 adguard_dns,20562,wildcard_syntax,||install*.zonastat.com^
+adguard_dns,20598,unsupported_leading_dot_dns_syntax,.tvp.tv^
 adguard_dns,20668,wildcard_syntax,||log*.zijieapi.com^
 adguard_dns,20671,wildcard_syntax,||mssdk*.zijieapi.com^
 adguard_dns,20675,wildcard_syntax,||polaris*-normal-*.zijieapi.com^
@@ -531,8 +556,10 @@ adguard_dns,22109,ip_literal_not_domain,||74.55.82.102^
 adguard_dns,22110,ip_literal_not_domain,||79.125.117.123^
 adguard_dns,22618,wildcard_syntax,||metrics*.fitanalytics.com^
 adguard_dns,23184,wildcard_syntax,||query*.petametrics.com^
+adguard_dns,23832,unsupported_leading_dot_dns_syntax,.ay.delivery^
 adguard_dns,23882,wildcard_syntax,||sock*-goguardian.pusher.com^
 adguard_dns,47223,other_anchor_syntax,||tccd.douglas.
+adguard_dns,73921,unsupported_leading_dot_dns_syntax,.stape.net
 adguard_dns,73922,other_anchor_syntax,|load.gtm.
 adguard_dns,73923,other_anchor_syntax,|load.sgtm.
 adguard_dns,73924,other_anchor_syntax,|load.ss.
@@ -565,7 +592,7 @@ adguard_dns,129951,other_syntax,-728-x-90-
 adguard_dns,129952,other_syntax,-728-x-90.
 adguard_dns,129953,other_syntax,-728x90a.
 adguard_dns,129954,other_syntax,-970x90-
-adguard_dns,129955,invalid_domain_length_or_trailing_dot,.1080.x.90.
+adguard_dns,129955,unsupported_leading_dot_dns_syntax,.1080.x.90.
 adguard_dns,129977,other_syntax,-bandarkiu.
 adguard_dns,129978,other_syntax,-cina777.
 adguard_dns,129979,other_syntax,-indo666.

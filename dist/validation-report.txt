@@ -1,15 +1,15 @@
 NobleDNS build report
-Version: 1.0.2
+Version: 1.0.3
 Status: PUBLIC
 Original project code license: GPL-3.0-only
 Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.
 Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.
-Merged block rules: 303,652
+Merged block rules: 303,625
 Common rules: 94,273
 Active exception rules: 11
-Main subscription rules: 303,663
-Rule cap: 303,663/500,000
-Main SHA256: 35ecfa6188c41f7db808d3c42c9b3c279d1fe7535059be5466157a0385056042
+Main subscription rules: 303,636
+Rule cap: 303,636/500,000
+Main SHA256: 341d5b697b83030b68ed72290115c4084706fbb614b5352643720c783dee579e
 
 Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.
 Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests.
