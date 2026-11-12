@@ -255,6 +255,25 @@ class RuleLivenessTests(unittest.TestCase):
         self.assertEqual(status, "stale_or_missing_observations")
         self.assertEqual(metrics["fresh_observations"], 0)
 
+    def test_audit_matches_parent_domain_rules_and_provenance(self):
+        row = observation(host="ads.example.com")
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": [row],
+        })
+        report = mod.audit(
+            {"example.com": {"||example.com^"}},
+            validated,
+            {"example.com": {"adguard_dns_filter"}},
+            NOW,
+            30,
+        )
+        result = report["results"][0]
+        self.assertTrue(result["in_current_subscription"])
+        self.assertEqual(result["matched_rules"], ["||example.com^"])
+        self.assertEqual(result["source_keys"], ["adguard_dns_filter"])
+        self.assertEqual(result["action"], "no_change")
+
     def test_audit_never_removes_rules_and_includes_source_provenance(self):
         rules = {"ads.example.com": {"||ads.example.com^"}}
         observations = mod.validate_observations({
