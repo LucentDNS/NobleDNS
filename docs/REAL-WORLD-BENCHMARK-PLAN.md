@@ -134,9 +134,18 @@ A liveness NXDOMAIN observation is not a false-positive measurement and must not
 
 A small convenience sample is useful for regression testing but cannot support a claim of representative national performance.
 
-## 7. Release gates
+## 7. Product readiness versus field-evidence maturity
 
-Minimum gates before NobleDNS may be described as a **field-tested mature balanced list**:
+The benchmark is a quality-improvement and evidence programme, **not a rule that blocks every public release until a large field study is complete**. NobleDNS should be useful and responsibly maintained at release time, based on the best available public evidence, source review, conservative policy, compatibility knowledge and reproducible internal checks. A release must not knowingly ship unresolved high-impact defects or unreviewed source imports merely because a benchmark is incomplete.
+
+Before each release, apply the checks appropriate to the claim being made:
+- Verify source identity, license/provenance, scope, update health and material changes.
+- Review known conflicts against essential services and resolve or explicitly exclude risky additions.
+- Validate parser semantics, output integrity, exceptions, subscription format and supported-client compatibility to the extent claimed.
+- Run the project's existing regression suite and inspect new/changed rules; do not treat rule count or CI success as efficacy proof.
+- Publish known limitations honestly and retain rollback capability.
+
+The following are gates for stronger claims such as **field-tested mature**, **measured low false-positive**, or **competitively benchmarked**; they are not a reason to leave an otherwise responsibly prepared release indefinitely unpublished:
 1. All published syntax forms have reproducible pass results on each explicitly supported client/version.
 2. No unresolved critical false positive remains in the reviewed essential-service matrix.
 3. The independent corpus has meaningful, category-stratified positive and negative samples, with a blind holdout and current evidence.
@@ -157,7 +166,7 @@ At the time this plan is added:
 - No comparative efficacy or performance score has been established.
 - The rule-liveness observation fixture is empty; no live multi-vantage liveness conclusions exist.
 
-Therefore NobleDNS must not yet be marketed as fully field-tested, proven low-false-positive or objectively superior to established lists.
+Therefore, current evidence does not support claims that NobleDNS is fully field-tested, has a measured low false-positive rate, or is objectively superior to established lists. This does not by itself mean the published v1.0.3 release is a half-finished product; it means those stronger empirical claims remain unproven and must not be advertised as facts.
 
 ## 9. Reporting template
 
