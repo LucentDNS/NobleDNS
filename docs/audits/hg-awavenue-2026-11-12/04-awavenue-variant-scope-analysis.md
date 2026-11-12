@@ -8,7 +8,7 @@
 - NobleDNS baseline subscription SHA-256: `527d913bb6e385c3dace940a49c462b91b03b5c8845b7c313be36314a88d8fda`
 - AWAvenue Ads-only snapshot SHA-256: `f4b660efb332b59960d7c8f2313db2c42af347f41d28c24c0834713bc7809928`
 - AWAvenue Full snapshot SHA-256: `fdf930d67659f6f1405c81e67c1fb7797145c54296c5ba0398729aa4d846808c`
-- Exact Ads-only source: [AWAvenue Ads-only AdGuard rules](https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/Filters/AWAvenue-Ads-Rule-Adguard.txt)
+- Exact Ads-only source: [AWAvenue Ads-only AdGuard rules](https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt)
 - Exact source line numbers refer to the audited Ads-only snapshot preserved in the audit artifact.
 
 ## Why this subset matters
