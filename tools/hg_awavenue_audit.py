@@ -59,7 +59,8 @@ RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)
 
 
 def fetch_snapshot(url: str) -> bytes:
-    """Fetch pinned HTTPS text with bounded size and strict UTF-8."""
+    """Fetch direct HTTPS text with bounded size and strict UTF-8."""
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     last_error = None
     print(f"Fetching snapshot: {url}", flush=True)
     for attempt in range(1, 4):
@@ -72,7 +73,7 @@ def fetch_snapshot(url: str) -> bytes:
                     "Cache-Control": "no-cache",
                 },
             )
-            with urllib.request.urlopen(request, timeout=60) as response:
+            with opener.open(request, timeout=120) as response:
                 if getattr(response, "status", 200) != 200:
                     raise ValueError(f"unexpected HTTP status: {response.status}")
                 final_url = response.geturl()
