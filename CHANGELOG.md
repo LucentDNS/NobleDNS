@@ -13,6 +13,8 @@ All notable changes to NobleDNS are documented here.
 ### Changed
 - NobleDNS is maintained and published as a public DNS filtering rule set.
 - Main-branch pushes run the complete build, validation and publication process.
+- Documented the difference between parser/build validation and real-world filtering efficacy.
+- Added an immutable SemVer release alongside content-addressed audit Releases.
 
 ### Fixed
 - Corrected GitHub Actions output handling so the release identity hash is passed to the publication job.

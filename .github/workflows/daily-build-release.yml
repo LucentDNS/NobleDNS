@@ -500,3 +500,80 @@ jobs:
               --title "$TITLE" \
               --generate-notes
           fi
+
+      - name: Publish immutable SemVer release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION=$(python -c "import json; print(json.load(open('dist/manifest.json', encoding='utf-8'))['version'])")
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Manifest version is not stable SemVer: $VERSION"
+            exit 1
+          fi
+
+          VERSION_TAG="v$VERSION"
+          echo "Stable release tag: $VERSION_TAG"
+
+          if gh release view "$VERSION_TAG" >/dev/null 2>&1; then
+            IS_PRERELEASE="$(gh release view "$VERSION_TAG" --json isPrerelease --jq '.isPrerelease')"
+            IS_DRAFT="$(gh release view "$VERSION_TAG" --json isDraft --jq '.isDraft')"
+            if [ "$IS_PRERELEASE" = "true" ] || [ "$IS_DRAFT" = "true" ]; then
+              echo "::error::The existing version release is a prerelease or draft; refusing to treat it as stable."
+              exit 1
+            fi
+
+            ASSETS=(
+              dist/dns-filter.txt
+              dist/manifest.json
+              dist/validation-report.txt
+              dist/whitelist-review.txt
+              dist/parser-exclusions.csv
+              dist/syntax-audit.json
+              dist/syntax-review.csv
+              LICENSE
+              THIRD-PARTY-NOTICES.md
+              licenses/GPL-3.0.txt
+            )
+
+            EXISTING_ASSETS="$(gh release view "$VERSION_TAG" --json assets --jq '.assets[].name')"
+            VERIFY_DIR="$(mktemp -d)"
+            trap 'rm -rf "$VERIFY_DIR"' EXIT
+            gh release download "$VERSION_TAG" --dir "$VERIFY_DIR"
+
+            for asset in "${ASSETS[@]}"; do
+              asset_name="${asset##*/}"
+              if ! grep -Fqx -- "$asset_name" <<< "$EXISTING_ASSETS" ||
+                 [ ! -f "$VERIFY_DIR/$asset_name" ] ||
+                 ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
+                echo "::error::Immutable version release asset is missing or differs: $asset_name"
+                exit 1
+              fi
+            done
+
+            echo "Stable version release exists and all assets match; leaving it immutable."
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION_TAG" >/dev/null 2>&1; then
+            echo "::error::The version tag exists without a GitHub Release. Refusing to retarget it."
+            exit 1
+          fi
+
+          gh release create "$VERSION_TAG" \
+            dist/dns-filter.txt \
+            dist/manifest.json \
+            dist/validation-report.txt \
+            dist/whitelist-review.txt \
+            dist/parser-exclusions.csv \
+            dist/syntax-audit.json \
+            dist/syntax-review.csv \
+            LICENSE \
+            THIRD-PARTY-NOTICES.md \
+            licenses/GPL-3.0.txt \
+            --target "$(git rev-parse HEAD)" \
+            --title "NobleDNS $VERSION" \
+            --notes-file CHANGELOG.md
