@@ -201,6 +201,7 @@ class ParserTests(unittest.TestCase):
             b"||base.example.com^\n"
             b"@@||service.example.com^|\n"
             b"@@|exact.example.com^|\n"
+            b"@@|bare-exact.example.com^\n"
             b"@@||simple.example.com^\n",
             "adguard_dns",
             min_blocks=1,
@@ -211,6 +212,7 @@ class ParserTests(unittest.TestCase):
             {
                 "@@||service.example.com^|",
                 "@@|exact.example.com^|",
+                "@@|bare-exact.example.com^",
                 "@@||simple.example.com^",
             },
         )
@@ -227,6 +229,20 @@ class ParserTests(unittest.TestCase):
             mod.normalize_badfilter_target("@@|exact.example.com^|"),
             "@@|exact.example.com^|",
         )
+        self.assertEqual(
+            mod.normalize_badfilter_target("@@|bare-exact.example.com^"),
+            "@@|bare-exact.example.com^",
+        )
+
+    def test_badfilter_disables_exact_exception_without_redundant_end_anchor(self):
+        parsed = {"adguard_dns": set()}
+        exceptions = {"adguard_dns": {"@@|exact.example.com^"}}
+        directives = [
+            ("adguard_dns", 8, "@@|exact.example.com^$badfilter", "@@|exact.example.com^", "pending")
+        ]
+        audit = mod.apply_badfilters(parsed, exceptions, directives)
+        self.assertEqual(exceptions["adguard_dns"], set())
+        self.assertEqual(audit[0][4], "applied")
 
     def test_badfilter_disables_end_anchored_exception(self):
         parsed = {"adguard_dns": set()}
