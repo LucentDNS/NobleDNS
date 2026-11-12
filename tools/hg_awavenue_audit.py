@@ -113,7 +113,7 @@ SNAPSHOT_ARTIFACT_RUN_ID = 43184256306
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 \ndef git_blob_sha(data: bytes) -> str:
-    return hashlib.sha1(f"blob {len(data)}\\0".encode("ascii") + data).hexdigest()
+    return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
 
 
 
