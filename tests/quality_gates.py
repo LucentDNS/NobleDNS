@@ -42,6 +42,7 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
         raise AssertionError(f"Generated subscription is missing: {FILTER}")
 
     blocks: set[str] = set()
+    bare_blocks: set[str] = set()
     exceptions: set[str] = set()
     invalid: list[str] = []
 
@@ -67,10 +68,12 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
 
         if is_exception:
             exceptions.add(domain)
-        else:
+        elif has_caret:
             blocks.add(domain)
+        else:
+            bare_blocks.add(domain)
 
-    return blocks, exceptions, invalid
+    return blocks, bare_blocks, exceptions, invalid
 
 
 def covers(rule_domain: str, hostname: str) -> bool:
@@ -79,21 +82,36 @@ def covers(rule_domain: str, hostname: str) -> bool:
 
 
 def matching_rules(hostname: str, rules: set[str]) -> set[str]:
+    """Match rules with an explicit ^ hostname-end boundary."""
     labels = hostname.split(".")
     suffixes = {".".join(labels[index:]) for index in range(len(labels))}
     return rules.intersection(suffixes)
 
 
-def is_blocked(hostname: str, blocks: set[str], exceptions: set[str]) -> bool:
-    return bool(matching_rules(hostname, blocks)) and not bool(
-        matching_rules(hostname, exceptions)
-    )
+def matching_bare_rules(hostname: str, rules: set[str]) -> set[str]:
+    """Match ||domain rules without ^: domain anchor, but no hostname-end boundary."""
+    return {
+        rule for rule in rules
+        if hostname == rule or hostname.startswith(rule) or f".{rule}" in hostname
+    }
+
+
+def is_blocked(
+    hostname: str,
+    blocks: set[str],
+    exceptions: set[str],
+    bare_blocks: set[str] | None = None,
+) -> bool:
+    block_matches = matching_rules(hostname, blocks)
+    if bare_blocks:
+        block_matches |= matching_bare_rules(hostname, bare_blocks)
+    return bool(block_matches) and not bool(matching_rules(hostname, exceptions))
 
 
 class QualityGateTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.blocks, cls.exceptions, cls.invalid = load_rules()
+        cls.blocks, cls.bare_blocks, cls.exceptions, cls.invalid = load_rules()
         cls.essential = read_domains(ESSENTIAL)
         cls.known_ads = read_domains(KNOWN_ADS)
         cls.evidence_corpus = json.loads(EVIDENCE_CORPUS.read_text(encoding="utf-8"))
@@ -122,6 +140,23 @@ class QualityGateTests(unittest.TestCase):
         self.assertTrue(is_blocked("example.com", blocks, exceptions))
         self.assertFalse(is_blocked("notexample.com", blocks, exceptions))
 
+    def test_bare_anchor_without_caret_has_no_end_boundary(self) -> None:
+        bare = {"bare.example.com"}
+        self.assertTrue(is_blocked("bare.example.com", set(), set(), bare))
+        self.assertTrue(is_blocked("child.bare.example.com", set(), set(), bare))
+        # || is a hostname anchor; without ^ it can continue matching after the domain text.
+        self.assertTrue(is_blocked("bare.example.com.evil.test", set(), set(), bare))
+        self.assertTrue(is_blocked("x.bare.example.com.evil.test", set(), set(), bare))
+        self.assertFalse(is_blocked("notbare.example.com", set(), set(), bare))
+        self.assertFalse(is_blocked("notbare.example.com.evil.test", set(), set(), bare))
+
+    def test_caret_rule_requires_hostname_boundary(self) -> None:
+        blocks = {"bare.example.com"}
+        self.assertTrue(is_blocked("bare.example.com", blocks, set()))
+        self.assertTrue(is_blocked("child.bare.example.com", blocks, set()))
+        self.assertFalse(is_blocked("bare.example.com.evil.test", blocks, set()))
+        self.assertFalse(is_blocked("notbare.example.com", blocks, set()))
+
     def test_exception_count_stays_small(self) -> None:
         """Exceptions are allow-rules; a sudden surge means the list is leaking."""
         self.assertLessEqual(
@@ -146,10 +181,13 @@ class QualityGateTests(unittest.TestCase):
 
     def test_no_essential_hostname_is_effectively_blocked(self) -> None:
         affected = [
-            (hostname, sorted(rule for rule in self.blocks if covers(rule, hostname)),
-             sorted(rule for rule in self.exceptions if covers(rule, hostname)))
+            (
+                hostname,
+                sorted(matching_rules(hostname, self.blocks) | matching_bare_rules(hostname, self.bare_blocks)),
+                sorted(matching_rules(hostname, self.exceptions)),
+            )
             for hostname in self.essential
-            if is_blocked(hostname, self.blocks, self.exceptions)
+            if is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks)
         ]
         self.assertFalse(
             affected,
@@ -159,7 +197,7 @@ class QualityGateTests(unittest.TestCase):
     def test_known_ad_infrastructure_remains_blocked(self) -> None:
         missing = [
             hostname for hostname in self.known_ads
-            if not is_blocked(hostname, self.blocks, self.exceptions)
+            if not is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks)
         ]
         self.assertFalse(
             missing,
@@ -171,9 +209,9 @@ class QualityGateTests(unittest.TestCase):
         for record in self.evidence_corpus["records"]:
             hostname = record["hostname"]
             policy = record["expected_policy"]
-            if policy == "blocked" and not is_blocked(hostname, self.blocks, self.exceptions):
+            if policy == "blocked" and not is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks):
                 mismatches.append((hostname, policy, "not blocked"))
-            elif policy == "allowed" and is_blocked(hostname, self.blocks, self.exceptions):
+            elif policy == "allowed" and is_blocked(hostname, self.blocks, self.exceptions, self.bare_blocks):
                 mismatches.append((hostname, policy, "blocked"))
         self.assertFalse(
             mismatches,
