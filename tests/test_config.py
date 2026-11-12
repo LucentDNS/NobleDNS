@@ -78,4 +78,19 @@ class ConfigTests(unittest.TestCase):
             current = {f"||d{i}.example.com^" for i in range(90)} | {f"||new{i}.example.net^" for i in range(30)}
             with self.assertRaises(RuntimeError):
                 mod.check_drift({}, current, p, 15.0)
+
+    def test_drift_gate_blocks_absolute_rule_delta_even_below_percentage_limit(self):
+        import tempfile, json
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "manifest.json"
+            p.write_text(json.dumps({"sources":{}}))
+            old_rules = {f"||d{i}.example.com^" for i in range(100_000)}
+            (Path(td) / "dns-filter.txt").write_text("! old\n" + "\n".join(sorted(old_rules)))
+            current = (
+                old_rules
+                - {f"||d{i}.example.com^" for i in range(3_001)}
+                | {f"||new{i}.example.net^" for i in range(3_001)}
+            )
+            with self.assertRaisesRegex(RuntimeError, "absolute limit 3,000"):
+                mod.check_drift({}, current, p, 15.0)
 if __name__ == "__main__": unittest.main()
