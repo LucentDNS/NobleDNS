@@ -39,6 +39,16 @@ class WorkflowSecurityTests(unittest.TestCase):
                     "External actions must be pinned to a full 40-character commit SHA",
                 )
 
+    def test_release_workflow_records_hosted_runner_provenance(self):
+        path = WORKFLOWS / "daily-build-release.yml"
+        workflow = path.read_text(encoding="utf-8")
+
+        self.assertEqual(workflow.count("runs-on: ubuntu-24.04"), 2)
+        self.assertNotIn("runs-on: ubuntu-latest", workflow)
+        self.assertIn("Record build environment provenance", workflow)
+        self.assertIn("image_version=", workflow)
+        self.assertIn('test -s "$OUT/build-environment.txt"', workflow)
+
     def test_release_workflow_keeps_permissions_and_publish_guards_scoped(self):
         path = WORKFLOWS / "daily-build-release.yml"
         workflow = path.read_text(encoding="utf-8")
