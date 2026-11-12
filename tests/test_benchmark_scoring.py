@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import importlib.util
 import tempfile
 import unittest
@@ -15,6 +16,16 @@ SPEC.loader.exec_module(scorer)
 
 
 class BenchmarkScorerTests(unittest.TestCase):
+    def test_file_identity_records_size_and_sha256(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.txt"
+            data = b"||ads.example.test^\\n"
+            path.write_bytes(data)
+            identity = scorer.file_identity(path)
+            self.assertEqual(identity["bytes"], len(data))
+            self.assertEqual(identity["sha256"], hashlib.sha256(data).hexdigest())
+            self.assertEqual(identity["path"], str(path))
+
     def test_parent_block_and_exception_precedence(self) -> None:
         blocks = {"||ads.example.test^", "||example.test^"}
         exceptions = {"@@||safe.example.test^"}
