@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse, csv, hashlib, ipaddress, json, os, re, shutil, socket, sys, tempfile, time
 import http.client, urllib.error, urllib.request
+from urllib.parse import urlsplit
 import idna
 from collections import Counter
 from datetime import datetime, timezone
@@ -203,7 +204,28 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
     return blocks, exceptions, rejected, rows
 
 
+def validate_proxy_url(proxy: str | None) -> str | None:
+    """Accept only explicit HTTP(S) proxy endpoints without embedded credentials."""
+    if proxy is None or not proxy.strip():
+        return None
+    try:
+        parsed = urlsplit(proxy)
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError("Invalid proxy URL: malformed host or port") from exc
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Invalid proxy URL: only explicit http:// or https:// endpoints are supported")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError("Proxy credentials must not be embedded in the command-line URL")
+    if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
+        raise ValueError("Invalid proxy URL: paths, queries and fragments are not supported")
+    if port is not None and not 1 <= port <= 65535:
+        raise ValueError("Invalid proxy URL: port must be between 1 and 65535")
+    return proxy
+
+
 def fetch(url: str, proxy: str | None) -> bytes:
+    proxy = validate_proxy_url(proxy)
     handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy})] if proxy else []
     opener = urllib.request.build_opener(*handlers)
     last = None
