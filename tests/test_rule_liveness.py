@@ -171,6 +171,46 @@ class RuleLivenessTests(unittest.TestCase):
         self.assertEqual(status, "insufficient_nxdomain_evidence")
         self.assertEqual(metrics["resolver_operators"], ["cloudflare"])
 
+    def test_vantage_label_case_and_whitespace_do_not_fake_independent_sites(self):
+        rows = stable_nxdomain_observations()
+        for row in rows:
+            if row["vantage"] == "cn-lanzhou":
+                row["vantage"] = " US-WEST "
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertEqual(metrics["vantages"], ["us-west"])
+
+    def test_a_and_aaaa_must_form_a_near_simultaneous_daily_round(self):
+        rows = stable_nxdomain_observations()
+        for row in rows:
+            if row["qtype"] == "AAAA":
+                row["observed_at_utc"] = row["observed_at_utc"][:10] + "T12:15:00Z"
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "stable_nxdomain_candidate_manual_review")
+        self.assertEqual(metrics["max_a_aaaa_round_gap_minutes"], 15)
+
+        rows = stable_nxdomain_observations()
+        for row in rows:
+            row["observed_at_utc"] = (
+                row["observed_at_utc"][:10]
+                + ("T00:01:00Z" if row["qtype"] == "A" else "T23:59:00Z")
+            )
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertEqual(metrics["pairs_with_seven_day_complete_history"], 0)
+
     def test_old_nxdomain_from_one_pair_cannot_extend_recent_quorum_span(self):
         rows = stable_nxdomain_observations()
         rows = [
