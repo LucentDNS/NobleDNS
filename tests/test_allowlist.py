@@ -11,7 +11,7 @@ class AllowlistTests(unittest.TestCase):
     def test_empty_project_allowlist_is_valid(self):
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "allowlist.txt"
-            path.write_text("# reviewed exact hostnames only\\n", encoding="utf-8")
+            path.write_text("# reviewed exact hostnames only\n", encoding="utf-8")
             self.assertEqual(mod.parse_allowlist(path), set())
 
     def test_allowlist_generates_active_exception_and_removes_matching_subtree(self):
@@ -27,14 +27,14 @@ class AllowlistTests(unittest.TestCase):
     def test_allowlist_is_case_normalized_and_rejects_duplicate(self):
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "allowlist.txt"
-            path.write_text("Example.com\\nexample.com\\n", encoding="utf-8")
+            path.write_text("Example.com\nexample.com\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "Duplicate allowlist"):
                 mod.parse_allowlist(path)
 
     def test_allowlist_rejects_rule_syntax_and_broad_patterns(self):
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "allowlist.txt"
-            path.write_text("||example.com^\\n", encoding="utf-8")
+            path.write_text("||example.com^\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "exact domain"):
                 mod.parse_allowlist(path)
 
