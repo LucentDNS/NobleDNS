@@ -11,12 +11,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.0"
+VERSION_BASE = "1.0.1"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
     "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.\n"
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
+    "! Version: 1.0.1\n"
+    "! Expires: 1 day\n"
     "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
 )
 MIN_SOURCE_BYTES = 100_000
@@ -346,6 +348,8 @@ def build(args) -> Path:
     try:
         stage = temp_parent / "latest"; stage.mkdir()
         (stage / "dns-filter.txt").write_bytes(main_bytes)
+        # Compatibility path: byte-identical to the canonical subscription.
+        (stage / "NobleDNS.txt").write_bytes(main_bytes)
         shutil.copy2(LICENSE_PATH, stage / "LICENSE")
         shutil.copy2(THIRD_PARTY_NOTICES_PATH, stage / "THIRD-PARTY-NOTICES.md")
         staged_licenses = stage / "licenses"; staged_licenses.mkdir()
@@ -367,6 +371,8 @@ def build(args) -> Path:
         # Validate staged bytes before swapping latest; keep previous latest intact on failure.
         staged = (stage / "dns-filter.txt").read_bytes()
         if sha256(staged) != manifest["main_subscription_sha256"]: raise RuntimeError("Staged SHA256 mismatch")
+        if (stage / "NobleDNS.txt").read_bytes() != staged:
+            raise RuntimeError("Legacy subscription mirror differs from canonical output")
         latest = out / "latest"; backup = out / ".latest-previous"
         if backup.exists(): shutil.rmtree(backup)
         if latest.exists(): os.replace(latest, backup)
