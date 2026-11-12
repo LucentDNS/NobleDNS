@@ -128,7 +128,7 @@ class DNSLivenessCollectorTests(unittest.TestCase):
         config = json.loads(
             (Path(__file__).parents[1] / "tools" / "dns-liveness-resolvers.example.json").read_text()
         )
-        self.assertEqual(len(mod.validate_config(config)), 3)
+        self.assertEqual(len(mod.validate_config(config)), 4)
         broken = json.loads(json.dumps(config))
         broken["resolvers"][2]["endpoint"] = "https://dns10.quad9.net/dns-query"
         with self.assertRaisesRegex(ValueError, "scheme/path"):
