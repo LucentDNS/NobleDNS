@@ -1,7 +1,7 @@
 {
-  "total": 303621,
+  "total": 303652,
   "forms": {
-    "domain_and_subdomains": 303525,
+    "domain_and_subdomains": 303556,
     "domain_anchor_without_end_boundary": 69,
     "subdomains_only_with_end_boundary": 23,
     "subdomains_only": 4

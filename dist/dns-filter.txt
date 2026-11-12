@@ -1,6 +1,8 @@
 ! Title: NobleDNS Filter
 ! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.
 ! Homepage: https://github.com/LucentDNS/NobleDNS
+! Version: 1.0.1
+! Expires: 1 day
 ! Sources: AdGuard DNS Filter, HaGeZi Multi Normal
 .1.1.1.l80.js^
 .3.n.2.1.l50.js
@@ -35707,6 +35709,7 @@
 ||askme4date.com^
 ||askprivate.com^
 ||askrwut.qpon^
+||asktierraskidders.cyou^
 ||asl-shell.com^
 ||asleepcockpitborne.com^
 ||asleepextraordinary.com^
@@ -76538,6 +76541,7 @@
 ||djez1k-conversions.appsflyersdk.com^
 ||djez1k-inapps.appsflyersdk.com^
 ||djez1k-launches.appsflyersdk.com^
+||djfbhwtkraukq.space^
 ||djgnqo9p1icyr.cloudfront.net^
 ||djgqucjpunwhs.store^
 ||djhanucviqf.com^
@@ -86223,6 +86227,7 @@
 ||eslufnstwaboy.site^
 ||esm1.net^
 ||esmchqfdwfwdu.website^
+||esmg-pixel.vercel.app^
 ||esmr.eshopmarketer.com^
 ||esmzlhblkqsks.site^
 ||esn-eu.com^
@@ -94308,6 +94313,7 @@
 ||forgivenessmafia.com^
 ||forgivengirlie.com^
 ||forgivenrepresent.com^
+||forgoeroctober.cfd^
 ||forgot2scan.com^
 ||forgotindication.com^
 ||forgoula.com^
@@ -100180,6 +100186,7 @@
 ||ghonnz.columbiasports.co.jp^
 ||ghoqnanthfges.site^
 ||ghorserver.ghoreponno.com^
+||ghosegscdwzvq.site^
 ||ghostarmy.de^
 ||ghostassets.org^
 ||ghostclient.net^
@@ -113235,6 +113242,7 @@
 ||heky0uxng.com^
 ||helal.heelshoes.co.uk^
 ||helandsca.cfd^
+||helasmess.com^
 ||heldholi.cyou^
 ||heldholz.com^
 ||heldsadness.com^
@@ -119342,6 +119350,7 @@
 ||il-picchio.eu^
 ||il-rdx2-lgtvsdp-com.aws-prd.net^
 ||il191he2tib518wrggj.cfd^
+||il3oqymnmmmet9yf7v735jyw.rest^
 ||il8mxrlp2g39ry5fqjjrb3wc.cyou^
 ||ila9trk.com^
 ||ilaixsjjwkjoc.online^
@@ -123860,6 +123869,7 @@
 ||ipwwaxosr.com^
 ||ipwyyaiewuzfq.online^
 ||ipxlwzvtmleub.site^
+||ipybuapatcptx.online^
 ||ipyjxs.chowsangsang.com^
 ||ipyolmutfxlsv.website^
 ||ipytsjahiesvm.online^
@@ -124977,6 +124987,7 @@
 ||iyanyijie.com^
 ||iyasdasfda.w8510.com^
 ||iyavmv-gcdsdk.appsflyersdk.com^
+||iyazotbnfrqoy.site^
 ||iybordpmxdrno.online^
 ||iybtgfvfrnhro.store^
 ||iycifx.coldwatercreek.com^
@@ -125050,6 +125061,7 @@
 ||iyjpqf.speaking-agency.com^
 ||iykl.xyz^
 ||iykl2.xyz^
+||iylmhxsetacid.space^
 ||iylmylijdicmv.site^
 ||iylqhtoolnuce.website^
 ||iylwnmnnchzkq.website^
@@ -125120,6 +125132,7 @@
 ||izgmr.medisave.co.uk^
 ||izgve.sokolovelaw.com^
 ||izhd.top^
+||izhenvejbgnqc.online^
 ||izhfs.bonowellness.com^
 ||izhpfrxnvucbn.online^
 ||izhqi.exploreforia.com^
@@ -126322,6 +126335,7 @@
 ||jfjip.onceuponafarmorganics.com^
 ||jfjjkyifclsve.site^
 ||jfjle4g5l.com^
+||jfjxdvdareawn.space^
 ||jfkevitl.neuroflash.com^
 ||jfljazeimhaqv.space^
 ||jfllppccauvpj.online^
@@ -126538,6 +126552,7 @@
 ||jhvvdcqyhuwud.online^
 ||jhwwtm.idmarket.com^
 ||jhzfwl.cn^
+||jhzwuevetejiv.website^
 ||ji.hl.cn^
 ||jia183d6v.com^
 ||jiajo.com^
@@ -126864,6 +126879,7 @@
 ||jkdqm.totaldiabetessupply.com^
 ||jke1.jianke.com^
 ||jkerpa.clogau.co.uk^
+||jkfelwddet.com^
 ||jkfivewwaldgy.space^
 ||jkfsernucmedm.site^
 ||jkftythniutuos.com^
@@ -128126,6 +128142,7 @@
 ||jtexktcmlh.com^
 ||jtgmarket.com^
 ||jth-transport.be^
+||jthajuayablgw.space^
 ||jthargdwafkza.online^
 ||jthflt.wingbling.co.kr^
 ||jthhb.maxaroma.com^
@@ -132765,6 +132782,7 @@
 ||ksprjvv.com^
 ||kspuqt.encosmall.kr^
 ||kspyqwogczssl.website^
+||ksqjatyuv.com^
 ||ksr.goatcounter.com^
 ||ksr6uu1mk.com^
 ||ksrqsw.slim9.co.kr^
@@ -173054,6 +173072,7 @@
 ||njzyjy.cn^
 ||nk.axtun.fun^
 ||nkaczwsqxlolq.website^
+||nkalejcowzkwm.online^
 ||nkarmh.jmbullion.com^
 ||nkavabaw.com^
 ||nkbfkirbnxdbo.site^
@@ -184951,6 +184970,7 @@
 ||pfp.sina.net^
 ||pfqndecyikdrm.site^
 ||pfqwbqs.cn^
+||pfrlonhkozhuc.online^
 ||pftgorw.shop^
 ||pftk.temu.com^
 ||pfucg.nothingnew.com^
@@ -190621,6 +190641,7 @@
 ||preformcopal.cyou^
 ||prefz.io^
 ||pregnantskipper.com^
+||prehendkafirs.com^
 ||prehurl.com^
 ||preibisch.pl^
 ||preis-meister.de^
@@ -197881,6 +197902,7 @@
 ||rcvobudipmrke.site^
 ||rcvqdl.www.ied.edu^
 ||rcvriqufiwtct.site^
+||rcvvkdxkzimii.online^
 ||rcwbox.com^
 ||rcwgoidugaljp.site^
 ||rcwjxhashhfyg.online^
@@ -204274,6 +204296,7 @@
 ||ruyupu.com^
 ||ruzickap-github-io.goatcounter.com^
 ||ruziecoraz.com^
+||ruzrrgqtqukxm.online^
 ||rv-ads.supplyframe.com^
 ||rv.tropichideaway.com^
 ||rv1lws-cdn-settings.appsflyersdk.com^
@@ -262800,6 +262823,7 @@
 ||tg-la7-it.online^
 ||tg-la7.online^
 ||tg.coffeeandbibletime.com^
+||tg.finance.ua^
 ||tg.meitu.com^
 ||tg.minfin.com.ua^
 ||tg.mybb.ru^
@@ -265065,6 +265089,7 @@
 ||tldxkrbblwilm.space^
 ||tle.ru^
 ||tlfeivdeybass.store^
+||tlgewzrjvefxd.online^
 ||tlgfwgtjceusl.online^
 ||tlgivardfp.com^
 ||tlgpglndhwfvq.site^
@@ -284745,6 +284770,7 @@
 ||vliplatform.com^
 ||vlitag.com^
 ||vlive.qqvideo.tc.qq.com^
+||vlixkpyhlfclx.website^
 ||vlixvwaaluajs.online^
 ||vlizo-modehaus.de^
 ||vljfo.lanimal.co^
@@ -286365,6 +286391,7 @@
 ||vuvqsctm.com^
 ||vuvrail.com^
 ||vuwgityuhrcvf.online^
+||vuwirjuxewcxf.website^
 ||vuwjds-cdn-settings.appsflyersdk.com^
 ||vuwjv7sjvg7.zedporn.com^
 ||vuwofoeszqiby.store^
@@ -287250,6 +287277,7 @@
 ||waitressamazinglyindependent.com^
 ||waiveryjambosbis.qpon^
 ||waixpa.supriagora.com.br^
+||waj301k9sb.com^
 ||wajulidbennc.vu^
 ||wajw.top^
 ||wakabairo.net^
@@ -287559,6 +287587,7 @@
 ||washokufinder.lol^
 ||washpost.nile.works^
 ||washrepone.com^
+||washtubzayinstriole.cfd^
 ||wasiz.com^
 ||wasm.stream^
 ||wasntlocutor.cyou^
@@ -300447,6 +300476,7 @@
 ||z1el6lgol.com^
 ||z1fl848ft.com^
 ||z1hihu.xmcimg.com^
+||z1lktnvwfxmf22y2qepz5wgmu7696.cfd^
 ||z1lmjks4l.com^
 ||z1mbdp-cdn-settings.appsflyersdk.com^
 ||z1mbdp-launches.appsflyersdk.com^
@@ -302256,6 +302286,7 @@
 ||zlyd21-launches.appsflyersdk.com^
 ||zlywd.kasaustralia.com.au^
 ||zlyyboiullypt.online^
+||zlzcekxqmuflp.site^
 ||zlzczl.fajob.jp^
 ||zlzhwpoqancln.online^
 ||zlzmctsagb.com^
@@ -302296,6 +302327,7 @@
 ||zmiqg.eccouncil.org^
 ||zmiqtnsxzbthu.online^
 ||zmizkpjamkesd.site^
+||zmjlrxckuqcpe.online^
 ||zmjt3xi8k.com^
 ||zmjyyrdtjgmlq.online^
 ||zmk852tp7.com^
@@ -302708,6 +302740,7 @@
 ||zprk.io^
 ||zprwx.hokiesports.com^
 ||zpsmdryujwkoz.site^
+||zpteilaamwnwz.space^
 ||zptfrxoaumxhnu.com^
 ||zptsgryw.cn^
 ||zpu.samsungelectronics.com^

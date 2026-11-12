@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-12T04:02:24.173847+00:00",
+  "built_at_utc": "2026-11-12T04:14:28.991200+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -35,9 +35,9 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4659508,
-      "sha256": "064df1e05681607adf00762378f8cc2e6c6cd02b66614882fe1153e4ff5a9af5",
-      "simple_block_rules": 189711,
+      "bytes": 4660255,
+      "sha256": "c865b27792e275335a6c0e66e03c356029519015048d4e5f82592ad00fcfe39b",
+      "simple_block_rules": 189743,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -66,19 +66,19 @@
       "excluded_lines_by_reason": {}
     }
   },
-  "blocking_rules": 303621,
-  "common_rules": 94272,
+  "blocking_rules": 303652,
+  "common_rules": 94273,
   "source_only_rules": {
-    "adguard_dns": 95439,
-    "hagezi_normal": 113910
+    "adguard_dns": 95470,
+    "hagezi_normal": 113909
   },
   "exception_rules_separate": 11,
   "max_rules": 500000,
-  "main_subscription_sha256": "85529d3615746bae9fd24697cbc9189e28c127d7f1e19d2053f2bc931e48b994",
+  "main_subscription_sha256": "013b616f743b03a4e7f200a9f952cdcafc9b3389a78a7362f0587c6a8dd0d3be",
   "syntax_audit": {
-    "total": 303621,
+    "total": 303652,
     "forms": {
-      "domain_and_subdomains": 303525,
+      "domain_and_subdomains": 303556,
       "domain_anchor_without_end_boundary": 69,
       "subdomains_only_with_end_boundary": 23,
       "subdomains_only": 4
