@@ -58,6 +58,16 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertEqual(exceptions, {"@@||safe.example.test^"})
             self.assertEqual(unsupported, [])
 
+    def test_rule_loader_rejects_trailing_dot_patterns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.txt"
+            path.write_text("||valid.example.test^\\n.invalid.example.test.\\n", encoding="utf-8")
+            blocks, exceptions, unsupported = scorer.load_rules(path)
+            self.assertEqual(blocks, {"||valid.example.test^"})
+            self.assertEqual(exceptions, set())
+            self.assertEqual(len(unsupported), 1)
+            self.assertIn("invalid hostname", unsupported[0])
+
     def test_confusion_matrix_is_category_specific(self) -> None:
         rows = [
             {"hostname": "ads.example.test", "category": "ad", "expected": "block", "evidence_ref": "test-1"},
