@@ -86,6 +86,14 @@ A targeted follow-up search found first-party Vivo documentation relevant to the
 
 **Decision remains unchanged:** `open-ad.vivo.com.cn`, `ad-market.vivo.com.cn` and `uapi-ads.vivo.com.cn` are not approved for the public blocklist. The official evidence improves ecosystem attribution but does not supply the hostname-to-client-traffic mapping, current endpoint observations, or compatibility evidence needed for a block decision.
 
+## 4.2 Official Baidu evidence: confirmed sibling endpoint, not the .cn candidates
+
+Baidu's own MobAds JSSDK deployment page documents the native `Baidu_MobAds_SDK.jar` integration and shows the ad-placement script loading from `mobads.baidu.com/ads/js/hnew.js`. The page says the script is inserted at the location where the advertisement is displayed. This is direct vendor evidence that the `.com` hostname participates in Baidu ad delivery.
+
+Source: https://mobads.baidu.com/ads/indexlp.html
+
+This evidence does **not** prove that `mobads.baidu.cn` is an equivalent current endpoint, and it does not establish the precise purpose of `mobads-logs.baidu.cn`. The latter may be measurement, diagnostics, or a broader SDK logging service. Their inclusion in multiple upstream/community lists remains corroboration, not candidate-specific functional proof. Keep both .cn candidates unapproved; do not infer the parent `baidu.cn` or `baidu.com` zones.
+
 ## 5. License and provenance gate
 
 - OISD declares GPL-3.0 for its list. It is the clearest candidate source for a controlled technical evaluation, but any reused rule still needs required attribution/notices and review of third-party inputs.
