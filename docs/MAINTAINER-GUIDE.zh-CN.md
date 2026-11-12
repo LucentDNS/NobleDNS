@@ -28,9 +28,9 @@ NobleDNS/
 ├── config/
 │   └── sources.json
 ├── docs/
-│   ├── CHANGELOG.md
 │   ├── FEEDBACK.md
 │   ├── MAINTAINER-GUIDE.md
+│   ├── MAINTAINER-GUIDE.zh-CN.md
 │   ├── QUALITY.md
 │   ├── RC2.2-BASELINE.md
 │   └── RELEASE.md
