@@ -2,7 +2,7 @@
 """Score a reviewed hostname corpus against a simple AdGuard DNS subscription.
 
 This is an offline rule-semantics evaluator, not a live DNS/client test.
-Supported forms: ||domain^, ||domain, .domain^, .domain and @@||domain^.
+Supported forms: ||domain^, ||domain and @@||domain^.
 """
 from __future__ import annotations
 
@@ -16,7 +16,6 @@ from datetime import date
 from pathlib import Path
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
-LEADING_DOT_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 CATEGORIES = {"ad", "tracking", "telemetry", "threat", "essential", "legitimate"}
 FIELDS = [
     "hostname", "category", "expected", "evidence_ref", "evidence_summary",
@@ -25,8 +24,7 @@ FIELDS = [
 
 
 def valid_hostname(value: str) -> bool:
-    value = value.rstrip(".")
-    if not value or len(value) > 253 or "." not in value:
+    if not value or len(value) > 253 or "." not in value or value.endswith("."):
         return False
     try:
         ascii_name = value.encode("idna").decode("ascii")
@@ -106,10 +104,6 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
         if not line or line.startswith(("!", "#")):
             continue
         match = RULE_RE.fullmatch(line)
-        leading_dot = False
-        if not match:
-            match = LEADING_DOT_RE.fullmatch(line)
-            leading_dot = bool(match)
         if not match:
             unsupported.append(f"line {line_no}: {line}")
             continue
@@ -123,8 +117,6 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
             unsupported.append(f"line {line_no}: unsupported exception {line}")
         elif is_exception:
             exceptions.add("@@||" + domain + "^")
-        elif leading_dot:
-            blocks.add("." + domain + ("^" if has_caret else ""))
         else:
             blocks.add("||" + domain + ("^" if has_caret else ""))
     return blocks, exceptions, unsupported
@@ -133,9 +125,6 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
 def rule_matches(hostname: str, rule: str) -> bool:
     if rule.startswith("@@"):
         rule = rule[2:]
-    if rule.startswith("."):
-        domain = rule[1:].removesuffix("^")
-        return hostname != domain and hostname.endswith("." + domain)
     if not rule.startswith("||"):
         return False
     pattern = rule[2:]
