@@ -8,6 +8,10 @@ class ConfigTests(unittest.TestCase):
         self.assertTrue(mod.FILTER_HEADER.startswith("! Title: NobleDNS Filter\n"))
         self.assertIn("! Homepage: https://github.com/LucentDNS/NobleDNS\n", mod.FILTER_HEADER)
 
+    def test_project_version_is_stable_semver(self):
+        import re
+        self.assertRegex(mod.VERSION_BASE, r"^\\d+\\.\\d+\\.\\d+$")
+
     def test_exactly_two_approved_sources(self):
         cfg = mod.load_config()
         self.assertEqual([x["key"] for x in cfg["sources"]], ["adguard_dns", "hagezi_normal"])
