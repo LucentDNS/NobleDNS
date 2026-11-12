@@ -18,7 +18,7 @@ NobleDNS maintains **one balanced public edition**, designed with mainland China
 
 - The only supported public product is the **NobleDNS Balanced Edition**.
 - Do not create separate aggressive, strict, lite, regional or app-specific public variants unless the project explicitly revises this policy after evidence and maintenance-capacity review.
-- The main subscription remains block-only. Exceptions and allowlist candidates are reviewed separately; they must not be silently merged into the main blocklist.
+- Upstream exception rules remain review-only and are never activated automatically. A separate project-maintained `config/allowlist.txt` is the only input allowed to generate active `@@||domain^` exceptions; each entry must be supported by reproducible compatibility evidence. The allowlist starts empty. Active exceptions are included in the main subscription and covered by tests.
 - A source is not accepted merely because it is popular or large. Review its purpose, license, syntax, update behavior, rule scope, overlap, provenance and likely compatibility impact.
 - Upstream lists currently configured are general-purpose lists, not mainland-China-specific datasets. Do not imply that their upstream maintainers have validated them for mainland services.
 
@@ -77,11 +77,19 @@ These checks verify build integrity and the rules covered by the regression corp
 
 ## Current parser scope
 
-The compiler supports the documented AdGuard DNS forms: ||domain^, ||domain, .domain^ and .domain when the hostname is a valid multi-label DNS name. AdGuard documents ||example.org^ as blocking the apex and all subdomains, while .example.org blocks subdomains only and leaves the apex domain allowed. NobleDNS preserves these forms exactly; it never rewrites leading-dot rules into apex-and-subdomain blocks. The ||domain form without an explicit ^ is retained unchanged from upstream and listed for targeted compatibility review. AdGuard documents || as a hostname-start anchor and ^ as the hostname-end separator; the 69 retained bare-anchor rules therefore need targeted client verification before we claim broad compatibility. See the [official AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
+The compiler publishes only the two documented AdGuard DNS hostname-anchor forms: `||domain^` and `||domain`, provided the hostname is a valid multi-label DNS name. The bare-anchor form without an explicit `^` is valid syntax and is preserved unchanged; it is not discarded merely for lacking an end separator.
 
-The real upstream leading-dot regression fixture contains 28 source records: 23 .domain^ rules, 4 .domain rules and 1 trailing-dot rule that must remain excluded. Parser regression coverage does not establish broad DNS-client compatibility. Live compatibility testing remains part of ongoing maintenance.
+Leading-dot forms (`.domain^` and `.domain`) are excluded from the public output and recorded in `parser-exclusions.csv` as unsupported by NobleDNS's selected DNS syntax contract. They are not rewritten into other rules. The real upstream regression fixture contains 28 leading-dot records; all 28 must remain excluded unless a future standards review explicitly expands the supported syntax and tests prove the behavior.
 
-Do not expand parser scope unless tests prove semantic equivalence for the target clients. Do not silently turn unsupported patterns into ordinary domain blocks.
+The 69 retained `||domain` rules are inventoried in `syntax-review.csv` for targeted client matching verification. This is a compatibility-review item, not a claim that the syntax is invalid. See the [official AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
+
+## Allowlist policy
+
+The upstream `@@` exceptions are preserved in `whitelist-review.txt` for source-level audit only. They are not activated automatically because an upstream exception may override a block supplied by another source.
+
+Project-approved exceptions are maintained separately in `config/allowlist.txt`. Each non-comment line must be a valid exact hostname. The builder validates the entries, removes matching block rules for that hostname and its subdomains, and emits a corresponding `@@||hostname^` exception in the main subscription. The file is intentionally empty until a compatibility issue is reproduced and reviewed. Do not add broad parent domains without evidence.
+
+Do not expand parser scope or allowlist entries merely to increase coverage or silence unverified reports.
 
 ## Automated publication checks
 
