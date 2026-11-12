@@ -22,6 +22,7 @@ import update as builder
 
 BASELINE_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt"
 MANIFEST_URL = "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/manifest.json"
+AWA_CHANGELOG_URL = "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/assets/README_Update.md"
 SOURCES = {
     "hg1": {
         "name": "HG main blocking list (hg1.txt)",
@@ -96,6 +97,16 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def source_metadata(data: bytes) -> dict:
+    metadata = {}
+    for line in data.decode("utf-8-sig").splitlines()[:30]:
+        match = re.match(r"^\s*!\s*([^:]+):\s*(.*?)\s*$", line)
+        if match:
+            key = match.group(1).strip().lower().replace(" ", "_")
+            metadata[key] = match.group(2).strip()
+    return metadata
+
+
 def parse_snapshot(key: str, data: bytes) -> dict:
     blocks, exceptions, rejected, rows = builder.parse_source(data, key, min_blocks=0)
     block_parts = {}
@@ -141,6 +152,7 @@ def parse_snapshot(key: str, data: bytes) -> dict:
                               if line.strip() and not line.strip().startswith(("!", "#", "[", "//"))),
         "sha256": sha256(data),
         "bytes": len(data),
+        "metadata": source_metadata(data),
     }
 
 def suffixes(hostname: str) -> set[str]:
