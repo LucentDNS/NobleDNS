@@ -32,13 +32,14 @@ NobleDNS 是一个独立维护的 DNS 过滤规则项目，面向日常网络使
 - [查看旧地址兼容文件](https://github.com/LucentDNS/NobleDNS/blob/main/NobleDNS.txt)
 - [构建清单](dist/manifest.json)
 - [最新验证报告](dist/validation-report.txt)
+- [当前生效的上游例外规则](dist/allowlist-active.txt)
 - [正式版本发布页](https://github.com/LucentDNS/NobleDNS/releases)
 
 ## 过滤范围
 
 NobleDNS 在 DNS 层面过滤来源规则所覆盖的广告、跟踪、遥测及其他不需要的域名。DNS 过滤是网络防护的一环，无法去除所有形式的广告，例如第一方广告、与正常业务共用域名的广告，以及直接嵌入应用或媒体内容的广告。
 
-主订阅只包含封禁规则。上游例外规则会单独审查，不会未经判断就直接合并为放行规则。
+主订阅包含封禁规则，以及上游提供、通过语法和域名校验的简单例外规则。这些例外规则用于保留上游明确表达的兼容性意图，并与封禁规则一起参与客户端匹配。复杂或不支持的例外语法仍会被排除，并记录在解析排除报告中。
 
 ## 规则来源与维护方式
 

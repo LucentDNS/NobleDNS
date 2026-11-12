@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.1"
+VERSION_BASE = "1.0.2"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
@@ -317,6 +317,16 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     }, review_rows
 
 
+def render_subscription(blocks: set[str], exceptions: set[str]) -> str:
+    """Render the canonical filter while preserving active exception semantics."""
+    if blocks & exceptions:
+        raise ValueError("A rule cannot be both a blocking rule and an exception")
+    rules = blocks | exceptions
+    if not rules:
+        raise ValueError("Refusing an empty subscription")
+    return FILTER_HEADER + "\n".join(sorted(rules)) + "\n"
+
+
 def build(args) -> Path:
     validate_licensing_files()
     cfg = load_config(Path(args.config))
@@ -342,29 +352,25 @@ def build(args) -> Path:
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
     merged = parsed[keys[0]] | parsed[keys[1]]
-    check_drift(source_stats, merged, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
+    all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
+    published_rules = merged | all_exceptions
+    check_drift(source_stats, published_rules, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
     common = parsed[keys[0]] & parsed[keys[1]]
     syntax_summary, syntax_review_rows = syntax_audit(merged, parsed)
-    if len(merged) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(merged):,} > {MAX_RULES:,}")
+    if len(published_rules) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(published_rules):,} > {MAX_RULES:,}")
     if not merged: raise RuntimeError("Refusing empty output")
-    all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
-    main = FILTER_HEADER + "\n".join(sorted(merged)) + "\n"
+    main = render_subscription(merged, all_exceptions)
     main_bytes = main.encode("utf-8")
-    # Verify every output line and preserve the source rule syntax exactly.
+    # Validate every published blocking and exception rule without rewriting its syntax.
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
-    if len(lines) != len(merged) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
+    if len(lines) != len(published_rules) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
     for line in lines:
-        m = (
-            BLOCK_RE.fullmatch(line)
-            or BARE_RE.fullmatch(line)
-            or LEADING_DOT_CARET_RE.fullmatch(line)
-            or LEADING_DOT_BARE_RE.fullmatch(line)
-        )
+        m = EXCEPTION_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line) or LEADING_DOT_CARET_RE.fullmatch(line) or LEADING_DOT_BARE_RE.fullmatch(line)
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "block-only", "exceptions": "separate review artifact; not active in main list", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression", "source_drift_gate_percent": args.max_source_change_percent}}
-    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Separate exceptions: {len(all_exceptions):,}", f"Rule cap: {len(merged):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, uniqueness, rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression", "source_drift_gate_percent": args.max_source_change_percent}}
+    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
     try:
@@ -378,7 +384,12 @@ def build(args) -> Path:
         shutil.copy2(LICENSE_COPY_PATH, staged_licenses / "GPL-3.0.txt")
         (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (stage / "validation-report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
-        (stage / "whitelist-review.txt").write_text("! Source exceptions for manual review only; not active in dns-filter.txt\n" + "\n".join(sorted(all_exceptions)) + ("\n" if all_exceptions else ""), encoding="utf-8")
+        active_allowlist_lines = ["! Simple upstream exception rules active in dns-filter.txt; complex exception syntax remains excluded."]
+        for key in keys:
+            if exceptions[key]:
+                active_allowlist_lines.append(f"! Source: {key}")
+                active_allowlist_lines.extend(sorted(exceptions[key]))
+        (stage / "allowlist-active.txt").write_text("\n".join(active_allowlist_lines) + "\n", encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
         write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "documented_semantics", "source"], syntax_review_rows)
         (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -39,7 +39,7 @@ NobleDNS/
 │   ├── manifest.json
 │   ├── parser-exclusions.csv
 │   ├── validation-report.txt
-│   └── whitelist-review.txt
+│   └── allowlist-active.txt
 ├── licenses/
 ├── tests/
 ├── .gitattributes
@@ -139,7 +139,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 | `manifest.json` | 来源、数量、哈希、构建信息 |
 | `validation-report.txt` | 构建验证报告 |
 | `parser-exclusions.csv` | 被排除规则及原因 |
-| `whitelist-review.txt` | 上游例外规则，仅供审查 |
+| `allowlist-active.txt` | 已纳入主订阅的简单上游例外规则 |
 | `sources/sources-manifest.json` | 上游快照及 SHA256 |
 
 特别关注：
@@ -149,7 +149,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 - 来源规则数量没有异常变化。
 - 新增、删除规则比例合理。
 - 排除原因没有出现异常增长。
-- 主订阅只包含阻止规则。
+- 主订阅包含封禁规则和通过语法、域名校验的简单上游例外规则；复杂例外仍排除。
 - 构建 SHA256 与 manifest 一致。
 
 ### 4.4 运行回归测试
@@ -176,7 +176,8 @@ git diff --check
 - 两个来源之间的重叠变化。
 - 复杂语法排除变化。
 - 前置点规则（`.domain^`、`.domain`）的保留与排除变化。
-- 例外规则变化。
+- 例外规则变化及其是否进入 `allowlist-active.txt`。
+- 确认 `allowlist-active.txt` 中每条规则都出现在主订阅中，并核对 manifest 的 `active_exception_rules`。
 
 对于大幅变化，先保留上游快照和构建结果，进行单独审查。
 
@@ -246,7 +247,7 @@ build-output/
     ├── manifest.json
     ├── validation-report.txt
     ├── parser-exclusions.csv
-    ├── whitelist-review.txt
+    ├── allowlist-active.txt
     └── sources/
         └── sources-manifest.json
 ```

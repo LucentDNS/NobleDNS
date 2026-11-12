@@ -4,6 +4,11 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+### Changed
+- Activate the 11 currently supported simple upstream exception rules in the main subscription, preserving their intended allow semantics while keeping unsupported complex exceptions excluded.
+- Publish `dist/allowlist-active.txt` and record active exception counts in the manifest and validation report.
+- Move the next stable release line to 1.0.2; keep v1.0.1 immutable.
+
 ### Fixed
 - Restore the legacy root-level `NobleDNS.txt` subscription as a byte-identical build artifact and publish it alongside the canonical `dist/dns-filter.txt` list.
 - Add filter version and one-day expiry metadata, with automated checks against the build manifest.
