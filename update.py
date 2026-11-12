@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NobleDNS RC3 candidate builder. Pinned dependencies; fail closed."""
+"""NobleDNS public DNS filter builder. Pinned dependencies; fail closed."""
 from __future__ import annotations
 import argparse, csv, hashlib, ipaddress, json, os, re, shutil, socket, sys, tempfile, time
 import http.client, urllib.error, urllib.request
@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.0-rc3"
+VERSION_BASE = "1.0.0"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
