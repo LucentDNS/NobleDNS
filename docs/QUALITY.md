@@ -4,7 +4,7 @@
 
 NobleDNS maintains **one balanced public edition**, designed with mainland China everyday network compatibility as a primary consideration. The project favors conservative, evidence-based DNS blocking over maximum rule count or aggressive blocking.
 
-“Mainland-oriented” and “low false-positive” are design priorities. They are not measured performance claims until supported by a representative test corpus, reproducible client tests and published results. Do not describe the project as having a proven low false-positive rate while that evidence is absent.
+“Mainland-oriented” and “low false-positive” are design priorities, not measured performance claims. NobleDNS now maintains a small automated regression corpus: 72 essential-service hostnames are checked for unintended blocking, and 20 known advertising-infrastructure hostnames are checked for continued blocking coverage. This is useful regression protection, but it is not representative of all mainland services and does not establish a measured real-world false-positive or true-positive rate. Do not describe the project as having a proven low false-positive rate.
 
 ## Quality priorities
 
