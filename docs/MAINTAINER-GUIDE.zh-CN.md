@@ -275,6 +275,12 @@ build-output/
 
 `.github/workflows/daily-build-release.yml`
 
+发布身份验证与最小权限配置：
+
+`docs/RELEASE-AUTHENTICATION.md`
+
+正式发布使用仅安装于 NobleDNS 仓库、仅具有 `contents: write` 权限的专用 GitHub App。工作流默认 `GITHUB_TOKEN` 保持 `contents: read`。App 私钥仅通过 `release` 环境提供，该环境必须限制为 `main` 分支。在 App、环境、仓库变量及发布路径测试全部完成前，不得启用对应的规则集绕过权限、PR 要求和必需状态检查。
+
 当前自动化行为：
 
 | 触发方式 | 行为 |
