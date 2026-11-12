@@ -155,12 +155,13 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 ```powershell
 py -3.12 -m py_compile .\update.py
 py -3.12 -m unittest discover -s tests -v
+py -3.12 .\tools\validate_evidence_corpus.py
 git diff --check
 ```
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
+证据语料验证器必须通过；语料为空是当前预期状态，不代表已完成真实域名分类。新增或更新记录时，必须附带可追溯证据、审查日期、置信度和预期策略。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条规则全部被排除并写入 `parser-exclusions.csv`。AdGuard DNS 官方语法文档明确说明 `||domain^` 和 `||domain`，未将 `.domain^` / `.domain` 列为 hostname-pattern 规则；不得把前导点规则改写成 `||domain^`。
 
 #### 添加回归用例
 
