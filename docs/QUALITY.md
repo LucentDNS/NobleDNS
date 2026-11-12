@@ -97,6 +97,10 @@ Do not expand parser scope or alter source semantics merely to increase coverage
 
 Automated checks do not replace testing every app, site, device or DNS client. Issues reported by users are reviewed and, when confirmed, added to regression coverage where appropriate.
 
+## Exception rule governance
+
+DNS exception rules can override matching block rules. The current 11 simple upstream exceptions are recorded in [`data/exception-review.csv`](../data/exception-review.csv) and documented in the [exception review procedure](EXCEPTION-REVIEW.md). They are marked `pending`, not independently approved by NobleDNS. Their presence in an upstream source is provenance, not proof of necessity or appropriate scope. This register does not yet enforce a build-time approval gate; the existing 11 inherited exceptions remain active until a separately reviewed policy change is made. New exceptions must not be treated as approved by default.
+
 ## Feedback
 
 If you find a site or app that does not work as expected, a domain that should be blocked but is not, or another rule-related problem, please report it through [GitHub Issues](https://github.com/LucentDNS/NobleDNS/issues). Include the affected hostname, site or app, exact affected function, DNS client and version, reproduction steps, and relevant sanitized DNS evidence. See [Feedback and rule improvement](FEEDBACK.md).
