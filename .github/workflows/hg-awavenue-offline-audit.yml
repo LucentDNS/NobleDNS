@@ -16,6 +16,10 @@ permissions:
   actions: read
   contents: write
 
+concurrency:
+  group: hg-awavenue-audit-${{ github.ref }}
+  cancel-in-progress: false
+
 # Push and pull_request events both fired for every same-repository PR update.
 # This branch is the only permitted target, so one push-triggered audit is enough.
 concurrency:
@@ -100,28 +104,34 @@ jobs:
         run: |
           set -euo pipefail
           TARGET="docs/audits/hg-awavenue-2026-11-12"
-          mkdir -p "$TARGET"
-          cp audit-output/reports/01-HG-source-audit.md "$TARGET/"
-          cp audit-output/reports/02-AWAvenue-source-audit.md "$TARGET/"
-          cp audit-output/reports/03-merged-increment-audit.md "$TARGET/"
-          cp audit-output/audit.json "$TARGET/"
-          cp audit-output/candidate-domain-inventory.csv "$TARGET/"
-          cp audit-output/unsupported-source-lines.csv "$TARGET/"
-          cp audit-output/effective-incremental-rules.csv "$TARGET/"
-          cp audit-output/suspected-source-anomalies.csv "$TARGET/"
-
+          TARGET_BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          TARGET_BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          # Another audit run may have advanced this isolated branch while this
-          # job was processing. Rebase the report-only commit parent onto its
-          # current tip before staging, so stale pushes cannot be rejected.
-          git fetch origin "$TARGET_BRANCH"
-          git reset --soft "origin/${TARGET_BRANCH}"
-          git add "$TARGET"
-          if git diff --cached --quiet; then
-            echo "Audit reports are unchanged; no commit is needed."
-            exit 0
-          fi
-          git commit -m "audit: publish HG and AWAvenue offline reports"
-          git push origin "HEAD:refs/heads/${TARGET_BRANCH}"
+
+          # Reconcile concurrent audit runs safely. The generated audit-output
+          # directory is untracked and survives branch checkout/reset.
+          for attempt in 1 2 3; do
+            git fetch origin "$TARGET_BRANCH"
+            git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+            mkdir -p "$TARGET"
+            cp audit-output/reports/01-HG-source-audit.md "$TARGET/"
+            cp audit-output/reports/02-AWAvenue-source-audit.md "$TARGET/"
+            cp audit-output/reports/03-merged-increment-audit.md "$TARGET/"
+            cp audit-output/audit.json "$TARGET/"
+            cp audit-output/candidate-domain-inventory.csv "$TARGET/"
+            cp audit-output/unsupported-source-lines.csv "$TARGET/"
+            cp audit-output/effective-incremental-rules.csv "$TARGET/"
+            cp audit-output/suspected-source-anomalies.csv "$TARGET/"
+            git add "$TARGET"
+            if git diff --cached --quiet; then
+              echo "Audit reports are unchanged; no commit is needed."
+              exit 0
+            fi
+            git commit -m "audit: publish HG and AWAvenue offline reports"
+            if git push origin "HEAD:refs/heads/${TARGET_BRANCH}"; then
+              exit 0
+            fi
+            echo "::warning::Audit branch moved during push attempt ${attempt}; retrying against its latest tip."
+          done
+          echo "::error::Could not publish audit reports after three branch reconciliation attempts."
+          exit 1
