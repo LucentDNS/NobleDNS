@@ -707,6 +707,20 @@ def main() -> int:
     merged_domain_exact_unique = len(merged_domains - baseline_block_domains)
     projected_rule_count = baseline_total_rules + merged_rule_exact_unique
 
+    hg_watermark_anomalies = []
+    for rule in sorted(parsed["hg1"]["bare"].values()):
+        domain = rule_domain(rule)
+        marker = domain.find("hgzs.uunat.com")
+        if marker > 0 and domain[marker - 1] != ".":
+            hg_watermark_anomalies.append({
+                "source": "hg1",
+                "type": "possible_navigation_host_concatenation",
+                "rule": rule,
+                "source_lines": parsed["hg1"]["line_map"].get(rule, []),
+                "domain_fragment_before_navigation_host": domain[:marker],
+                "note": "Heuristic flag only; do not split or repair without upstream confirmation.",
+            })
+
     report = {
         "schema_version": 1,
         "audit_time_utc": datetime.now(timezone.utc).isoformat(),
@@ -804,20 +818,6 @@ def main() -> int:
         ],
     }
     (out / "audit.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    hg_watermark_anomalies = []
-    for rule in sorted(parsed["hg1"]["bare"].values()):
-        domain = rule_domain(rule)
-        marker = domain.find("hgzs.uunat.com")
-        if marker > 0 and domain[marker - 1] != ".":
-            hg_watermark_anomalies.append({
-                "source": "hg1",
-                "type": "possible_navigation_host_concatenation",
-                "rule": rule,
-                "source_lines": parsed["hg1"]["line_map"].get(rule, []),
-                "domain_fragment_before_navigation_host": domain[:marker],
-                "note": "Heuristic flag only; do not split or repair without upstream confirmation.",
-            })
 
     hg_extra = (
         "HG's own README identifies hg1.txt as the blocking list and hg2.txt as its companion allowlist. "
