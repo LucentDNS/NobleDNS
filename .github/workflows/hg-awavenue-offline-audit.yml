@@ -16,15 +16,11 @@ permissions:
   actions: read
   contents: write
 
-concurrency:
-  group: hg-awavenue-audit-${{ github.ref }}
-  cancel-in-progress: false
-
 # Push and pull_request events both fired for every same-repository PR update.
 # This branch is the only permitted target, so one push-triggered audit is enough.
 concurrency:
   group: nobledns-hg-awavenue-audit-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   audit:
