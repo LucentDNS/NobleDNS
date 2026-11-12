@@ -93,6 +93,6 @@ NobleDNS 在 DNS 层面过滤来源规则所覆盖的广告、跟踪、遥测及
 
 ## 构建与许可证
 
-本项目使用 Python 标准库进行构建和回归测试，要求 Python 3.12。维护者可参阅[维护者指南](docs/MAINTAINER-GUIDE.md)了解本地构建和发布流程。
+本项目使用 Python 标准库进行构建和回归测试，要求 Python 3.12。维护者可参阅[维护者指南](docs/MAINTAINER-GUIDE.zh-CN.md)了解本地构建和发布流程。
 
 NobleDNS 项目代码采用 [GPL-3.0-only](LICENSE) 许可证。编译规则包含上游衍生内容，仍受适用的上游许可证及第三方条款约束，详见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
