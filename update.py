@@ -389,7 +389,7 @@ def build(args) -> Path:
             if exceptions[key]:
                 active_allowlist_lines.append(f"! Source: {key}")
                 active_allowlist_lines.extend(sorted(exceptions[key]))
-        (stage / "allowlist-active.txt").write_text("\\n".join(active_allowlist_lines) + "\\n", encoding="utf-8")
+        (stage / "allowlist-active.txt").write_text("\n".join(active_allowlist_lines) + "\n", encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
         write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "documented_semantics", "source"], syntax_review_rows)
         (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
