@@ -16,7 +16,7 @@ class ParserTests(unittest.TestCase):
                 "! Title: NobleDNS Filter",
                 "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.",
                 "! Homepage: https://github.com/LucentDNS/NobleDNS",
-                "! Version: 1.0.1",
+                f"! Version: {mod.VERSION_BASE}",
                 "! Expires: 1 day",
                 "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal",
             ],
@@ -66,6 +66,12 @@ class ParserTests(unittest.TestCase):
         rendered = mod.render_subscription(blocks, exceptions)
         self.assertIn("@@||safe.example.com^", rendered.splitlines())
         self.assertIn("||ads.example.com^", rendered.splitlines())
+
+    def test_complex_exception_is_not_activated(self):
+        blocks, exceptions, rejected, _ = self.parse("||ads.example.com^\\n@@||safe.example.com^$important\\n")
+        self.assertEqual(blocks, {"||ads.example.com^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["modifier_important"], 1)
 
     def test_render_rejects_rule_in_both_sets(self):
         with self.assertRaises(ValueError):
