@@ -1,0 +1,70 @@
+from __future__ import annotations
+
+import csv
+import importlib.util
+import tempfile
+import unittest
+from datetime import date
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("nobledns_benchmark_scorer", ROOT / "tools" / "score_benchmark.py")
+scorer = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(scorer)
+
+
+class BenchmarkScorerTests(unittest.TestCase):
+    def test_parent_block_and_exception_precedence(self) -> None:
+        blocks = {"ads.example.test", "example.test"}
+        exceptions = {"safe.example.test"}
+        self.assertEqual(scorer.decide("cdn.ads.example.test", blocks, exceptions)[0], "block")
+        self.assertEqual(scorer.decide("safe.example.test", blocks, exceptions)[0], "allow")
+        self.assertEqual(scorer.decide("child.safe.example.test", blocks, exceptions)[0], "allow")
+        self.assertEqual(scorer.decide("notexample.test", blocks, exceptions)[0], "allow")
+
+    def test_confusion_matrix_is_category_specific(self) -> None:
+        rows = [
+            {"hostname": "ads.example.test", "category": "ad", "expected": "block", "evidence_ref": "test-1"},
+            {"hostname": "safe.example.test", "category": "essential", "expected": "allow", "evidence_ref": "test-2"},
+            {"hostname": "miss.example.test", "category": "tracking", "expected": "block", "evidence_ref": "test-3"},
+        ]
+        result = scorer.score(rows, {"ads.example.test"}, set())
+        self.assertEqual(result["by_category"]["ad"]["tp"], 1)
+        self.assertEqual(result["by_category"]["essential"]["tn"], 1)
+        self.assertEqual(result["by_category"]["tracking"]["fn"], 1)
+
+    def test_empty_or_unsupported_corpus_records_are_not_silently_scored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "corpus.csv"
+            with path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=scorer.FIELDS)
+                writer.writeheader()
+                writer.writerow({
+                    "hostname": "ads.example.test", "category": "ad", "expected": "block",
+                    "evidence_ref": "test-evidence", "evidence_summary": "controlled test evidence",
+                    "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
+                    "independent": "true", "reviewer": "reviewer-a",
+                })
+            rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
+            self.assertEqual(errors, [])
+            self.assertEqual(len(rows), 1)
+
+    def test_stale_evidence_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "corpus.csv"
+            with path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=scorer.FIELDS)
+                writer.writeheader()
+                writer.writerow({
+                    "hostname": "ads.example.test", "category": "ad", "expected": "block",
+                    "evidence_ref": "test-evidence", "evidence_summary": "expired evidence",
+                    "confidence": "high", "reviewed_on": "2026-10-01", "expires_on": "2026-11-01",
+                    "independent": "true", "reviewer": "reviewer-a",
+                })
+            rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
+            self.assertEqual(rows, [])
+            self.assertTrue(any("evidence expired" in error for error in errors))
+
+
+if __name__ == "__main__":
+    unittest.main()
