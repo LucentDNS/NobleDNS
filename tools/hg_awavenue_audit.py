@@ -215,6 +215,33 @@ def baseline_parent_matches(candidate_rule: str, baseline: dict) -> list[str]:
     return sorted(matches)
 
 
+def build_baseline_index(baseline: dict) -> dict:
+    domains = set(baseline["caret"]) | set(baseline["bare"])
+    caret_domains = set(baseline["caret"])
+    bare_domains = set(baseline["bare"])
+    effective_domains = set()
+    descendants = defaultdict(list)
+    for domain in domains:
+        domain_suffixes = suffixes(domain)
+        for suffix in domain_suffixes:
+            descendants[suffix].append(domain)
+        if (domain_suffixes - {domain}) & caret_domains:
+            continue
+        if any(
+            parent != domain and bare_domain_matches(parent, domain)
+            for parent in bare_domains
+        ):
+            continue
+        effective_domains.add(domain)
+    return {
+        "domains": domains,
+        "caret_domains": caret_domains,
+        "bare_domains": bare_domains,
+        "effective_domains": effective_domains,
+        "descendants": descendants,
+    }
+
+
 def rule_overlap_pairs(left_rules: set[str], right_rules: set[str]) -> list[tuple[str, str]]:
     """Find hierarchical overlaps, including prefix collisions involving bare anchors."""
     left_by_domain = defaultdict(list)
@@ -281,11 +308,16 @@ def read_fixture(path: Path) -> list[str]:
     ]
 
 
-def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads: list[str]) -> dict:
+def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads: list[str],
+                  baseline_index: dict | None = None) -> dict:
     candidate_rules = set(source["blocks"])
     baseline_rules = set(baseline["blocks"])
     candidate_domains = set(source["caret"]) | set(source["bare"])
-    baseline_domains = set(baseline["caret"]) | set(baseline["bare"])
+    if baseline_index is None:
+        baseline_index = build_baseline_index(baseline)
+    baseline_domains = baseline_index["domains"]
+    effective_baseline_domains = baseline_index["effective_domains"]
+    baseline_descendants = baseline_index["descendants"]
     exact_domain_overlap = candidate_domains & baseline_domains
     exact_rule_overlap = candidate_rules & baseline_rules
 
@@ -321,33 +353,24 @@ def source_metrics(source: dict, baseline: dict, essential: list[str], known_ads
     ]
 
     # A new parent rule broadens the baseline only if no existing baseline
-    # parent rule already covered the affected baseline hostname.
-    effective_baseline_domains = set()
-    baseline_caret_domains = set(baseline["caret"])
-    for baseline_domain in baseline_domains:
-        parent_suffixes = suffixes(baseline_domain) - {baseline_domain}
-        if parent_suffixes & baseline_caret_domains:
-            continue
-        if any(
-            parent != baseline_domain and bare_domain_matches(parent, baseline_domain)
-            for parent in baseline["bare"]
-        ):
-            continue
-        effective_baseline_domains.add(baseline_domain)
-
+    # parent rule already covered the affected baseline hostname. The index is
+    # built once and shared by all candidate sources.
     broadens = defaultdict(set)
     # Every new bare-anchor rule has unbounded hostname-prefix semantics, even
     # when the candidate apex happens to be covered by an existing parent rule.
     for candidate_rule in new_bare_rules:
         broadens[candidate_rule]
-    for baseline_domain in effective_baseline_domains:
-        for suffix in suffixes(baseline_domain):
-            if suffix in new_caret_domains:
-                matching_rule = source["caret"][suffix]
+    for candidate_domain in new_caret_domains:
+        matching_rule = source["caret"][candidate_domain]
+        for baseline_domain in baseline_descendants.get(candidate_domain, []):
+            if baseline_domain in effective_baseline_domains:
                 broadens[matching_rule].add(baseline_domain)
-        for candidate_rule in new_bare_rules:
-            if bare_domain_matches(rule_domain(candidate_rule), baseline_domain):
-                broadens[candidate_rule].add(baseline_domain)
+    if new_bare_rules:
+        bare_candidates = [(rule, rule_domain(rule)) for rule in new_bare_rules]
+        for baseline_domain in effective_baseline_domains:
+            for candidate_rule, candidate_domain in bare_candidates:
+                if bare_domain_matches(candidate_domain, baseline_domain):
+                    broadens[candidate_rule].add(baseline_domain)
 
     affected_baseline_domains = set()
     for values in broadens.values():
@@ -600,8 +623,9 @@ def main() -> int:
     if not essential or not known_ads:
         raise RuntimeError("Required NobleDNS regression fixtures are empty")
 
+    baseline_index = build_baseline_index(baseline)
     metrics = {
-        key: source_metrics(parsed[key], baseline, essential, known_ads)
+        key: source_metrics(parsed[key], baseline, essential, known_ads, baseline_index)
         for key in ("hg1", "awavenue_full", "awavenue_only_ads")
     }
     hg2_allow_domains = set(parsed["hg2"]["exception_domains"])
@@ -631,7 +655,7 @@ def main() -> int:
         "exception_domains": {},
         "line_map": dict(merged_line_map),
     }
-    merged_metrics = source_metrics(merged_view, baseline, essential, known_ads)
+    merged_metrics = source_metrics(merged_view, baseline, essential, known_ads, baseline_index)
     exact_rule_overlap = len(parsed["hg1"]["blocks"] & parsed["awavenue_full"]["blocks"])
     domain_overlap = len(hg_domains & awa_domains)
     baseline_total_rules = len(baseline["blocks"]) + len(baseline["exceptions"])
