@@ -63,3 +63,12 @@ Any domain appearing in a compiled NobleDNS subscription is included as a DNS bl
 
 AdGuard and HaGeZi are independent upstream projects.
 NobleDNS is not affiliated with or endorsed by either project.
+
+## 6. HaGeZi upstream disclaimer
+
+HaGeZi publishes its DNS blocklists under GPL-3.0 and states that the GPL license copy must accompany redistribution. The GPL-3.0 text is included in this repository and in the generated build artifact.
+
+HaGeZi also publishes a separate disclaimer in its [official repository README](https://github.com/hagezi/dns-blocklists#disclaimer). The disclaimer addresses, among other things, the lists being provided without warranty, the absence of guarantees against false positives or missed domains, the technical (not accusatory or endorsing) nature of domain inclusion, user responsibility for deployment, and the fact that some upstream inputs may carry separate third-party terms.
+
+This notice summarizes that material and does not replace or reproduce the upstream disclaimer. The upstream disclaimer may change; maintainers must re-check the official text before each release and assess whether any change affects NobleDNS redistribution or use. This project does not provide legal advice.
+
