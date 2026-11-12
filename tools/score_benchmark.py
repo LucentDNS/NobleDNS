@@ -60,8 +60,14 @@ def load_corpus(path: Path, today: date) -> tuple[list[dict], list[str]]:
             seen.add(host)
             if row["category"] not in CATEGORIES:
                 problems.append("invalid category")
+            expected_policy = {
+                "ad": "block", "tracking": "block", "telemetry": "block", "threat": "block",
+                "essential": "allow", "legitimate": "allow",
+            }.get(row["category"])
             if row["expected"] not in {"block", "allow"}:
                 problems.append("expected must be block or allow")
+            elif expected_policy and row["expected"] != expected_policy:
+                problems.append(f"category {row['category']} requires expected={expected_policy}")
             if not row["evidence_ref"] or not row["evidence_summary"]:
                 problems.append("missing evidence reference/summary")
             if row["confidence"] != "high":
