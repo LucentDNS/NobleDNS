@@ -5,6 +5,10 @@ All notable changes to NobleDNS are documented here.
 ## Unreleased
 
 ### Changed
+- Rework the project homepages to lead with user value, the single balanced edition, mainland-use priorities and practical subscription guidance.
+- Keep detailed verification scope and evidence limitations in the quality documentation rather than foregrounding them as a warning block on the homepage.
+
+### Changed
 - Clarify NobleDNS as a single balanced edition designed with mainland China everyday network compatibility as a primary consideration.
 - Document conservative rule acceptance, domestic-service review priorities and evidence requirements for future low-false-positive claims.
 - Add a Chinese-language project overview and a formal single-edition policy.
