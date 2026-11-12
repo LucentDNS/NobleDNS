@@ -69,11 +69,11 @@ class ParserTests(unittest.TestCase):
         self.assertIn("@@||safe.example.com^", rendered.splitlines())
         self.assertIn("||ads.example.com^", rendered.splitlines())
 
-    def test_complex_exception_is_not_activated(self):
+    def test_important_exception_is_preserved_with_priority(self):
         blocks, exceptions, rejected, _ = self.parse("||ads.example.com^\n@@||safe.example.com^$important\n")
         self.assertEqual(blocks, {"||ads.example.com^"})
-        self.assertEqual(exceptions, set())
-        self.assertEqual(rejected["modifier_important"], 1)
+        self.assertEqual(exceptions, {"@@||safe.example.com^$important"})
+        self.assertEqual(rejected, {})
 
     def test_render_rejects_rule_in_both_sets(self):
         with self.assertRaises(ValueError):
