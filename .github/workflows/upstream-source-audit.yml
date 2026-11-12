@@ -1,0 +1,41 @@
+name: NobleDNS upstream source audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "tools/upstream_audit.py"
+      - ".github/workflows/upstream-source-audit.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nobledns-upstream-audit-\${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Download and compare candidate sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run isolated source audit
+        run: python tools/upstream_audit.py --out audit-output
+
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nobledns-upstream-audit
+          path: audit-output/
+          if-no-files-found: warn
+          retention-days: 30
