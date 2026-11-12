@@ -117,11 +117,12 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
 
     addresses: list[str] = []
     cnames: list[str] = []
+    authority_soa_zones: list[str] = []
     total_records = ancount + nscount + arcount
     if total_records > 4096:
         raise ValueError("DNS response has an unreasonable record count")
     for index in range(total_records):
-        _owner, offset = decode_name(packet, offset)
+        owner, offset = decode_name(packet, offset)
         if offset + 10 > len(packet):
             raise ValueError("truncated DNS resource record")
         rrtype, rrclass, _ttl, rdlength = struct.unpack("!HHIH", packet[offset:offset + 10])
@@ -138,12 +139,22 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
                 addresses.append(str(ipaddress.ip_address(packet[offset:end])))
             elif rrtype == 5:
                 cname, consumed = decode_name(packet, offset)
-                if consumed > end:
-                    raise ValueError("CNAME name exceeds its resource data")
+                if consumed != end:
+                    raise ValueError("CNAME name does not exactly fill its resource data")
                 valid, reason = builder.valid_domain(cname)
                 if not valid:
                     raise ValueError(f"invalid CNAME target: {reason}")
                 cnames.append(cname)
+        elif ancount <= index < ancount + nscount and rrclass == 1 and rrtype == 6:
+            mname, soa_offset = decode_name(packet, offset)
+            rname, soa_offset = decode_name(packet, soa_offset)
+            if soa_offset + 20 != end:
+                raise ValueError("SOA record has malformed resource data")
+            valid, reason = builder.valid_domain(owner)
+            if not valid:
+                raise ValueError(f"invalid SOA owner: {reason}")
+            if hostname == owner or hostname.endswith("." + owner):
+                authority_soa_zones.append(owner)
         offset = end
 
     rcode_num = flags & 0x000F
@@ -151,6 +162,7 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
         "rcode": RCODE.get(rcode_num, "OTHER"),
         "answers": addresses,
         "cname_chain": list(dict.fromkeys(cnames)),
+        "authority_soa_zones": list(dict.fromkeys(authority_soa_zones)),
         "dnssec_ad": bool(flags & 0x0020),
     }
 
@@ -209,11 +221,11 @@ def query_doh(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
         opener = build_opener(ProxyHandler({}))
         with opener.open(request, timeout=timeout) as response:
             if response.status != 200 or response.headers.get_content_type() != "application/dns-message":
-                return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
+                return {"rcode": "OTHER", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
             body = response.read(65536)
         return parse_response(body, query_id, qtype, hostname)
     except (TimeoutError, socket.timeout):
-        return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "dnssec_ad": False}
+        return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
     except (HTTPError, URLError, OSError, ValueError):
         return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
 
@@ -293,6 +305,7 @@ def collect(hostnames: list[str], resolvers: list[dict], vantage: str,
                     "rcode": result["rcode"],
                     "answers": result["answers"],
                     "cname_chain": result["cname_chain"],
+                    "authority_soa_zones": result["authority_soa_zones"],
                     "dnssec_ad": result["dnssec_ad"],
                 })
                 time.sleep(delay)
