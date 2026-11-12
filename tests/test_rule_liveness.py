@@ -79,6 +79,26 @@ class RuleLivenessTests(unittest.TestCase):
         self.assertEqual(status, "nxdomain_without_authority_soa_manual_review")
         self.assertEqual(metrics["nxdomain_observations_with_soa"], 0)
 
+    def test_resolver_quorum_with_different_soa_zones_is_manual_review(self):
+        rows = stable_nxdomain_observations()
+        rows[0]["authority_soa_zones"] = ["ads.example.com"]
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, _ = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "nxdomain_authority_zone_disagreement_manual_review")
+
+    def test_multiple_soa_zones_in_one_response_are_manual_review(self):
+        rows = stable_nxdomain_observations()
+        rows[0]["authority_soa_zones"] = ["example.com", "ads.example.com"]
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, _ = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "nxdomain_authority_zone_disagreement_manual_review")
+
     def test_unrelated_soa_zone_is_rejected(self):
         row = observation()
         row["authority_soa_zones"] = ["unrelated.example.net"]
