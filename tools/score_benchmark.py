@@ -19,18 +19,14 @@ RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)
 CATEGORIES = {"ad", "tracking", "telemetry", "threat", "essential", "legitimate"}
 FIELDS = [
     "hostname", "category", "expected", "evidence_ref", "evidence_summary",
-    "confidence", "reviewed_on", "expires_on", "independent", "reviewer",
+    "confidence", "reviewed_on", "expires_on", "independent", "reviewer", "independent_reviewer",
 ]
 
 
 def valid_hostname(value: str) -> bool:
-    if not value or len(value) > 253 or "." not in value or value.endswith("."):
+    if not value or not value.isascii() or len(value) > 253 or "." not in value or value.endswith("."):
         return False
-    try:
-        ascii_name = value.encode("idna").decode("ascii")
-    except UnicodeError:
-        return False
-    labels = ascii_name.split(".")
+    labels = value.split(".")
     return all(
         1 <= len(label) <= 63
         and re.fullmatch(r"[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?", label)
@@ -77,16 +73,25 @@ def load_corpus(path: Path, today: date) -> tuple[list[dict], list[str]]:
                     problems.append("review date is in the future")
             except ValueError:
                 problems.append("reviewed_on must be YYYY-MM-DD")
+            if row["category"] == "threat" and not row["expires_on"]:
+                problems.append("threat evidence requires an expiry date")
             if row["expires_on"]:
                 try:
-                    if date.fromisoformat(row["expires_on"]) < today:
+                    expires = date.fromisoformat(row["expires_on"])
+                    if expires < today:
                         problems.append("evidence expired")
+                    if expires < reviewed:
+                        problems.append("expiry date precedes review date")
                 except ValueError:
                     problems.append("expires_on must be YYYY-MM-DD or blank")
             if row["independent"].lower() != "true":
                 problems.append("evidence must be marked independent=true")
             if not row["reviewer"]:
                 problems.append("missing reviewer")
+            if not row["independent_reviewer"]:
+                problems.append("missing independent reviewer")
+            elif row["independent_reviewer"] == row["reviewer"]:
+                problems.append("independent reviewer must differ from primary reviewer")
             if problems:
                 errors.append(f"line {line_no} ({host}): " + "; ".join(problems))
             else:
