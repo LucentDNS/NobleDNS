@@ -257,6 +257,28 @@ def write_csv(path: Path, header, rows):
         w = csv.writer(f); w.writerow(header); w.writerows(rows)
 
 
+def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
+    """Classify supported output forms without changing their matching semantics."""
+    forms = {
+        "anchored_domain_with_separator": re.compile(r"^\\|\\|[^\\^/$|]+\\^$"),
+        "anchored_domain_without_separator": re.compile(r"^\\|\\|[^\\^/$|]+$"),
+        "leading_dot_with_separator": re.compile(r"^\\.[^\\^/$|]+\\^$"),
+        "leading_dot_without_separator": re.compile(r"^\\.[^\\^/$|]+$"),
+    }
+    counts = {name: 0 for name in forms}
+    review_rows = []
+    examples = {name: [] for name in forms}
+    for rule in sorted(rules):
+        form = next((name for name, pattern in forms.items() if pattern.fullmatch(rule)), "unclassified")
+        if form == "unclassified":
+            raise ValueError(f"Rule missing from syntax audit: {rule}")
+        counts[form] += 1
+        if len(examples[form]) < 10:
+            examples[form].append(rule)
+        if form in ("anchored_domain_without_separator", "leading_dot_with_separator", "leading_dot_without_separator"):
+            sources = [key for key, source_set in source_rules.items() if rule in source_set]
+            review_rows.append((rule, form, ";".join(sources)))
+    return {"total": len(rules), "forms": counts, "examples": examples}, review_rows
 def build(args) -> Path:
     validate_licensing_files()
     cfg = load_config(Path(args.config))
@@ -284,6 +306,7 @@ def build(args) -> Path:
     merged = parsed[keys[0]] | parsed[keys[1]]
     check_drift(source_stats, merged, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
     common = parsed[keys[0]] & parsed[keys[1]]
+    syntax_summary, syntax_review_rows = syntax_audit(merged, parsed)
     if len(merged) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(merged):,} > {MAX_RULES:,}")
     if not merged: raise RuntimeError("Refusing empty output")
     all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
@@ -302,7 +325,7 @@ def build(args) -> Path:
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED", "release_channel": cfg.get("release_channel", "candidate"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "policy": {"main_list": "block-only", "exceptions": "separate review artifact; not active in main list", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression; broad client compatibility not qualified", "source_drift_gate_percent": args.max_source_change_percent}, "qualification": {"live_dns_compatibility_tested": False, "real_world_false_positive_rate_measured": False, "production_ready": False}}
+    manifest = {"project": PROJECT, "version": version, "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED", "release_channel": cfg.get("release_channel", "candidate"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "block-only", "exceptions": "separate review artifact; not active in main list", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression; broad client compatibility not qualified", "source_drift_gate_percent": args.max_source_change_percent}, "qualification": {"live_dns_compatibility_tested": False, "real_world_false_positive_rate_measured": False, "production_ready": False}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: CANDIDATE_NOT_PRODUCTION_QUALIFIED", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Separate exceptions: {len(all_exceptions):,}", f"Rule cap: {len(merged):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, uniqueness, rule cap.", "Not yet proven: live DNS client compatibility, false-positive rate, missed-block rate, payment/login/push/app compatibility."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
@@ -317,6 +340,8 @@ def build(args) -> Path:
         (stage / "validation-report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
         (stage / "whitelist-review.txt").write_text("! Source exceptions for manual review only; not active in dns-filter.txt\n" + "\n".join(sorted(all_exceptions)) + ("\n" if all_exceptions else ""), encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
+        write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "source"], syntax_review_rows)
+        (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
         source_dir = stage / "sources"; source_dir.mkdir()
         source_manifest = {}
         for source in cfg["sources"]:
