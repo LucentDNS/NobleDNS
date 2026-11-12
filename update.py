@@ -458,6 +458,7 @@ def build(args) -> Path:
     now = datetime.now(timezone.utc)
     version = VERSION_BASE
     parsed, exceptions, source_stats, rejected_rows, raw_snapshots = {}, {}, {}, [], {}
+    source_metadata, badfilter_directives = {}, []
     input_dir = Path(args.input_dir) if args.input_dir else None
     for source in cfg["sources"]:
         key, filename = source["key"], source["filename"]
@@ -469,13 +470,31 @@ def build(args) -> Path:
             data = fetch(source["url"], args.proxy)
         if len(data) < MIN_SOURCE_BYTES: raise ValueError(f"{key}: source smaller than {MIN_SOURCE_BYTES} bytes")
         raw_snapshots[filename] = data
-        blocks, exc, rejected, rows = parse_source(data, key)
+        blocks, exc, rejected, rows, directives = parse_source(data, key)
         parsed[key], exceptions[key] = blocks, exc
         rejected_rows.extend(rows)
-        license_info = UPSTREAM_LICENSES[key]
-        source_stats[key] = {"name": source["name"], "url": source["url"], "license": license_info["spdx"], "license_url": license_info["license_url"], "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data), "simple_block_rules": len(blocks), "simple_exception_rules": len(exc), "excluded_lines_by_reason": dict(rejected)}
-        print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
+        badfilter_directives.extend(directives)
+        source_metadata[key] = (source, data, rejected)
     keys = [x["key"] for x in cfg["sources"]]
+    badfilter_audit_rows = apply_badfilters(parsed, exceptions, badfilter_directives)
+    badfilter_status_counts = Counter(row[4] for row in badfilter_audit_rows)
+    badfilter_removed_rules = len({
+        row[3] for row in badfilter_audit_rows if row[4] == "applied"
+    })
+    for key in keys:
+        source, data, rejected = source_metadata[key]
+        license_info = UPSTREAM_LICENSES[key]
+        source_stats[key] = {
+            "name": source["name"], "url": source["url"],
+            "license": license_info["spdx"], "license_url": license_info["license_url"],
+            "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data),
+            "simple_block_rules": len(parsed[key]), "simple_exception_rules": len(exceptions[key]),
+            "excluded_lines_by_reason": dict(rejected),
+        }
+        print(
+            f"{key}: {len(parsed[key]):,} blocks, {len(exceptions[key]):,} exceptions, "
+            f"{sum(rejected.values()):,} excluded"
+        )
     merged = parsed[keys[0]] | parsed[keys[1]]
     all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
     published_rules = merged | all_exceptions
@@ -496,8 +515,8 @@ def build(args) -> Path:
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_subdomain_only": "preserved; matches subdomains only, not the apex domain", "source_drift_gate_percent": args.max_source_change_percent}}
-    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "badfilter_audit": {"directives": len(badfilter_audit_rows), "applied": badfilter_status_counts["applied"], "already_applied": badfilter_status_counts["already_applied"], "target_not_found": badfilter_status_counts["target_not_found"], "unsupported": badfilter_status_counts["unsupported_target_syntax"] + badfilter_status_counts["unsupported_modifier_combination"], "removed_rules": badfilter_removed_rules}, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_subdomain_only": "preserved; matches subdomains only, not the apex domain", "badfilter": "supported exact $badfilter directives disable matching rules across the merged approved sources; all directives are recorded in badfilter-audit.csv", "source_drift_gate_percent": args.max_source_change_percent}}
+    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Badfilter directives: {len(badfilter_audit_rows)} (applied: {badfilter_status_counts['applied']}, target not found: {badfilter_status_counts['target_not_found']}, unsupported: {badfilter_status_counts['unsupported_target_syntax'] + badfilter_status_counts['unsupported_modifier_combination']}); removed rules: {badfilter_removed_rules}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
     try:
@@ -518,6 +537,7 @@ def build(args) -> Path:
                 active_allowlist_lines.extend(sorted(exceptions[key]))
         (stage / "allowlist-active.txt").write_text("\n".join(active_allowlist_lines) + "\n", encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
+        write_csv(stage / "badfilter-audit.csv", ["source", "line_number", "directive", "target_rule", "status", "affected_sources"], sorted(badfilter_audit_rows))
         write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "documented_semantics", "source"], syntax_review_rows)
         (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         source_dir = stage / "sources"; source_dir.mkdir()
