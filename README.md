@@ -43,6 +43,7 @@ Add this URL as a custom DNS blocklist in a compatible filtering client. Keep th
 - [Open the legacy-compatible mirror](https://github.com/LucentDNS/NobleDNS/blob/main/NobleDNS.txt)
 - [Build manifest](dist/manifest.json)
 - [Latest validation report](dist/validation-report.txt)
+- [Upstream badfilter directive audit](dist/badfilter-audit.csv)
 - [Active upstream exceptions](dist/allowlist-active.txt)
 - [Versioned releases](https://github.com/LucentDNS/NobleDNS/releases)
 
