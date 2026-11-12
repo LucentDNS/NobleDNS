@@ -31,6 +31,7 @@ NobleDNS/
 │   ├── FEEDBACK.md
 │   ├── MAINTAINER-GUIDE.md
 │   ├── MAINTAINER-GUIDE.zh-CN.md
+│   └── RELEASE-AUTHENTICATION.md
 │   ├── QUALITY.md
 │   ├── RC2.2-BASELINE.md
 │   └── RELEASE.md
@@ -274,6 +275,12 @@ After a build, inspect the reports and rule changes before deciding whether to u
 Workflow file:
 
 `.github/workflows/daily-build-release.yml`
+
+Release authentication and least-privilege setup:
+
+`docs/RELEASE-AUTHENTICATION.md`
+
+The publisher uses a dedicated GitHub App installation token scoped to this repository and `contents: write`. The workflow's default `GITHUB_TOKEN` remains read-only. The App private key is supplied through the `release` environment, which must be restricted to `main`. Do not enable the corresponding branch-ruleset bypass and pull-request requirements until the App, environment, and repository variable are configured and the release path has been tested.
 
 Current automation behavior:
 
