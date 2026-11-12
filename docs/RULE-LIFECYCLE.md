@@ -20,7 +20,8 @@ It verifies source snapshot SHA-256 values and records which approved source(s) 
 |---|---|---|
 | `active_dns_answer_observed` | At least one fresh A/AAAA query returned an answer | Not a dead-domain candidate |
 | `mixed_or_split_horizon` | Fresh positive and NXDOMAIN observations coexist | Investigate resolver, geography, CDN and split-horizon differences |
-| `stable_nxdomain_candidate_manual_review` | Strict multi-resolver, multi-vantage, multi-day NXDOMAIN threshold met | Manual review only; never auto-delete |
+| `stable_nxdomain_candidate_manual_review` | Strict multi-resolver, multi-vantage, multi-day NXDOMAIN threshold met, with a relevant SOA authority record on every latest response | Manual review only; never auto-delete |
+| `nxdomain_without_authority_soa_manual_review` | NXDOMAIN quorum appears met, but at least one latest response lacks a relevant SOA authority record | Investigate possible resolver-side synthesis/filtering; not a stable dead-domain finding |
 | `insufficient_nxdomain_evidence` | NXDOMAIN observed but quorum/time coverage is insufficient | Gather more observations |
 | `nodata_or_no_address` | NOERROR without A/AAAA address data | Not equivalent to NXDOMAIN; investigate record type and CNAME behavior |
 | `sinkhole_observed_manual_review` | An observation carries a separately sourced sinkhole evidence URL | Retain pending security/context review; sinkhole is not dead |
@@ -40,8 +41,9 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 4. At least two distinct vantage points are represented.
 5. At least three resolver/operator/vantage combinations have both A and AAAA results.
 6. The fresh NXDOMAIN observation history spans at least seven full elapsed days.
-7. Observations are no older than 30 days by default.
-8. Observation timestamps cannot be in the future. A/AAAA answers must be syntactically valid IP addresses of the queried address family; non-NOERROR responses cannot carry address answers.
+7. Every latest NXDOMAIN response includes a relevant SOA authority zone that is an ancestor of the queried hostname. Missing SOA evidence is a separate manual-review status, never a stable candidate.
+8. Observations are no older than 30 days by default.
+9. Observation timestamps cannot be in the future. A/AAAA answers must be syntactically valid IP addresses of the queried address family; non-NOERROR responses cannot carry address answers.
 
 The threshold is intentionally conservative. It reduces the chance that one resolver outage, one region, one query type, or one short-lived DNS change is mistaken for a dead domain. It does not prove that the domain is malicious, unregistered, abandoned, or safe to unblock.
 
@@ -86,7 +88,7 @@ $all = foreach ($file in $files) {
   Set-Content -Encoding UTF8 ".\private-audit\observations-merged.json"
 ```
 
-The collector has hard bounds: at least 3 unique resolver operators, at most 10 configured resolvers, at most 50 hostnames per run (default 20), 2–20 second timeout, and 0.2–5 second delay between requests. It queries only A and AAAA and uses DNS-over-HTTPS/TLS wire format. It records response codes, address answers, CNAME targets, resolver endpoint and the DNSSEC AD bit. No retries or bulk subscription scans are performed. The DoH client bypasses ambient HTTP proxy settings so a configured proxy cannot silently impersonate the selected resolver; DoT uses a direct TLS socket with certificate validation.
+The collector has hard bounds: at least 3 unique resolver operators, at most 10 configured resolvers, at most 50 hostnames per run (default 20), 2–20 second timeout, and 0.2–5 second delay between requests. It queries only A and AAAA and uses DNS-over-HTTPS/TLS wire format. It records response codes, address answers, CNAME targets, negative SOA authority zones, resolver endpoint and the DNSSEC AD bit. No retries or bulk subscription scans are performed. The DoH client bypasses ambient HTTP proxy settings so a configured proxy cannot silently impersonate the selected resolver; DoT uses a direct TLS socket with certificate validation.
 
 Run the same small sample from at least two genuinely different network locations, changing the `--vantage` label. A label is self-reported: the collector cannot prove the machine's geography, resolver ownership, or independence. Verify those facts separately and document the evidence. Public resolvers see the queried hostnames and the collector's network source address; do not include private hostnames or private traffic logs. Keep raw observations private until reviewed and sanitized.
 
