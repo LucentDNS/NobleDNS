@@ -94,6 +94,22 @@ Source: https://mobads.baidu.com/ads/indexlp.html
 
 This evidence does **not** prove that `mobads.baidu.cn` is an equivalent current endpoint, and it does not establish the precise purpose of `mobads-logs.baidu.cn`. The latter may be measurement, diagnostics, or a broader SDK logging service. Their inclusion in multiple upstream/community lists remains corroboration, not candidate-specific functional proof. Keep both .cn candidates unapproved; do not infer the parent `baidu.cn` or `baidu.com` zones.
 
+## 4.3 Updated first-party Vivo SDK evidence
+
+The current official [vivo advertising alliance SDK privacy policy](https://adnet.vivo.com.cn/home/agreement/18) describes the SDK's purposes as ad delivery, attribution, ad measurement and anti-fraud. It lists device/network identifiers, app metadata, optional location, ad interaction records, and diagnostic/performance data. This is strong evidence that the SDK ecosystem performs advertising and measurement functions.
+
+It still does **not** identify the candidate hosts `ad-market.vivo.com.cn` or `uapi-ads.vivo.com.cn` as the actual SDK request endpoints, nor does it prove those hosts are required exclusively for advertising. Keep the individual hostnames unapproved pending endpoint-to-function mapping and controlled client observations.
+
+## 4.4 First-party Unity Ads SDK evidence
+
+Unity's official [China Unity Ads SDK privacy policy](https://unity.cn/unityads-sdk) explicitly identifies the Unity Ads SDK and describes advertising delivery, ad-effectiveness analysis, attribution, advertising interactions and analytics. This confirms that Unity Ads is a real advertising/measurement SDK offered in the China market.
+
+It does **not** map `splash-ads.cdn.unity.cn` or `splash-ads.unitychina.cn` to a specific SDK request or prove that either hostname is safe to block. These two splash-related candidates remain unapproved until the exact hosts are observed in controlled app traffic and startup, reward-video, purchase and update flows are tested.
+
+## 4.5 Evidence gaps remain for Alimama and WPS candidates
+
+This search pass did not locate first-party technical documentation that maps the specific candidate hosts `bm.alimama.cn`, `bmvip.alimama.cn`, `cb.alimama.cn`, `ad.docer.wps.cn`, `push.wps.cn` or `notify.wps.cn` to current client-side request functions. Do not treat historical community lists, hostnames, or the general existence of an advertising/push product as proof for those exact hosts. Continue to require exact endpoint observations and app-function regression evidence.
+
 ## 5. License and provenance gate
 
 - OISD declares GPL-3.0 for its list. It is the clearest candidate source for a controlled technical evaluation, but any reused rule still needs required attribution/notices and review of third-party inputs.
