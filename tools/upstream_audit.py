@@ -130,16 +130,28 @@ def main() -> int:
     union_parent_covered = {d for d in union_unique if is_covered(d, baseline)}
 
     exception_rows = []
+    all_exception_domains = {d for source in parsed.values() for d in source["exceptions"]}
+    child_block_counts = {d: 0 for d in all_exception_domains}
+    for block_domain in baseline:
+        labels = block_domain.split(".")
+        for index in range(len(labels)):
+            suffix = ".".join(labels[index:])
+            if suffix in child_block_counts:
+                child_block_counts[suffix] += 1
     for key in parsed:
         for domain in sorted(parsed[key]["exceptions"]):
-            baseline_exact = domain in baseline
-            baseline_child_blocks = sorted(d for d in baseline if is_covered(d, {domain}) and d != domain)
-            baseline_parent_blocks = sorted(d for d in baseline if is_covered(domain, {d}) and d != domain)
+            labels = domain.split(".")
+            parent_blocks = sorted(
+                ".".join(labels[index:])
+                for index in range(1, len(labels))
+                if ".".join(labels[index:]) in baseline
+            )
+            child_count = child_block_counts.get(domain, 0) - int(domain in baseline)
             exception_rows.append({
                 "source": key, "exception_domain": domain,
-                "exact_baseline_block_conflict": str(baseline_exact).lower(),
-                "baseline_blocked_subdomains_neutralized": ";".join(baseline_child_blocks),
-                "baseline_parent_blocks": ";".join(baseline_parent_blocks),
+                "exact_baseline_block_conflict": str(domain in baseline).lower(),
+                "baseline_blocked_subdomains_neutralized_count": child_count,
+                "baseline_parent_blocks": ";".join(parent_blocks),
             })
     with (out / "candidate-unique-rules.csv").open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["source", "domain", "already_covered_by_baseline_parent", "ends_in_cn"])
