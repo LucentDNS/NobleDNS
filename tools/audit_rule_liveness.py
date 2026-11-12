@@ -235,6 +235,9 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 "nxdomain_observations_with_soa": sum(
                     1 for row in current if row.get("authority_soa_zones")
                 ),
+                "authority_soa_zones": sorted({
+                    zone for row in current for zone in row.get("authority_soa_zones", [])
+                }),
                 "resolver_operators": sorted(operators),
                 "vantages": sorted(vantages),
                 "complete_resolver_vantage_pairs": len(complete_pairs),
@@ -304,7 +307,7 @@ def write_outputs(report: dict, output_dir: Path) -> None:
         "hostname", "status", "in_current_subscription", "matched_rules",
         "source_keys", "observation_count", "fresh_observations",
         "resolver_operators", "vantages", "complete_resolver_vantage_pairs",
-        "nxdomain_observations_with_soa", "observation_span_days", "action",
+        "nxdomain_observations_with_soa", "authority_soa_zones", "observation_span_days", "action",
     ]
     with (output_dir / "candidates.csv").open("w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
