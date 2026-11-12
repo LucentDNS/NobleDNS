@@ -137,6 +137,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 | `manifest.json` | 来源、数量、哈希、构建信息 |
 | `validation-report.txt` | 构建验证报告 |
 | `parser-exclusions.csv` | 被排除规则及原因 |
+| `badfilter-audit.csv` | 已处理的 `$badfilter` 指令、精确目标、处理结果和受影响来源 |
 | `allowlist-active.txt` | 已纳入主订阅的简单上游例外规则 |
 | `sources/sources-manifest.json` | 上游快照及 SHA256 |
 
@@ -191,6 +192,7 @@ git diff --check
 - 复杂语法排除变化。
 - 前置点规则（`.domain^`、`.domain`）的排除数量变化。
 - 例外规则变化及其是否进入 `allowlist-active.txt`。
+- `$badfilter` 指令：核对精确目标、是否成功移除，以及受影响的上游来源。
 - 确认 `allowlist-active.txt` 中每条规则都出现在主订阅中，并核对 manifest 的 `active_exception_rules`。
 
 对于大幅变化，先保留上游快照和构建结果，进行单独审查。
@@ -261,6 +263,7 @@ build-output/
     ├── manifest.json
     ├── validation-report.txt
     ├── parser-exclusions.csv
+    ├── badfilter-audit.csv
     ├── allowlist-active.txt
     └── sources/
         └── sources-manifest.json
