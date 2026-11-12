@@ -24,7 +24,7 @@ KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 EXCEPTION_SUBDOMAIN_END_RE = re.compile(r"^@@\|\|(?P<domain>[^\^/$|]+)\^\|$")
-EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
+EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^(?P<end>\|)?$")
 BLOCK_SUBDOMAIN_END_RE = re.compile(r"^\|\|(?P<domain>[^\^/$|]+)\^\|$")
 BLOCK_EXACT_HOST_RE = re.compile(r"^\|(?P<domain>[^\^/$|]+)\^(?P<end>\|)?$")
 
