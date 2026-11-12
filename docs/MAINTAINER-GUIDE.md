@@ -160,7 +160,7 @@ git diff --check
 
 Note: these commands do not check untracked files by default. For new documentation, also check UTF-8 encoding, the final newline, and trailing whitespace separately.
 
-All tests must pass. The real-upstream leading-dot rule fixture (`tests/fixtures/leading-dot-rules.txt`) must verify that 27 valid rules are preserved with subdomain-only semantics and the malformed trailing-dot record is rejected by domain validation. AdGuard DNS documents `.domain^` and `.domain` as matching subdomains only, not the apex. Never rewrite these rules as `||domain^`.
+All tests must pass. The real-upstream leading-dot rule fixture (`tests/fixtures/leading-dot-rules.txt`) must verify that all 28 records are excluded as `unsupported_leading_dot_dns_syntax`. The DNS-specific AdGuard syntax reference does not define `.domain^` or `.domain` as hostname-pattern operators. Do not claim subdomain-only semantics or publish these entries unless authoritative DNS-specific documentation or controlled target-client evidence establishes their behavior.
 
 #### Adding a Regression Case
 
