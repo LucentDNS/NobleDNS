@@ -77,11 +77,13 @@ These checks verify build integrity and the rules covered by the regression corp
 
 ## Current parser scope
 
-The compiler supports the documented AdGuard DNS forms: ||domain^, ||domain, .domain^ and .domain when the hostname is a valid multi-label DNS name. AdGuard documents ||example.org^ as blocking the apex and all subdomains, while .example.org blocks subdomains only and leaves the apex domain allowed. NobleDNS preserves these forms exactly; it never rewrites leading-dot rules into apex-and-subdomain blocks. The ||domain form without an explicit ^ is retained unchanged from upstream and listed for targeted compatibility review. AdGuard documents || as a hostname-start anchor and ^ as the hostname-end separator; the 69 retained bare-anchor rules therefore need targeted client verification before we claim broad compatibility. See the [official AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
+The public DNS subscription accepts the documented AdGuard hostname-pattern forms `||domain^` and `||domain`, provided the hostname is a valid multi-label domain. AdGuard documents `||` as matching the beginning of a hostname, including subdomains, and `^` as the hostname-end separator. A missing `^` is not, by itself, a reason to discard a rule; the 69 retained bare-anchor rules remain listed for targeted client matching verification.
 
-The real upstream leading-dot regression fixture contains 28 source records: 23 .domain^ rules, 4 .domain rules and 1 trailing-dot rule that must remain excluded. Parser regression coverage does not establish broad DNS-client compatibility. Live compatibility testing remains part of ongoing maintenance.
+Leading-dot forms (`.domain^` and `.domain`) are not among the hostname-pattern forms documented in the [AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/). NobleDNS therefore excludes them from the public subscription and records each original line in `parser-exclusions.csv` with the reason `unsupported_leading_dot_dns_syntax`. They are never rewritten as `||domain^`, because that would change their scope. The real upstream regression fixture contains 28 leading-dot records; all 28 must remain excluded unless the project formally expands its supported syntax based on authoritative documentation and client tests.
 
-Do not expand parser scope unless tests prove semantic equivalence for the target clients. Do not silently turn unsupported patterns into ordinary domain blocks.
+Complex modifiers, regexes, wildcard rules and unsupported exception forms remain excluded unless their semantics are explicitly implemented and tested. Active simple upstream exceptions are limited to `@@||domain^`, validated against the same domain rules, included in the main subscription and enumerated in `dist/allowlist-active.txt`.
+
+Do not expand parser scope or alter source semantics merely to increase coverage or silence unverified reports.
 
 ## Automated publication checks
 
