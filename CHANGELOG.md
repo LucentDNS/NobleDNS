@@ -4,6 +4,11 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+### Changed
+- Clarify NobleDNS as a single balanced edition designed with mainland China everyday network compatibility as a primary consideration.
+- Document conservative rule acceptance, domestic-service review priorities and evidence requirements for future low-false-positive claims.
+- Add a Chinese-language project overview and a formal single-edition policy.
+
 ## [1.0.0] - 2026-11-12
 
 ### Added
@@ -25,7 +30,7 @@ Earlier development milestones and the RC2.2 reproducibility baseline are retain
 
 ## Changelog maintenance
 
-- Keep unreleased changes under `[Unreleased]`.
+- Keep changes that are not yet released under the Unreleased section.
 - Move changes into a versioned section only when that version is actually released.
 - Use the actual release version and release date; do not fabricate historical release entries.
 - Record meaningful project changes rather than routine build noise.
