@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import ipaddress
 import json
 import re
 import sys
@@ -38,7 +39,8 @@ def parse_time(value: object) -> datetime:
     return parsed
 
 
-def validate_observations(document: object) -> list[dict]:
+def validate_observations(document: object, now: datetime | None = None) -> list[dict]:
+    now = now or datetime.now(timezone.utc)
     if not isinstance(document, dict) or set(document) != {"schema_version", "observations"}:
         raise ValueError("observation document must contain exactly schema_version and observations")
     if type(document["schema_version"]) is not int or document["schema_version"] != SCHEMA_VERSION:
@@ -59,18 +61,28 @@ def validate_observations(document: object) -> list[dict]:
         if not valid or hostname != hostname.lower():
             raise ValueError(f"observation[{index}] has invalid/non-lowercase hostname: {reason}")
         observed = parse_time(row["observed_at_utc"])
+        if observed > now:
+            raise ValueError(f"observation[{index}].observed_at_utc is in the future")
         for field in ("resolver", "resolver_operator", "vantage"):
             if not isinstance(row[field], str) or not row[field].strip():
                 raise ValueError(f"observation[{index}].{field} must be a non-empty string")
-        if row["qtype"] not in {"A", "AAAA"}:
+        if not isinstance(row["qtype"], str) or row["qtype"] not in {"A", "AAAA"}:
             raise ValueError(f"observation[{index}].qtype must be A or AAAA")
-        if row["rcode"] not in RCODES:
+        if not isinstance(row["rcode"], str) or row["rcode"] not in RCODES:
             raise ValueError(f"observation[{index}].rcode is unsupported")
         answers = row["answers"]
         if not isinstance(answers, list) or any(not isinstance(x, str) or not x for x in answers):
-            raise ValueError(f"observation[{index}].answers must be an array of non-empty strings")
-        if row["rcode"] == "NXDOMAIN" and answers:
-            raise ValueError(f"observation[{index}] cannot have answers with NXDOMAIN")
+            raise ValueError(f"observation[{index}].answers must be an array of non-empty IP address strings")
+        if row["rcode"] != "NOERROR" and answers:
+            raise ValueError(f"observation[{index}] cannot have address answers unless rcode is NOERROR")
+        for answer in answers:
+            try:
+                address = ipaddress.ip_address(answer)
+            except ValueError as exc:
+                raise ValueError(f"observation[{index}] contains a non-IP address answer: {answer}") from exc
+            expected_version = 4 if row["qtype"] == "A" else 6
+            if address.version != expected_version:
+                raise ValueError(f"observation[{index}] answer family does not match qtype {row['qtype']}")
         if "sinkhole_evidence_reference" in row:
             reference = row["sinkhole_evidence_reference"]
             if not isinstance(reference, str):
@@ -273,11 +285,12 @@ def main() -> int:
     args = parser.parse_args()
     if args.max_age_days < 1 or args.max_age_days > 365:
         parser.error("--max-age-days must be between 1 and 365")
+    now = datetime.now(timezone.utc)
     document = json.loads(args.observations.read_text(encoding="utf-8"))
-    observations = validate_observations(document)
+    observations = validate_observations(document, now)
     rules = load_block_rules(args.rules)
     provenance = load_source_provenance(args.source_dir)
-    report = audit(rules, observations, provenance, datetime.now(timezone.utc), args.max_age_days)
+    report = audit(rules, observations, provenance, now, args.max_age_days)
     write_outputs(report, args.output_dir)
     print(
         f"Liveness audit: {report['observed_hostnames']} observed; "
