@@ -5,8 +5,8 @@ SPEC = importlib.util.spec_from_file_location("nobledns_update", Path(__file__).
 mod = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(mod)
 class ConfigTests(unittest.TestCase):
     def test_filter_header_declares_subscription_title(self):
-        self.assertTrue(mod.FILTER_HEADER.startswith("! Title: NobleDNS DNS Filter\\n"))
-        self.assertIn("! Homepage: https://github.com/LucentDNS/NobleDNS\\n", mod.FILTER_HEADER)
+        self.assertTrue(mod.FILTER_HEADER.startswith("! Title: NobleDNS DNS Filter\n"))
+        self.assertIn("! Homepage: https://github.com/LucentDNS/NobleDNS\n", mod.FILTER_HEADER)
 
     def test_exactly_two_approved_sources(self):
         cfg = mod.load_config()
