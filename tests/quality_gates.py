@@ -74,10 +74,15 @@ def covers(rule_domain: str, hostname: str) -> bool:
     return hostname == rule_domain or hostname.endswith("." + rule_domain)
 
 
+def matching_rules(hostname: str, rules: set[str]) -> set[str]:
+    labels = hostname.split(".")
+    suffixes = {".".join(labels[index:]) for index in range(len(labels))}
+    return rules.intersection(suffixes)
+
+
 def is_blocked(hostname: str, blocks: set[str], exceptions: set[str]) -> bool:
-    return (
-        any(covers(rule, hostname) for rule in blocks)
-        and not any(covers(rule, hostname) for rule in exceptions)
+    return bool(matching_rules(hostname, blocks)) and not bool(
+        matching_rules(hostname, exceptions)
     )
 
 
@@ -87,6 +92,14 @@ class QualityGateTests(unittest.TestCase):
         cls.blocks, cls.exceptions, cls.invalid = load_rules()
         cls.essential = read_domains(ESSENTIAL)
         cls.known_ads = read_domains(KNOWN_ADS)
+
+    def test_guard_detects_direct_and_parent_blocks_and_honors_exceptions(self) -> None:
+        self.assertTrue(is_blocked("abchina.com", {"abchina.com"}, set()))
+        self.assertTrue(is_blocked("mobile.abchina.com", {"abchina.com"}, set()))
+        self.assertFalse(
+            is_blocked("abchina.com", {"abchina.com"}, {"abchina.com"})
+        )
+        self.assertFalse(is_blocked("doubleclick.net", set(), set()))
 
     def test_fixture_sizes_are_explicit_and_stable(self) -> None:
         self.assertEqual(len(self.essential), 72)
