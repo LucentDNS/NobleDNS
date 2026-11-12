@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0-20261112-022633-UTC",
+  "version": "1.0.0",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-12T02:26:33.703233+00:00",
+  "built_at_utc": "2026-11-12T03:18:22.557949+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
