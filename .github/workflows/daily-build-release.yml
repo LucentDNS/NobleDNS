@@ -83,6 +83,9 @@ jobs:
       - name: Run regression tests
         run: python -m unittest discover -s tests -v
 
+      - name: Validate evidence corpus
+        run: python tools/validate_evidence_corpus.py
+
       - name: Build from upstream sources with drift protection
         shell: bash
         env:
