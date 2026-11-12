@@ -297,7 +297,7 @@ def build(args) -> Path:
     validate_licensing_files()
     cfg = load_config(Path(args.config))
     now = datetime.now(timezone.utc)
-    version = VERSION_BASE + "-" + now.strftime("%Y%m%d-%H%M%S-UTC")
+    version = VERSION_BASE
     parsed, exceptions, source_stats, rejected_rows, raw_snapshots = {}, {}, {}, [], {}
     input_dir = Path(args.input_dir) if args.input_dir else None
     for source in cfg["sources"]:
