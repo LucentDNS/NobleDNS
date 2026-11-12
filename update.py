@@ -477,6 +477,12 @@ def build(args) -> Path:
         source_metadata[key] = (source, data, rejected)
     keys = [x["key"] for x in cfg["sources"]]
     badfilter_audit_rows = apply_badfilters(parsed, exceptions, badfilter_directives)
+    for key in keys:
+        if len(parsed[key]) < MIN_SOURCE_BLOCKS:
+            raise ValueError(
+                f"{key}: only {len(parsed[key]):,} active block rules remain after badfilter processing; "
+                f"minimum is {MIN_SOURCE_BLOCKS:,}"
+            )
     badfilter_status_counts = Counter(row[4] for row in badfilter_audit_rows)
     badfilter_removed_rules = len({
         row[3] for row in badfilter_audit_rows if row[4] == "applied"
