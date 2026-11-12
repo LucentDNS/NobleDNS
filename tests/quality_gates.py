@@ -68,7 +68,7 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
 
         domain = match.group("domain").lower()
         is_exception = bool(match.groupdict().get("exception")) or exception_form is not None
-        has_caret = bool(match.group("caret"))
+        has_caret = bool(match.groupdict().get("caret"))
         if is_exception and exception_form is None and not has_caret:
             invalid.append(line)
             continue
@@ -157,6 +157,17 @@ class QualityGateTests(unittest.TestCase):
             250,
             f"{len(self.exceptions)} exceptions active — review upstream before publishing",
         )
+
+    def test_documented_end_anchored_exceptions_keep_exact_scope(self) -> None:
+        blocks = {"example.com^"}
+        domain_and_subdomains = {"||sub.example.com^|"}
+        exact_hostname = {"|sub.example.com^|"}
+        self.assertFalse(is_blocked("sub.example.com", blocks, domain_and_subdomains))
+        self.assertFalse(is_blocked("www.sub.example.com", blocks, domain_and_subdomains))
+        self.assertTrue(is_blocked("example.com", blocks, domain_and_subdomains))
+        self.assertTrue(is_blocked("other.example.com", blocks, domain_and_subdomains))
+        self.assertFalse(is_blocked("sub.example.com", blocks, exact_hostname))
+        self.assertTrue(is_blocked("www.sub.example.com", blocks, exact_hostname))
 
     def test_fixture_sizes_are_explicit_and_stable(self) -> None:
         self.assertEqual(len(self.essential), 72)
