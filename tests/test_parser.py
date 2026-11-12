@@ -42,12 +42,14 @@ class ParserTests(unittest.TestCase):
             {
                 "domain_and_subdomains": 1,
                 "domain_anchor_without_end_boundary": 1,
+                "subdomains_only": 0,
             },
         )
         self.assertEqual(summary["review_required"], 1)
         self.assertEqual(len(review), 1)
         self.assertEqual(review[0][0], "||bare.example.com")
         self.assertIn("hostname-start anchor", summary["semantics"]["domain_anchor_without_end_boundary"])
+        self.assertIn("not the apex domain", summary["semantics"]["subdomains_only"])
 
     def test_caret_rule(self):
         blocks, _, _, _ = self.parse("||ads.example.com^\n")
@@ -121,21 +123,26 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(blocks, {"||ads.example.com^"})
 
 
-    def test_leading_dot_rules_are_rejected(self):
+    def test_leading_dot_rules_preserve_subdomain_only_semantics(self):
         blocks, _, rejected, rows = mod.parse_source(
-            b".ads.example.com^\n.bare.example.com\n||ok.example.com^\n",
+            b".ads.example.com^\\n.bare.example.com\\n||ok.example.com^\\n",
             "test",
             min_blocks=1,
         )
-        self.assertEqual(blocks, {"||ok.example.com^"})
-        self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 2)
-        self.assertEqual([row[3] for row in rows], [".ads.example.com^", ".bare.example.com"])
+        self.assertEqual(
+            blocks,
+            {".ads.example.com^", ".bare.example.com", "||ok.example.com^"},
+        )
+        self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 0)
+        self.assertEqual(rows, [])
 
-    def test_syntax_audit_rejects_leading_dot_forms(self):
-        with self.assertRaisesRegex(ValueError, "Rule missing from syntax audit"):
-            mod.syntax_audit({".ads.example.com^"}, {})
+    def test_syntax_audit_accepts_leading_dot_forms(self):
+        summary, review = mod.syntax_audit({".ads.example.com^", ".bare.example.com"}, {})
+        self.assertEqual(summary["forms"]["subdomains_only"], 2)
+        self.assertEqual(summary["review_required"], 0)
+        self.assertEqual(review, [])
 
-    def test_real_upstream_leading_dot_fixture_is_fully_excluded(self):
+    def test_real_upstream_leading_dot_fixture_keeps_valid_rules(self):
         fixture = Path(__file__).parent / "fixtures" / "leading-dot-rules.txt"
         raw = fixture.read_bytes()
         rules = raw.decode("utf-8").splitlines()
@@ -145,8 +152,10 @@ class ParserTests(unittest.TestCase):
         blocks, exceptions, rejected, rows = mod.parse_source(
             raw, "adguard_dns", min_blocks=0
         )
-        self.assertEqual(blocks, set())
+        self.assertEqual(len(blocks), 27)
         self.assertEqual(exceptions, set())
-        self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 28)
-        self.assertEqual(len(rows), 28)
+        self.assertEqual(rejected["invalid_domain_length_or_trailing_dot"], 1)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][3], ".1080.x.90.")
+
 if __name__ == "__main__": unittest.main()
