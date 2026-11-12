@@ -158,7 +158,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(unique_rows)
     with (out / "exception-conflicts.csv").open("w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["source", "exception_domain", "exact_baseline_block_conflict", "baseline_blocked_subdomains_neutralized", "baseline_parent_blocks"])
+        writer = csv.DictWriter(handle, fieldnames=["source", "exception_domain", "exact_baseline_block_conflict", "baseline_blocked_subdomains_neutralized_count", "baseline_parent_blocks"])
         writer.writeheader()
         writer.writerows(exception_rows)
 
