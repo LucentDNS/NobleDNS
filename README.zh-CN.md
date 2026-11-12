@@ -60,7 +60,7 @@ DNS 过滤只是网络防护的一环，无法拦截所有广告，尤其是第�
 
 ## 质量政策与文档
 
-- [质量与维护策略](docs/QUALITY.md)
+- [例外规则审核登记册](docs/EXCEPTION-REVIEW.md)- [质量与维护策略](docs/QUALITY.md)
 - [DNS 客户端兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md)
 - [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md)
 - [单一均衡版政策](docs/EDITION-POLICY.md)
