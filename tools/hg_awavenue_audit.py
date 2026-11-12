@@ -528,6 +528,28 @@ def main() -> int:
         downloaded[key] = data
         parsed[key] = parse_snapshot(key, data)
 
+    changelog_data = fetch_snapshot(AWA_CHANGELOG_URL)
+    (snapshots / "awavenue-changelog.md").write_bytes(changelog_data)
+    changelog_lines = changelog_data.decode("utf-8-sig").splitlines()
+    changelog_evidence = []
+    for index, line in enumerate(changelog_lines):
+        if any(token in line for token in (
+            "移除 2 个确认误杀的域名",
+            "移除 log.aliyuncs.com",
+            "移除 -normal.zijieapi.com",
+            "移除广告主投放后台域名",
+        )):
+            heading = next(
+                (changelog_lines[pos].strip() for pos in range(index, -1, -1)
+                 if changelog_lines[pos].strip().startswith("## ")),
+                "Version heading not found",
+            )
+            changelog_evidence.append({
+                "line": index + 1,
+                "version_heading": heading,
+                "entry": line.strip(),
+            })
+
     baseline_data = fetch_snapshot(BASELINE_URL)
     (snapshots / "nobledns-main-dns-filter.txt").write_bytes(baseline_data)
     baseline = parse_snapshot("nobledns_baseline", baseline_data)
@@ -612,12 +634,20 @@ def main() -> int:
                 "sha256": parsed[key]["sha256"],
                 "bytes": parsed[key]["bytes"],
                 "raw_rule_lines": parsed[key]["raw_rule_lines"],
+                "metadata": parsed[key]["metadata"],
                 "unique_block_rules": len(parsed[key]["blocks"]),
                 "unique_exception_rules": len(parsed[key]["exceptions"]),
                 "bare_block_rules": len(parsed[key]["bare"]),
                 "rejected": parsed[key]["rejected"],
                 "metrics": metrics.get(key),
             } for key in SOURCES
+        },
+        "source_anomalies": hg_watermark_anomalies,
+        "awa_changelog": {
+            "url": AWA_CHANGELOG_URL,
+            "sha256": sha256(changelog_data),
+            "bytes": len(changelog_data),
+            "evidence": changelog_evidence,
         },
         "cross_source": {
             "hg1_vs_awavenue_full_exact_rule_overlap": exact_rule_overlap,
@@ -670,15 +700,32 @@ def main() -> int:
     }
     (out / "audit.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+    hg_watermark_anomalies = []
+    for rule in sorted(parsed["hg1"]["bare"].values()):
+        domain = rule_domain(rule)
+        marker = domain.find("hgzs.uunat.com")
+        if marker > 0 and domain[marker - 1] != ".":
+            hg_watermark_anomalies.append({
+                "source": "hg1",
+                "type": "possible_navigation_host_concatenation",
+                "rule": rule,
+                "source_lines": parsed["hg1"]["line_map"].get(rule, []),
+                "domain_fragment_before_navigation_host": domain[:marker],
+                "note": "Heuristic flag only; do not split or repair without upstream confirmation.",
+            })
+
     hg_extra = (
         "HG's own README identifies hg1.txt as the blocking list and hg2.txt as its companion allowlist. "
         f"The companion hg2 file parsed {len(hg2_allow_domains):,} supported exception domains; "
         f"{len(hg2_vs_baseline):,} hierarchical exception/block overlaps with the NobleDNS baseline and "
         f"{len(hg2_vs_hg1):,} overlaps with hg1 were found. It does not provide matching exceptions for "
         "the pinduoduo.com or pingan.com parent blocks identified by the essential-service regression fixture. "
-        "The 35 retained bare-anchor rules need client-specific matching review. The source also contains "
-        "large numbers of IP-literal, wildcard, single-label and malformed/unsupported entries, all excluded "
-        "by the NobleDNS parser. The public repository did not expose a LICENSE file at its root."
+        "The 35 retained bare-anchor rules need client-specific matching review. "
+        f"{len(hg_watermark_anomalies)} bare-anchor entries contain hgzs.uunat.com concatenated directly "
+        "to the preceding domain fragment; this resembles navigation-host contamination, but the audit does "
+        "not split or repair them. The source also contains large numbers of IP-literal, wildcard, single-label "
+        "and malformed/unsupported entries, all excluded by the NobleDNS parser. The public repository did "
+        "not expose a LICENSE file at its root."
     )
     awa_extra = (
         "The exact requested main file is the full-protection subscription. The AWAvenue README says this "
@@ -687,8 +734,14 @@ def main() -> int:
         "variant described as compatibility/minimal-intervention oriented. That variant is audited separately "
         f"and contains {len(only_ads_domains):,} supported unique blocking domains versus {len(awa_domains):,} "
         f"in the full-protection list. The full list has {len(awa_domains - only_ads_domains):,} additional "
-        "domains not present in the Ads-only variant. This is a source-scope distinction, not a claim that "
-        "every additional domain is harmful or safe to block."
+        "domains not present in the Ads-only variant. The source header identifies version "
+        f"{parsed['awavenue_full']['metadata'].get('version', 'unknown')} updated "
+        f"{parsed['awavenue_full']['metadata'].get('update_time', 'unknown')}. Its changelog documents "
+        "confirmed false-positive removals affecting Youku normal APIs and PDD product-image loading, "
+        "removal of log.aliyuncs.com and a -normal.zijieapi.com keyword pattern after false-positive reports, "
+        "and removal of advertiser-backend hosts not requested by client apps. Changelog line references: "
+        f"{', '.join(str(item['line']) for item in changelog_evidence)}. This history shows active correction, "
+        "but also confirms that source rules require ongoing endpoint-level scrutiny."
     )
 
     reports = out / "reports"
@@ -845,6 +898,9 @@ No production source configuration, public rules, manifest, subscription, or rel
             })
     write_csv(out / "unsupported-source-lines.csv",
               ["source", "line_number", "reason", "original_line"], excluded_rows)
+    write_csv(out / "suspected-source-anomalies.csv",
+              ["source", "type", "rule", "source_lines", "domain_fragment_before_navigation_host", "note"],
+              hg_watermark_anomalies)
 
     print(
         f"HG/AWAvenue offline audit complete: baseline {len(baseline['blocks']):,} blocks; "
