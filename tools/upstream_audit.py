@@ -17,11 +17,11 @@ sys.path.insert(0, str(ROOT))
 import update as builder  # Reuse the production parser; do not create a second syntax definition.
 
 SOURCES = {
-    "adguard_dns": {"name": "AdGuard DNS Filter", "role": "baseline", "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"},
-    "hagezi_normal": {"name": "HaGeZi Multi NORMAL", "role": "baseline", "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt"},
-    "oisd_big": {"name": "OISD Big", "role": "candidate", "url": "https://big.oisd.nl/"},
-    "anti_ad": {"name": "anti-AD (AdGuard format)", "role": "candidate", "url": "https://anti-ad.net/adguard.txt"},
-    "adrules_dns": {"name": "AdRules DNS", "role": "candidate", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt"},
+    "adguard_dns": {"name": "AdGuard DNS Filter", "role": "baseline", "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt", "license": "GPL-3.0"},
+    "hagezi_normal": {"name": "HaGeZi Multi NORMAL", "role": "baseline", "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt", "license": "GPL-3.0"},
+    "oisd_big": {"name": "OISD Big", "role": "candidate", "url": "https://big.oisd.nl/", "license": "GPL-3.0"},
+    "anti_ad": {"name": "anti-AD (AdGuard format)", "role": "candidate", "url": "https://anti-ad.net/adguard.txt", "license": "MIT"},
+    "adrules_dns": {"name": "AdRules DNS", "role": "candidate", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt", "license": "0BSD"},
 }
 RULE_DOMAIN_RE = re.compile(r"^(?:@@)?\|\|([^\^/$|]+)(?:\^)?$")
 
@@ -36,7 +36,6 @@ def is_covered(domain: str, rules: set[str]) -> bool:
     return any(".".join(labels[i:]) in rules for i in range(len(labels)))
 
 def fetch(url: str) -> bytes:
-    # Use the production fetcher's HTTPS, retry, byte-limit, and strict-UTF-8 protections.
     return builder.fetch(url, None)
 
 def main() -> int:
@@ -45,11 +44,14 @@ def main() -> int:
     args = parser.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
+    snapshots = out / "source-snapshots"
+    snapshots.mkdir(parents=True, exist_ok=True)
     parsed, metadata, failures = {}, {}, {}
 
     for key, source in SOURCES.items():
         try:
             raw = fetch(source["url"])
+            (snapshots / f"{key}.txt").write_bytes(raw)
             blocks, exceptions, rejected, _rows = builder.parse_source(raw, key, min_blocks=0)
             block_domains = {rule_domain(rule) for rule in blocks}
             exception_domains = {rule_domain(rule) for rule in exceptions}
@@ -58,6 +60,7 @@ def main() -> int:
                 **source,
                 "bytes": len(raw),
                 "sha256": hashlib.sha256(raw).hexdigest(),
+                "snapshot": f"source-snapshots/{key}.txt",
                 "downloaded_at_utc": datetime.now(timezone.utc).isoformat(),
                 "blocking_rules": len(blocks),
                 "blocking_domains": len(block_domains),
@@ -94,8 +97,7 @@ def main() -> int:
     candidate_unique_sets = {}
     for key in candidate_keys:
         blocks = parsed[key]["blocks"]
-        exact_overlap = blocks & baseline
-        unique_exact = blocks - baseline
+        exact_overlap, unique_exact = blocks & baseline, blocks - baseline
         covered_by_parent = {d for d in unique_exact if is_covered(d, baseline)}
         candidate_unique_sets[key] = unique_exact
         comparisons[key] = {
@@ -113,8 +115,7 @@ def main() -> int:
         }
         for domain in sorted(unique_exact):
             unique_rows.append({
-                "source": key,
-                "domain": domain,
+                "source": key, "domain": domain,
                 "already_covered_by_baseline_parent": str(domain in covered_by_parent).lower(),
                 "ends_in_cn": str(domain.endswith(".cn")).lower(),
             })
@@ -126,16 +127,28 @@ def main() -> int:
                 "overlap_between_candidate_unique_sets": len(candidate_unique_sets[left] & candidate_unique_sets[right])
             }
     union_unique = set().union(*candidate_unique_sets.values()) if candidate_unique_sets else set()
-    incremental_by_order = {}
-    seen = set()
-    for key in candidate_keys:
-        incremental_by_order[key] = len(candidate_unique_sets[key] - seen)
-        seen.update(candidate_unique_sets[key])
+    union_parent_covered = {d for d in union_unique if is_covered(d, baseline)}
 
+    exception_rows = []
+    for key in parsed:
+        for domain in sorted(parsed[key]["exceptions"]):
+            baseline_exact = domain in baseline
+            baseline_child_blocks = sorted(d for d in baseline if is_covered(d, {domain}) and d != domain)
+            baseline_parent_blocks = sorted(d for d in baseline if is_covered(domain, {d}) and d != domain)
+            exception_rows.append({
+                "source": key, "exception_domain": domain,
+                "exact_baseline_block_conflict": str(baseline_exact).lower(),
+                "baseline_blocked_subdomains_neutralized": ";".join(baseline_child_blocks),
+                "baseline_parent_blocks": ";".join(baseline_parent_blocks),
+            })
     with (out / "candidate-unique-rules.csv").open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["source", "domain", "already_covered_by_baseline_parent", "ends_in_cn"])
         writer.writeheader()
         writer.writerows(unique_rows)
+    with (out / "exception-conflicts.csv").open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["source", "exception_domain", "exact_baseline_block_conflict", "baseline_blocked_subdomains_neutralized", "baseline_parent_blocks"])
+        writer.writeheader()
+        writer.writerows(exception_rows)
 
     report = {
         "project": "NobleDNS",
@@ -151,7 +164,10 @@ def main() -> int:
         "candidate_comparisons": comparisons,
         "pairwise_candidate_overlap": pairwise_candidate_overlap,
         "candidate_union_exact_unique_domains": len(union_unique),
-        "incremental_unique_by_candidate_order": incremental_by_order,
+        "candidate_union_unique_not_covered_by_baseline_parent": len(union_unique - union_parent_covered),
+        "candidate_union_unique_already_covered_by_baseline_parent": len(union_parent_covered),
+        "candidate_union_plus_baseline_exact_domain_total": len(baseline | union_unique),
+        "candidate_union_incremental_by_source_order": {},
         "download_or_parse_failures": failures,
         "limitations": [
             "The production NobleDNS parser is reused so syntax acceptance matches the current builder; parser exclusions are not silently converted.",
@@ -159,10 +175,14 @@ def main() -> int:
             "Exact unique domains may already be covered by a broader baseline parent-domain rule; these are counted separately.",
             "Exception precedence and client-specific matching behavior require separate compatibility tests.",
             "A domain appearing in an upstream list is not by itself proof that it is safe or appropriate to block.",
-            "Moving source URLs are snapshots of this run; hashes identify the exact downloaded bytes.",
+            "Moving source URLs are snapshots of this run; hashes and included source-snapshot files identify the exact downloaded bytes.",
             "The .cn suffix count is a rough geographic signal only; it is not a complete mainland-specific classification.",
         ],
     }
+    seen = set()
+    for key in candidate_keys:
+        report["candidate_union_incremental_by_source_order"][key] = len(candidate_unique_sets[key] - seen)
+        seen.update(candidate_unique_sets[key])
     (out / "audit.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     lines = [
@@ -174,8 +194,7 @@ def main() -> int:
         "",
         f"Live baseline snapshot: {len(baseline):,} unique blocking domains; {len(baseline_exceptions):,} exception domains.",
         "",
-        "## Baseline snapshot vs published manifest",
-        "",
+        "## Baseline snapshot vs published manifest", "",
         "| Source | Published SHA-256 | Downloaded SHA-256 | Match |",
         "|---|---|---|---|",
     ]
@@ -196,6 +215,7 @@ def main() -> int:
         )
     lines += [
         "", f"Candidate unique-domain union vs baseline: {len(union_unique):,}",
+        f"Of those, not already covered by a baseline parent rule: {len(union_unique - union_parent_covered):,}",
         "", "## Candidate-to-candidate overlap", "",
         "| Pair | Overlap between each source's baseline-unique set |", "|---|---:|",
     ]
@@ -203,20 +223,22 @@ def main() -> int:
         lines.append(f"| {pair} | {values['overlap_between_candidate_unique_sets']:,} |")
     lines += [
         "", "## Source fingerprints", "",
-        "| Source | Bytes | SHA-256 | Parsed blocks | Exceptions | Unsupported lines |",
-        "|---|---:|---|---:|---:|---:|",
+        "| Source | License declaration | Bytes | SHA-256 | Parsed blocks | Exceptions | Unsupported lines |",
+        "|---|---|---:|---|---:|---:|---:|",
     ]
     for values in metadata.values():
         lines.append(
-            f"| {values['name']} | {values['bytes']:,} | {values['sha256']} | "
+            f"| {values['name']} | {values['license']} | {values['bytes']:,} | {values['sha256']} | "
             f"{values['blocking_rules']:,} | {values['exception_rules']:,} | "
             f"{sum(values['unsupported_lines_by_reason'].values()):,} |"
         )
+    lines += ["", "## Exception conflicts", ""]
+    lines += [f"- {r['source']}: {r['exception_domain']} (exact baseline conflict: {r['exact_baseline_block_conflict']})" for r in exception_rows] if exception_rows else ["No exception rules found."]
     lines += ["", "## Failures", ""]
     lines += [f"- **{key}:** {value}" for key, value in failures.items()] if failures else ["None."]
     lines += ["", "## Interpretation limits", ""] + [f"- {item}" for item in report["limitations"]]
     (out / "audit-report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Reports written to {out}")
+    print(f"Reports and source snapshots written to {out}")
     return 1 if failures else 0
 
 if __name__ == "__main__":
