@@ -161,7 +161,7 @@ git diff --check
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前导点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条记录全部以 `unsupported_leading_dot_dns_syntax` 排除。AdGuard DNS 专用语法文档没有定义 `.domain^` 或 `.domain` 是 hostname-pattern 运算符。没有权威 DNS 专用文档或目标客户端可复现测试证明其行为前，不得宣称它们只匹配子域名，也不得将其发布为有效封禁规则。
+所有测试必须通过。真实上游前导点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证 28 条记录全部以 `unsupported_leading_dot_dns_syntax` 排除。当前 AdGuard DNS 专用语法文档已不再列出 `.domain^` 或 `.domain`；但 AdGuard for Android / AdGuard Home 的归档官方知识库曾说明 `.example.org` 只匹配子域名、不匹配根域名。在目标客户端的准确版本通过可复现测试前，仍应排除 fixture 中全部 28 条记录，不得宣称当前客户端兼容。绝不能将其改写为 `||domain^`。
 
 #### 添加回归用例
 
