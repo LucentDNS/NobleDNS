@@ -30,6 +30,10 @@ Create controlled records for:
 - `notbare.nobledns.test`
 - `subonly.nobledns.test`
 - `child.subonly.nobledns.test`
+- `exception.nobledns.test`
+- `www.exception.nobledns.test`
+- `exact.nobledns.test`
+- `www.exact.nobledns.test`
 
 The authoritative server should return a known test address for every name in both zones. This separates filtering behavior from upstream resolution failures.
 
@@ -58,10 +62,14 @@ Do not add these synthetic rules to the public subscription.
 | `||bare.nobledns.test` | `notbare.nobledns.test` | Must not be blocked by a hostname-start anchor |
 | `.subonly.nobledns.test^` | apex | Allow |
 | `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
+| `@@||exception.nobledns.test^|` | apex | Allow |
+| `@@||exception.nobledns.test^|` | `www.exception.nobledns.test` | Allow |
+| `@@|exact.nobledns.test^|` | apex | Allow |
+| `@@|exact.nobledns.test^|` | `www.exact.nobledns.test` | Block; the single leading `|` and trailing `|` restrict the exception to the exact hostname |
 
 For each query, record the DNS response, client filtering log, authoritative-server log and whether the result matches the documented semantics. A timeout or missing authoritative response is an invalid test, not a successful block.
 
-The bare-anchor cases are included to verify the documented distinction between hostname-start anchoring and the `^` hostname-end separator. In particular, a hostname continuing after the literal pattern is expected to match when `^` is absent. Record actual client results and do not rewrite upstream rules based on a single client result.
+The bare-anchor and end-anchored exception cases verify the documented distinction between hostname-start anchoring, the `^` hostname-end separator, and the single-pipe start/end anchors. AdGuard documents these forms in its [DNS filtering syntax reference](https://adguard-dns.io/kb/general/dns-filtering-syntax/). In particular, a hostname continuing after the literal pattern is expected to match when `^` is absent. Record actual client results and do not rewrite upstream rules based on a single client result.
 
 ## Execution procedure
 
