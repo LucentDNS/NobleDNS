@@ -53,6 +53,7 @@ NobleDNS is an independent project and is not affiliated with or endorsed by eit
 Rule count alone is not a measure of filtering quality. See:
 
 - [Quality and acceptance policy](docs/QUALITY.md)
+- [DNS client compatibility test plan](docs/COMPATIBILITY-TEST-PLAN.md)
 - [Current published manifest](dist/manifest.json)
 - [Validation report](dist/validation-report.txt)
 - [DNS syntax inventory](dist/syntax-audit.json)
