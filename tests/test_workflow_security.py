@@ -49,6 +49,15 @@ class WorkflowSecurityTests(unittest.TestCase):
         self.assertIn("image_version=", workflow)
         self.assertIn('test -s "$OUT/build-environment.txt"', workflow)
 
+    def test_daily_updates_do_not_create_candidate_or_content_addressed_releases(self):
+        path = WORKFLOWS / "daily-build-release.yml"
+        workflow = path.read_text(encoding="utf-8")
+
+        self.assertNotIn("content-addressed Release", workflow)
+        self.assertNotIn('gh release create "$TAG"', workflow)
+        self.assertIn('VERSION_TAG="v$VERSION"', workflow)
+        self.assertIn('gh release create "$VERSION_TAG"', workflow)
+
     def test_release_workflow_keeps_permissions_and_publish_guards_scoped(self):
         path = WORKFLOWS / "daily-build-release.yml"
         workflow = path.read_text(encoding="utf-8")
