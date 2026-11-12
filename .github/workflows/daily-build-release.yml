@@ -520,11 +520,41 @@ jobs:
 
           if gh release view "$VERSION_TAG" >/dev/null 2>&1; then
             IS_PRERELEASE="$(gh release view "$VERSION_TAG" --json isPrerelease --jq '.isPrerelease')"
-            if [ "$IS_PRERELEASE" = "true" ]; then
-              echo "::error::The existing version tag is marked as a prerelease."
+            IS_DRAFT="$(gh release view "$VERSION_TAG" --json isDraft --jq '.isDraft')"
+            if [ "$IS_PRERELEASE" = "true" ] || [ "$IS_DRAFT" = "true" ]; then
+              echo "::error::The existing version release is a prerelease or draft; refusing to treat it as stable."
               exit 1
             fi
-            echo "Stable version release already exists; leaving it immutable."
+
+            ASSETS=(
+              dist/dns-filter.txt
+              dist/manifest.json
+              dist/validation-report.txt
+              dist/whitelist-review.txt
+              dist/parser-exclusions.csv
+              dist/syntax-audit.json
+              dist/syntax-review.csv
+              LICENSE
+              THIRD-PARTY-NOTICES.md
+              licenses/GPL-3.0.txt
+            )
+
+            EXISTING_ASSETS="$(gh release view "$VERSION_TAG" --json assets --jq '.assets[].name')"
+            VERIFY_DIR="$(mktemp -d)"
+            trap 'rm -rf "$VERIFY_DIR"' EXIT
+            gh release download "$VERSION_TAG" --dir "$VERIFY_DIR"
+
+            for asset in "${ASSETS[@]}"; do
+              asset_name="${asset##*/}"
+              if ! grep -Fqx -- "$asset_name" <<< "$EXISTING_ASSETS" ||
+                 [ ! -f "$VERIFY_DIR/$asset_name" ] ||
+                 ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
+                echo "::error::Immutable version release asset is missing or differs: $asset_name"
+                exit 1
+              fi
+            done
+
+            echo "Stable version release exists and all assets match; leaving it immutable."
             exit 0
           fi
 
