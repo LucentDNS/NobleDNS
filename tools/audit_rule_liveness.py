@@ -167,7 +167,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
             for row in current:
                 qtypes_by_pair[(row["resolver"], row["resolver_operator"], row["vantage"])].add(row["qtype"])
             complete_pairs = [pair for pair, qtypes in qtypes_by_pair.items() if qtypes == {"A", "AAAA"}]
-            dates = [row["_time"] for row in current]
+            dates = [row["_time"] for row in fresh if row["rcode"] == "NXDOMAIN"]
             span = (max(dates) - min(dates)).total_seconds() / 86400
             quorum = (
                 len(operators) >= 3
