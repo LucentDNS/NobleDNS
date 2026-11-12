@@ -38,8 +38,8 @@ A hostname is labelled `stable_nxdomain_candidate_manual_review` only when all o
 
 1. Fresh observations exist for both A and AAAA.
 2. The latest observation for every resolver/operator/vantage/qtype tuple is NXDOMAIN.
-3. At least three distinct resolver operators are represented.
-4. At least two distinct vantage points are represented.
+3. At least three distinct resolver operators are represented, and **each qualifying operator must be observed from at least two genuinely distinct vantage points**. Resolver ownership and vantage geography must be independently verified; labels alone are not proof.
+4. At least three resolver/operator/vantage combinations have both A and AAAA results.
 5. At least three resolver/operator/vantage combinations have both A and AAAA results.
 6. **Every resolver/operator/vantage pair in the quorum** has at least two complete UTC-day rounds, each containing NXDOMAIN for both A and AAAA and no conflicting or failed response for either qtype that day. That pair's own first-to-last complete-round span must be at least seven full elapsed days. A historical result from one pair cannot extend the observation window of a newer quorum formed by other pairs.
 7. Every latest NXDOMAIN response includes exactly one relevant SOA authority zone that is an ancestor of the queried hostname, and that zone is consistent across the full resolver/vantage quorum. Missing or inconsistent SOA evidence receives a separate manual-review status, never a stable candidate.
