@@ -12,6 +12,7 @@ All notable changes to NobleDNS are documented here.
 - Add an explicit quality gate limiting active exception/allow rules to 50, so an abnormal allow-rule surge fails validation.
 - Document the exact workflow for adding regression fixtures and updating their pinned counts.
 - Add code and upstream rule-data license metadata to the generated subscription banner.
+- Split the maintainer guide into separate English and Simplified Chinese documents while keeping their operational instructions aligned.
 
 ### Fixed
 - Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
