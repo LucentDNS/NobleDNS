@@ -75,6 +75,7 @@ NobleDNS 在 DNS 层面过滤来源规则所覆盖的广告、跟踪、遥测及
 我们重视国内网站和应用的正常使用体验，也公开项目采用的质量标准、测试方法和验证进展。
 
 - [质量与维护策略](docs/QUALITY.md)
+- [证据化回归语料规范](docs/EVIDENCE-CORPUS.md)
 - [DNS 客户端兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md)
 - [单一均衡版政策](docs/EDITION-POLICY.md)
 - [最新验证报告](dist/validation-report.txt)
