@@ -256,7 +256,7 @@ jobs:
           retention-days: 30
 
   publish:
-    name: Publish candidate release
+    name: Publish public release
     needs: build-test
 
     # Pull requests and non-default branches must never publish.
@@ -302,9 +302,8 @@ jobs:
 
           CHANNEL=$(python -c "import json; print(json.load(open('config/sources.json', encoding='utf-8'))['release_channel'])")
 
-          if [ "$CHANNEL" != "candidate" ]; then
-            echo "::error::Only the candidate release channel is permitted by this workflow."
-            echo "Stable publishing requires a separate qualification and workflow review."
+          if [ "$CHANNEL" != "public" ]; then
+            echo "::error::Only the public release channel is permitted by this workflow."
             exit 1
           fi
 
@@ -329,7 +328,6 @@ jobs:
           echo "Build commit still matches the default branch."
 
       - name: Prepare public artifacts
-        if: needs.build-test.outputs.publish_update == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -430,8 +428,8 @@ jobs:
 
             IS_PRERELEASE="$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')"
             if [ "$IS_PRERELEASE" != "true" ]; then
-              echo "Correcting existing Release to prerelease."
-              gh release edit "$TAG" --prerelease
+              echo "Ensuring existing Release is not marked as a prerelease."
+              gh release edit "$TAG" --prerelease=false
             fi
 
             EXISTING_ASSETS="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
@@ -492,15 +490,14 @@ jobs:
             fi
 
             # Recover a draft left behind by an interrupted release creation.
-            gh release edit "$TAG" --draft=false --prerelease
-            echo "Release is published as a prerelease."
+            gh release edit "$TAG" --draft=false --prerelease=false
+            echo "Release is published."
           else
-            echo "Release does not exist; creating a candidate prerelease."
+            echo "Release does not exist; creating a public release."
 
             gh release create "$TAG" \
               "${ASSETS[@]}" \
               --target "$(git rev-parse HEAD)" \
               --title "$TITLE" \
-              --generate-notes \
-              --prerelease
+              --generate-notes
           fi
