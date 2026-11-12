@@ -65,7 +65,7 @@ The project does **not** currently claim:
 - Live DNS integration testing across AdGuard for Android, AdGuard Home, dnsmasq or other clients.
 - A comprehensive real-world mainland website/app compatibility matrix.
 
-To support future quality claims, build a reviewed corpus with at least these labels: confirmed ad/tracker, confirmed unwanted telemetry, confirmed malicious or threat infrastructure, legitimate or essential service, and unresolved. Each entry should include evidence, source, review date, confidence, affected service/function and a regression test where appropriate. Do not count unresolved entries as confirmed blocks or confirmed false positives.
+To support future quality claims, NobleDNS has introduced a versioned, machine-readable evidence-corpus schema in [EVIDENCE-CORPUS.md](EVIDENCE-CORPUS.md). The canonical `tests/fixtures/evidence-corpus.json` is intentionally empty until real hostnames meet the evidence standard. Its validator rejects unresolved-as-blocked records, upstream-only confirmation, duplicate or malformed entries, overdue reviews and expired threat evidence; the quality gate will compare each reviewed record's expected blocked/allowed policy with the generated subscription. This is evidence-management infrastructure, not proof that any real-world corpus has already been curated.
 
 Publish measurements only with their denominator, sampling method, test date, client/resolver versions, corpus revision and known limitations. Separate rule syntax/client compatibility, false-positive observations, missed-block observations, reviewed-corpus coverage, and user-reported issues with their verification status. A small or biased sample must not be presented as representative of all mainland users or all domestic apps.
 
