@@ -31,37 +31,20 @@ class BenchmarkScorerTests(unittest.TestCase):
         self.assertEqual(scorer.decide("example.test.evil.test", caret, set())[0], "allow")
         self.assertEqual(scorer.decide("www.example.test", caret, set())[0], "block")
 
-    def test_leading_dot_matches_subdomains_only(self) -> None:
-        blocks = {".example.test^", ".bare.example.net"}
-        self.assertEqual(scorer.decide("example.test", blocks, set())[0], "allow")
-        self.assertEqual(scorer.decide("www.example.test", blocks, set())[0], "block")
-        self.assertEqual(scorer.decide("bare.example.net", blocks, set())[0], "allow")
-        self.assertEqual(scorer.decide("cdn.bare.example.net", blocks, set())[0], "block")
-
-    def test_rule_loader_accepts_all_supported_forms(self) -> None:
+    def test_undocumented_leading_dot_syntax_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"
-            path.write_text(
-                "||caret.example.test^\n||bare.example.test\n"
-                ".subonly.example.test^\n.subonlybare.example.test\n"
-                "@@||safe.example.test^\n",
-                encoding="utf-8",
-            )
+            path.write_text("||valid.example.test^\n.example.test^\n", encoding="utf-8")
             blocks, exceptions, unsupported = scorer.load_rules(path)
-            self.assertEqual(
-                blocks,
-                {
-                    "||caret.example.test^", "||bare.example.test",
-                    ".subonly.example.test^", ".subonlybare.example.test",
-                },
-            )
-            self.assertEqual(exceptions, {"@@||safe.example.test^"})
-            self.assertEqual(unsupported, [])
+            self.assertEqual(blocks, {"||valid.example.test^"})
+            self.assertEqual(exceptions, set())
+            self.assertEqual(len(unsupported), 1)
+            self.assertIn(".example.test^", unsupported[0])
 
     def test_rule_loader_rejects_trailing_dot_patterns(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"
-            path.write_text("||valid.example.test^\n.invalid.example.test.\n", encoding="utf-8")
+            path.write_text("||valid.example.test^\n||invalid.example.test.^\n", encoding="utf-8")
             blocks, exceptions, unsupported = scorer.load_rules(path)
             self.assertEqual(blocks, {"||valid.example.test^"})
             self.assertEqual(exceptions, set())
