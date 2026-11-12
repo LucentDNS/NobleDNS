@@ -45,7 +45,7 @@ Build a versioned corpus with independently reviewed records:
 |---|---|---|
 | Confirmed ad delivery | Block | Controlled request/traffic capture, vendor documentation or independent research; high confidence |
 | Confirmed tracking/analytics | Block | Same; distinguish first-party functional telemetry from unwanted cross-site tracking |
-| Unwanted telemetry | Block or observe-only | Evidence of purpose, scope and user impact; do not classify crash reporting as advertising by default |
+| Confirmed unwanted telemetry | Block | Evidence of purpose, scope and user impact; do not classify crash reporting as advertising by default. Observe-only or unresolved items are excluded from scored rows |
 | Confirmed threat | Block | Reputable threat-intelligence evidence, timestamp, expiry and revalidation |
 | Essential/legitimate service | Allow | Controlled successful use, vendor documentation or independent research |
 | Unresolved | Observe only | Insufficient, conflicting or stale evidence |
@@ -59,7 +59,7 @@ Requirements:
 - Keep a blind holdout subset unavailable to the person tuning rules until an evaluation round is frozen.
 - Never commit private traffic logs, identifiers, credentials or user-specific browsing histories.
 
-The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects stale or non-high-confidence records, and refuses to score unsupported rule syntax. Its `independent=true` field is a reviewer attestation, not cryptographic proof; evidence must be checked by a second reviewer. The scorer models these documented forms: `||domain^` (domain and subdomains, with hostname-end boundary), `||domain` (hostname-start anchor without an end separator), `.domain^` and `.domain` (subdomains only, not the apex), and `@@||domain^` (exception). It rejects other syntax rather than silently scoring a partial interpretation. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed.
+The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects stale or non-high-confidence records, and refuses to score unsupported rule syntax. Its `independent=true` field is a reviewer attestation, not cryptographic proof; evidence must be checked by a second reviewer. The scorer models only the syntax currently accepted by the published v1.0.3 parser: `||domain^` (domain and subdomains, with hostname-end boundary), `||domain` (hostname-start anchor without an end separator), and `@@||domain^` (exception). Leading-dot records are excluded by the current production parser; an open proposal to preserve them must not be treated as supported until authoritative semantics and client behavior are established. Other syntax is rejected rather than silently scored. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed.
 
 ## 4. Metrics
 
@@ -172,4 +172,4 @@ Therefore, current evidence does not support claims that NobleDNS is fully field
 
 Every scored report should contain: executive summary and limitations; immutable list/corpus identities (version, commit, SHA-256); environment and exact client/resolver versions; corpus composition, evidence quality and sampling method; per-category TP, FP, FN, precision and recall; critical service task outcomes and severity; DNS latency, timeout, throughput, CPU and memory distributions; differences versus every comparator with confidence intervals where applicable; raw sanitized artifacts and reproduction steps; reviewer sign-off, unresolved questions and next test date.
 
-The scorer's supported-rule parser and confusion-matrix calculations are covered by unit tests; its output must always be labeled as offline simulation. The corpus template contains no pre-approved hostnames.\n\nThis plan is a test protocol only. It does not change the public rule set, add candidate sources or authorize publication of benchmark claims.
+The scorer's supported-rule parser and confusion-matrix calculations are covered by unit tests; it rejects leading-dot and malformed trailing-dot rule patterns to match the published parser's current behavior. Corpus hostnames may include one terminal DNS root dot, which is normalized before scoring. Its output must always be labeled as offline simulation. The corpus template contains no pre-approved hostnames.\n\nThis plan is a test protocol only. It does not change the public rule set, add candidate sources or authorize publication of benchmark claims.
