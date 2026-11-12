@@ -2,6 +2,12 @@
   "schema_version": 1,
   "resolvers": [
     {
+      "id": "dnspod-public-dns",
+      "operator": "Tencent-DNSPod",
+      "transport": "doh",
+      "endpoint": "https://doh.pub/dns-query"
+    },
+    {
       "id": "cloudflare-doh",
       "operator": "Cloudflare",
       "transport": "doh",
