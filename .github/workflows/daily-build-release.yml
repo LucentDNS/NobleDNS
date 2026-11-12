@@ -178,6 +178,16 @@ jobs:
           )
 
           new_hash = new["main_subscription_sha256"]
+          new_file_hash = hashlib.sha256(
+              Path("build-output/latest/dns-filter.txt").read_bytes()
+          ).hexdigest()
+
+          old_file_path = Path("dist/dns-filter.txt")
+          old_file_hash = (
+              hashlib.sha256(old_file_path.read_bytes()).hexdigest()
+              if old_file_path.exists()
+              else ""
+          )
 
           new_sources = {
               key: value["sha256"]
@@ -208,18 +218,21 @@ jobs:
 
           rules_changed = new_hash != old.get("main_subscription_sha256", "")
           sources_changed = new_sources != old_sources
-          publish_update = rules_changed or sources_changed
+          file_changed = new_file_hash != old_file_hash
+          publish_update = rules_changed or sources_changed or file_changed
 
           output = Path(os.environ["GITHUB_OUTPUT"])
           with output.open("a", encoding="utf-8") as f:
-              f.write(f"rules_changed={str(rules_changed).lower()}\n")
-              f.write(f"sources_changed={str(sources_changed).lower()}\n")
-              f.write(f"publish_update={str(publish_update).lower()}\n")
-              f.write(f"new_hash={new_hash}\n")
-              f.write(f"release_hash={release_hash}\n")
+              f.write(f"rules_changed={str(rules_changed).lower()}\\n")
+              f.write(f"sources_changed={str(sources_changed).lower()}\\n")
+              f.write(f"publish_update={str(publish_update).lower()}\\n")
+              f.write(f"file_changed={str(file_changed).lower()}\\n")
+              f.write(f"new_hash={new_hash}\\n")
+              f.write(f"release_hash={release_hash}\\n")
 
           print(f"Rules changed: {rules_changed}")
           print(f"Sources changed: {sources_changed}")
+          print(f"Subscription file changed: {file_changed}")
           print(f"Publish update required: {publish_update}")
           print(f"New rule SHA256: {new_hash}")
           print(f"Release identity SHA256: {release_hash}")
