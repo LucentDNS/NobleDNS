@@ -17,7 +17,7 @@ FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
     "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.\n"
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
-    "! Version: 1.0.1\n"
+    f"! Version: {VERSION_BASE}\n"
     "! Expires: 1 day\n"
     "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
 )
