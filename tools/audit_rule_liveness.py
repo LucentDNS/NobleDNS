@@ -267,7 +267,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 rounds_by_pair[pair][day][row["qtype"]].append(row)
             pair_spans = {}
             for pair, daily_results in rounds_by_pair.items():
-                complete_days = []
+                complete_round_times_by_day = {}
                 for day, qtypes in daily_results.items():
                     if set(qtypes) != {"A", "AAAA"}:
                         continue
@@ -282,19 +282,27 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                     # complete round, even if they fall on the same UTC date.
                     a_times = [observation["_time"] for observation in qtypes["A"]]
                     aaaa_times = [observation["_time"] for observation in qtypes["AAAA"]]
-                    paired = any(
-                        abs((a_time - aaaa_time).total_seconds())
-                        <= MAX_A_AAAA_ROUND_GAP_SECONDS
+                    round_completions = [
+                        max(a_time, aaaa_time)
                         for a_time in a_times
                         for aaaa_time in aaaa_times
-                    )
-                    if paired:
-                        complete_days.append(day)
-                complete_days.sort()
-                if len(complete_days) >= 2:
-                    first = datetime.fromisoformat(complete_days[0]).replace(tzinfo=timezone.utc)
-                    last = datetime.fromisoformat(complete_days[-1]).replace(tzinfo=timezone.utc)
-                    pair_spans[pair] = (last - first).total_seconds() / 86400
+                        if abs((a_time - aaaa_time).total_seconds())
+                        <= MAX_A_AAAA_ROUND_GAP_SECONDS
+                    ]
+                    if round_completions:
+                        complete_round_times_by_day[day] = round_completions
+                if len(complete_round_times_by_day) >= 2:
+                    # Measure seven full elapsed days from real observation
+                    # timestamps, not UTC midnight boundaries. Calendar-date
+                    # subtraction can overstate the evidence by almost 24h.
+                    round_times = [
+                        observed_at
+                        for daily_times in complete_round_times_by_day.values()
+                        for observed_at in daily_times
+                    ]
+                    pair_spans[pair] = (
+                        max(round_times) - min(round_times)
+                    ).total_seconds() / 86400
                 else:
                     pair_spans[pair] = 0.0
             temporal_pairs = {
