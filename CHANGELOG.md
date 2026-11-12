@@ -4,6 +4,8 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+## [1.0.0] - 2026-11-12
+
 ### Added
 - Public release workflow that publishes validated subscription and audit artifacts.
 - Public feedback guidance for blocking and compatibility reports.
