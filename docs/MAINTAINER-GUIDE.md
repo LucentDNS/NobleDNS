@@ -414,3 +414,7 @@ The current 11 simple upstream exceptions are tracked in `data/exception-review.
 Important: all 11 entries are currently marked `pending`. Their source provenance and syntax are recorded, but NobleDNS has not independently approved them. Do not mark them approved based only on their presence upstream or on a hostname's apparent purpose. Record the exact evidence, minimal scope, reviewer and UTC date for each decision.
 
 The register is currently an audit record, not a build-time enforcement gate. The inherited exceptions remain active in the subscription; do not remove or rewrite them as part of a documentation-only review. A future enforcement change must be separately tested and must explicitly handle existing pending entries and upstream additions without silently changing DNS behavior.
+
+## Upstream license and disclaimer review
+
+Before each public release, verify the current license and applicable notices for both configured upstream lists. For HaGeZi Multi Normal, review the [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.
