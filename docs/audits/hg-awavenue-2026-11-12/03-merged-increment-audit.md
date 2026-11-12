@@ -14,7 +14,7 @@
 - Rule cap: 500,000
 - HG snapshot SHA-256: feba1cec35500510b8f8590fa49e5c0312c6e5c4e86af2bf6b65eea3ff48e12e
 - AWAvenue full snapshot SHA-256: fdf930d67659f6f1405c81e67c1fb7797145c54296c5ba0398729aa4d846808c
-- Audit time UTC: 2026-11-12T09:40:41.959552+00:00
+- Audit time UTC: 2026-11-12T09:42:44.975978+00:00
 
 ## Cross-source overlap
 
