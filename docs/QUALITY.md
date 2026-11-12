@@ -14,9 +14,9 @@ NobleDNS should be no worse than established DNS blocklists in practical blockin
 
 ## Current parser scope
 
-The compiler supports `||domain^`, `||domain`, `@@||domain^`, `.domain^` and `.domain` when the hostname is a valid multi-label DNS name. Each supported form is preserved exactly; leading-dot rules are not rewritten as `||domain` rules because their matching semantics may differ. Exceptions are not placed in the main list. Wildcards, modifiers, regex/path patterns, IP literals, trailing-dot/open suffix patterns and other unsupported syntax are excluded and recorded.
+The compiler supports the documented AdGuard DNS forms `||domain^`, `||domain`, `.domain^` and `.domain` when the hostname is a valid multi-label DNS name. AdGuard documents `||example.org^` as blocking the apex and all subdomains, while `.example.org` blocks subdomains only and leaves the apex domain allowed. NobleDNS preserves these forms exactly; it never rewrites leading-dot rules into apex-and-subdomain blocks. The `||domain` form without an explicit `^` is retained from upstream but listed for targeted compatibility review because it lacks an explicit end boundary. See the [official AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/). Exceptions are not placed in the main list. Wildcards, modifiers, regex/path patterns, IP literals, trailing-dot/open suffix patterns and other unsupported syntax are excluded and recorded.
 
-The real upstream leading-dot regression fixture contains 28 source records: 23 `.domain^` rules, 4 `.domain` rules and 1 trailing-dot rule that must remain excluded. Parser regression coverage does not establish broad DNS-client compatibility. Live compatibility and production qualification remain outstanding.
+The real upstream leading-dot regression fixture contains 28 source records: 23 `.domain^` rules, 4 `.domain` rules and 1 trailing-dot rule that must remain excluded. The syntax inventory distinguishes documented subdomain-only forms from rules that need additional matching-boundary review. Parser regression coverage does not establish broad DNS-client compatibility. Live compatibility and production qualification remain outstanding.
 
 Do not expand parser scope unless tests prove semantic equivalence for the target clients. Do not silently turn unsupported patterns into ordinary domain blocks.
 
