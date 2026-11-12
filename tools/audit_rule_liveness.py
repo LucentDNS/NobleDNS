@@ -23,7 +23,7 @@ REQUIRED = {
     "hostname", "observed_at_utc", "resolver", "resolver_operator",
     "vantage", "qtype", "rcode", "answers",
 }
-OPTIONAL = {"sinkhole_evidence_reference"}
+OPTIONAL = {"sinkhole_evidence_reference", "resolver_endpoint", "cname_chain", "dnssec_ad"}
 RULE_RE = re.compile(r"^(?:\|\|([^\\^/$|]+)(?:\^)?|@@\|\|([^\\^/$|]+)\^)$")
 
 
@@ -83,6 +83,28 @@ def validate_observations(document: object, now: datetime | None = None) -> list
             expected_version = 4 if row["qtype"] == "A" else 6
             if address.version != expected_version:
                 raise ValueError(f"observation[{index}] answer family does not match qtype {row['qtype']}")
+        if "resolver_endpoint" in row:
+            endpoint = row["resolver_endpoint"]
+            if not isinstance(endpoint, str):
+                raise ValueError("resolver_endpoint must be a string")
+            parsed_endpoint = urlsplit(endpoint)
+            if (
+                parsed_endpoint.scheme not in {"https", "tls"}
+                or not parsed_endpoint.hostname
+                or parsed_endpoint.username or parsed_endpoint.password
+                or parsed_endpoint.query or parsed_endpoint.fragment
+            ):
+                raise ValueError("resolver_endpoint must be a safe HTTPS or TLS endpoint")
+        if "cname_chain" in row:
+            chain = row["cname_chain"]
+            if not isinstance(chain, list) or any(not isinstance(x, str) for x in chain):
+                raise ValueError("cname_chain must be an array of lowercase FQDNs")
+            for target in chain:
+                valid, reason = builder.valid_domain(target)
+                if not valid or target != target.lower():
+                    raise ValueError(f"invalid CNAME target {target}: {reason}")
+        if "dnssec_ad" in row and type(row["dnssec_ad"]) is not bool:
+            raise ValueError("dnssec_ad must be a boolean")
         if "sinkhole_evidence_reference" in row:
             reference = row["sinkhole_evidence_reference"]
             if not isinstance(reference, str):
@@ -158,11 +180,14 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
         row for row in fresh
         if row["rcode"] == "NOERROR" and row["answers"]
     ]
+    cname_observed = any(row.get("cname_chain") for row in fresh)
     nxdomain = [row for row in fresh if row["rcode"] == "NXDOMAIN"]
     if positive and nxdomain:
         status = "mixed_or_split_horizon"
     elif positive:
         status = "active_dns_answer_observed"
+    elif cname_observed:
+        status = "cname_chain_observed_manual_review"
     else:
         # Keep only the newest observation for each resolver/operator/vantage/qtype.
         latest = {}
