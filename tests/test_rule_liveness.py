@@ -45,10 +45,12 @@ def stable_nxdomain_observations():
         for resolver, operator in resolvers:
             for vantage in ("us-west", "cn-lanzhou"):
                 for qtype in ("A", "AAAA"):
-                    result.append(observation(
+                    row = observation(
                         day=day, resolver=resolver, operator=operator,
                         vantage=vantage, qtype=qtype,
-                    ))
+                    )
+                    row["authority_soa_zones"] = ["example.com"]
+                    result.append(row)
     return result
 
 
@@ -64,6 +66,26 @@ class RuleLivenessTests(unittest.TestCase):
         self.assertEqual(len(metrics["vantages"]), 2)
         self.assertEqual(metrics["complete_resolver_vantage_pairs"], 6)
         self.assertEqual(metrics["observation_span_days"], 9.0)
+
+    def test_quorum_without_negative_soa_is_manual_review_not_stable(self):
+        rows = stable_nxdomain_observations()
+        for row in rows:
+            row.pop("authority_soa_zones")
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "nxdomain_without_authority_soa_manual_review")
+        self.assertEqual(metrics["nxdomain_observations_with_soa"], 0)
+
+    def test_unrelated_soa_zone_is_rejected(self):
+        row = observation()
+        row["authority_soa_zones"] = ["unrelated.example.net"]
+        with self.assertRaisesRegex(ValueError, "unrelated SOA authority zone"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
 
     def test_nxdomain_from_one_resolver_is_not_a_dead_domain_finding(self):
         rows = mod.validate_observations({
