@@ -4,27 +4,34 @@ All notable changes to NobleDNS are documented here.
 
 ## Unreleased
 
+### Fixed
+- Exclude undocumented leading-dot hostname patterns from the public DNS subscription and retain all excluded source lines in the parser audit.
+- Preserve documented `||domain` rules without an explicit `^`; do not apply a blanket trailing-caret rejection.
+- Disable implicit environment-proxy discovery when no proxy is specified and reject HTTPS-to-HTTP source redirects.
+- Bump the next immutable release to 1.0.3; keep v1.0.2 unchanged.
+
+## [1.0.2] - 2026-11-12
+
 ### Changed
-- Activate the 11 currently supported simple upstream exception rules in the main subscription, preserving their intended allow semantics while keeping unsupported complex exceptions excluded.
+- Activate the 11 supported simple upstream exception rules in the main subscription, preserving their source compatibility intent while excluding unsupported complex exception syntax.
 - Publish `dist/allowlist-active.txt` and record active exception counts in the manifest and validation report.
-- Move the next stable release line to 1.0.2; keep v1.0.1 immutable.
 
 ### Fixed
-- Restore the legacy root-level `NobleDNS.txt` subscription as a byte-identical build artifact and publish it alongside the canonical `dist/dns-filter.txt` list.
-- Add filter version and one-day expiry metadata, with automated checks against the build manifest.
-- Bump the next stable release line to 1.0.1 so the immutable v1.0.0 release remains untouched.
+- Keep the root-level `NobleDNS.txt` subscription byte-identical to `dist/dns-filter.txt`.
+- Include `Version` and `Expires: 1 day` metadata in the filter header and verify it against the manifest.
+- Keep the SemVer release immutable and versioned independently from content-addressed audit releases.
+
+## [1.0.1] - 2026-11-12
+
+### Fixed
+- Restore the legacy root-level `NobleDNS.txt` compatibility subscription.
+- Add filter version and one-day expiry metadata.
+- Validate explicit HTTP(S) proxy URLs and reject embedded credentials.
 
 ### Changed
-- Clarify that upstream exceptions remain review-only until individually assessed for cross-source precedence and approved by the project.
-
-### Changed
-- Rework the project homepages to lead with user value, the single balanced edition, mainland-use priorities and practical subscription guidance.
-- Keep detailed verification scope and evidence limitations in the quality documentation rather than foregrounding them as a warning block on the homepage.
-
-### Changed
-- Clarify NobleDNS as a single balanced edition designed with mainland China everyday network compatibility as a primary consideration.
-- Document conservative rule acceptance, domestic-service review priorities and evidence requirements for future low-false-positive claims.
-- Add a Chinese-language project overview and a formal single-edition policy.
+- Clarify upstream exception review and cross-source precedence requirements.
+- Refine the project homepages to lead with user value, the single balanced edition and practical subscription guidance.
+- Define the single balanced mainland-oriented edition and add the Chinese-language project overview and edition policy.
 
 ## [1.0.0] - 2026-11-12
 
