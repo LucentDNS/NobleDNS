@@ -576,21 +576,11 @@ def main() -> int:
         if not re.fullmatch(r"[0-9a-f]{40}", ref):
             raise RuntimeError(f"{label} must be a full 40-character commit SHA")
 
-    def pinned(url: str, ref: str) -> str:
-        match = re.fullmatch(
-            r"https://raw\.githubusercontent\.com/([^/]+/[^/]+)/main/(.+)",
-            url,
-        )
-        if not match:
-            raise RuntimeError(f"Cannot pin unsupported upstream URL: {url}")
-        repository, path = match.groups()
-        return f"https://cdn.jsdelivr.net/gh/{repository}@{ref}/{path}"
-
-    baseline_url = pinned(BASELINE_URL, baseline_ref)
-    manifest_url = pinned(MANIFEST_URL, baseline_ref)
-    noble_license_url = pinned(NOBLE_LICENSE_URL, baseline_ref)
-    changelog_url = pinned(AWA_CHANGELOG_URL, awa_ref)
-    awa_license_url = pinned(AWA_LICENSE_URL, awa_ref)
+    baseline_url = BASELINE_URL
+    manifest_url = MANIFEST_URL
+    noble_license_url = NOBLE_LICENSE_URL
+    changelog_url = AWA_CHANGELOG_URL
+    awa_license_url = AWA_LICENSE_URL
 
     downloaded = {}
     parsed = {}
@@ -598,7 +588,7 @@ def main() -> int:
     source_refs = {}
     for key, source in SOURCES.items():
         ref = hg_ref if key.startswith("hg") else awa_ref
-        url = pinned(source["url"], ref)
+        url = source["url"]
         source_urls[key] = url
         source_refs[key] = ref
         data = fetch_snapshot(url)
