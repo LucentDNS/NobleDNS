@@ -343,7 +343,7 @@ def build(args) -> Path:
         (stage / "whitelist-review.txt").write_text("! Source exceptions for manual review only; not active in dns-filter.txt\n" + "\n".join(sorted(all_exceptions)) + ("\n" if all_exceptions else ""), encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
         write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "source"], syntax_review_rows)
-        (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         source_dir = stage / "sources"; source_dir.mkdir()
         source_manifest = {}
         for source in cfg["sources"]:
