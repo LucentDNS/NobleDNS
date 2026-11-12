@@ -30,6 +30,8 @@ MAX_SOURCE_BYTES = 50 * 1024 * 1024
 TIMEOUT = 120
 BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
+EXCEPTION_SUBDOMAIN_END_RE = re.compile(r"^@@\|\|(?P<domain>[^\^/$|]+)\^\|$")
+EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
 BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
 LEADING_DOT_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 BADFILTER_RE = re.compile(r"^(?P<rule>.+)\$badfilter$", re.I)
@@ -163,6 +165,14 @@ def normalize_badfilter_target(rule: str) -> str | None:
     if match:
         ok, domain = valid_domain(match.group(1))
         return f"@@||{domain}^" if ok else None
+    match = EXCEPTION_SUBDOMAIN_END_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group("domain"))
+        return f"@@||{domain}^|" if ok else None
+    match = EXCEPTION_EXACT_END_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group("domain"))
+        return f"@@|{domain}^|" if ok else None
     match = BLOCK_RE.fullmatch(rule)
     if match:
         ok, domain = valid_domain(match.group(1))
@@ -222,7 +232,7 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
                 rejected[result] += 1
                 rows.append((source_key, line_no, result, line))
             continue
-        kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
+        kind, match, bare, exception_form = "block", BLOCK_RE.fullmatch(line), False, None
         if not match:
             m = BARE_RE.fullmatch(line)
             if m and not m.group(1).endswith("."):
@@ -230,7 +240,15 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             else:
                 match = EXCEPTION_RE.fullmatch(line)
                 if match:
-                    kind = "exception"
+                    kind, exception_form = "exception", "domain_and_subdomains"
+                else:
+                    match = EXCEPTION_SUBDOMAIN_END_RE.fullmatch(line)
+                    if match:
+                        kind, exception_form = "exception", "domain_and_subdomains_end"
+                    else:
+                        match = EXCEPTION_EXACT_END_RE.fullmatch(line)
+                        if match:
+                            kind, exception_form = "exception", "exact_hostname"
         if match:
             candidate = match.group(1)
             if "*" in candidate:
@@ -239,7 +257,12 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             ok, result = valid_domain(candidate)
             if ok:
                 if kind == "exception":
-                    exceptions.add(f"@@||{result}^")
+                    if exception_form == "domain_and_subdomains_end":
+                        exceptions.add(f"@@||{result}^|")
+                    elif exception_form == "exact_hostname":
+                        exceptions.add(f"@@|{result}^|")
+                    else:
+                        exceptions.add(f"@@||{result}^")
                 else:
                     blocks.add(f"||{result}" + ("" if bare else "^"))
             else:
@@ -517,11 +540,16 @@ def build(args) -> Path:
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
     if len(lines) != len(published_rules) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
     for line in lines:
-        m = EXCEPTION_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line) or LEADING_DOT_RE.fullmatch(line)
+        m = EXCEPTION_RE.fullmatch(line) or EXCEPTION_SUBDOMAIN_END_RE.fullmatch(line) or EXCEPTION_EXACT_END_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line) or LEADING_DOT_RE.fullmatch(line)
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "badfilter_audit": {"directives": len(badfilter_audit_rows), "applied": badfilter_status_counts["applied"], "already_applied": badfilter_status_counts["already_applied"], "target_not_found": badfilter_status_counts["target_not_found"], "unsupported": badfilter_status_counts["unsupported_target_syntax"] + badfilter_status_counts["unsupported_modifier_combination"], "removed_rules": badfilter_removed_rules}, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_subdomain_only": "preserved; matches subdomains only, not the apex domain", "badfilter": "supported exact $badfilter directives disable matching rules across the merged approved sources; all directives are recorded in badfilter-audit.csv", "source_drift_gate_percent": args.max_source_change_percent}}
+    active_exception_rules_by_form = {
+        "domain_and_subdomains": sum(1 for rule in all_exceptions if rule.startswith("@@||") and rule.endswith("^")),
+        "domain_and_subdomains_end_anchored": sum(1 for rule in all_exceptions if rule.startswith("@@||") and rule.endswith("^|")),
+        "exact_hostname": sum(1 for rule in all_exceptions if rule.startswith("@@|") and not rule.startswith("@@||") and rule.endswith("^|")),
+    }
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "badfilter_audit": {"directives": len(badfilter_audit_rows), "applied": badfilter_status_counts["applied"], "already_applied": badfilter_status_counts["already_applied"], "target_not_found": badfilter_status_counts["target_not_found"], "unsupported": badfilter_status_counts["unsupported_target_syntax"] + badfilter_status_counts["unsupported_modifier_combination"], "removed_rules": badfilter_removed_rules}, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "active_exception_rules_by_form": active_exception_rules_by_form, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "validated upstream exceptions in supported domain/subdomain and exact-hostname forms active in the main subscription; unsupported patterns remain excluded", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_subdomain_only": "preserved; matches subdomains only, not the apex domain", "supported_exception_forms": ["@@||domain^", "@@||domain^|", "@@|domain^|"], "badfilter": "supported exact $badfilter directives disable matching rules across the merged approved sources; all directives are recorded in badfilter-audit.csv", "source_drift_gate_percent": args.max_source_change_percent}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Badfilter directives: {len(badfilter_audit_rows)} (applied: {badfilter_status_counts['applied']}, target not found: {badfilter_status_counts['target_not_found']}, unsupported: {badfilter_status_counts['unsupported_target_syntax'] + badfilter_status_counts['unsupported_modifier_combination']}); removed rules: {badfilter_removed_rules}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
@@ -536,7 +564,7 @@ def build(args) -> Path:
         shutil.copy2(LICENSE_COPY_PATH, staged_licenses / "GPL-3.0.txt")
         (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (stage / "validation-report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
-        active_allowlist_lines = ["! Simple upstream exception rules active in dns-filter.txt; complex exception syntax remains excluded."]
+        active_allowlist_lines = ["! Supported upstream exception rules active in dns-filter.txt; unsupported exception patterns remain excluded."]
         for key in keys:
             if exceptions[key]:
                 active_allowlist_lines.append(f"! Source: {key}")
