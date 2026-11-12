@@ -37,7 +37,7 @@ def read_domains(path: Path) -> list[str]:
     ]
 
 
-def load_rules() -> tuple[set[str], set[str], list[str]]:
+def load_rules() -> tuple[set[str], set[str], set[str], list[str]]:
     if not FILTER.is_file():
         raise AssertionError(f"Generated subscription is missing: {FILTER}")
 
