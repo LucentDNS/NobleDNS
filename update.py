@@ -13,12 +13,16 @@ CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
 VERSION_BASE = "1.0.0"
 MAX_RULES = 500_000
-FILTER_HEADER = (
-    "! Title: NobleDNS Filter\n"
-    "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.\n"
-    "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
-    "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
-)
+def filter_header(version: str) -> str:
+    """AdGuard-compatible metadata tied to the build version."""
+    return (
+        "! Title: NobleDNS Filter\n"
+        "! Description: Balanced DNS filtering for ads, trackers and unwanted domains.\n"
+        "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
+        f"! Version: {version}\n"
+        "! Expires: 1 day\n"
+        "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
+    )
 MIN_SOURCE_BYTES = 100_000
 MIN_SOURCE_BLOCKS = 10_000
 MAX_SOURCE_BYTES = 50 * 1024 * 1024
@@ -145,6 +149,7 @@ def classify_non_simple(line: str) -> str:
     if line.startswith("@@"): return "other_exception_syntax"
     if "/" in line and not line.startswith("//"): return "regex_or_path_syntax"
     if line.startswith("|") or line.endswith("|"): return "other_anchor_syntax"
+    if line.startswith("."): return "unsupported_leading_dot_dns_syntax"
     if line.startswith("||") and line.endswith("."): return "other_anchor_syntax"
     if line.startswith("||"): return "other_domain_or_ip_syntax"
     if line.startswith(("0.0.0.0 ", "127.0.0.1 ")): return "hosts_syntax"
@@ -163,21 +168,17 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
         leading_dot = False
         if not match:
-            m = LEADING_DOT_CARET_RE.fullmatch(line)
-            if m:
-                match, leading_dot = m, True
+            if line.startswith("."):
+                rejected["unsupported_leading_dot_dns_syntax"] += 1
+                rows.append((source_key, line_no, "unsupported_leading_dot_dns_syntax", line))
+                continue
+            m = BARE_RE.fullmatch(line)
+            if m and not m.group(1).endswith("."):
+                match, bare = m, True
             else:
-                m = LEADING_DOT_BARE_RE.fullmatch(line)
-                if m:
-                    match, bare, leading_dot = m, True, True
-                else:
-                    m = BARE_RE.fullmatch(line)
-                    if m and not m.group(1).endswith("."):
-                        match, bare = m, True
-                    else:
-                        match = EXCEPTION_RE.fullmatch(line)
-                        if match:
-                            kind = "exception"
+                match = EXCEPTION_RE.fullmatch(line)
+                if match:
+                    kind = "exception"
         if match:
             candidate = match.group(1)
             if "*" in candidate:
@@ -187,8 +188,6 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             if ok:
                 if kind == "exception":
                     exceptions.add(f"@@||{result}^")
-                elif leading_dot:
-                    blocks.add("." + result + ("" if bare else "^"))
                 else:
                     blocks.add(f"||{result}" + ("" if bare else "^"))
             else:
@@ -201,8 +200,31 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
     return blocks, exceptions, rejected, rows
 
 
+def validate_proxy(proxy: str | None) -> str | None:
+    """Accept only explicit HTTP(S) proxy URLs without embedded credentials."""
+    if proxy is None:
+        return None
+    from urllib.parse import urlsplit
+    parsed = urlsplit(proxy)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Proxy must be an http:// or https:// URL with a hostname")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError("Do not embed proxy credentials in --proxy; use a credential-free endpoint")
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError("Proxy URL contains an invalid port") from exc
+    if port is not None and not 1 <= port <= 65535:
+        raise ValueError("Proxy port must be between 1 and 65535")
+    if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
+        raise ValueError("Proxy URL must not contain a path, query, or fragment")
+    return proxy
+
+
 def fetch(url: str, proxy: str | None) -> bytes:
-    handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy})] if proxy else []
+    proxy = validate_proxy(proxy)
+    # Disable ambient proxy discovery: only the explicit CLI value is used.
+    handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy} if proxy else {})]
     opener = urllib.request.build_opener(*handlers)
     last = None
     for attempt in range(1, 6):
@@ -262,14 +284,10 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     forms = {
         "domain_and_subdomains": re.compile(r"^\|\|[^\^/$|]+\^$"),
         "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^\^/$|]+$"),
-        "subdomains_only_with_end_boundary": re.compile(r"^\.[^\^/$|]+\^$"),
-        "subdomains_only": re.compile(r"^\.[^\^/$|]+$"),
     }
     semantics = {
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
-        "domain_anchor_without_end_boundary": "Hostname-start anchor without explicit end boundary; retain source form and review client matching semantics.",
-        "subdomains_only_with_end_boundary": "Blocks subdomains only; does not block the apex domain.",
-        "subdomains_only": "Blocks subdomains only; does not block the apex domain.",
+        "domain_anchor_without_end_boundary": "Valid AdGuard DNS hostname-start anchor; blocks the domain and its subdomains without an explicit end separator.",
     }
     counts = {name: 0 for name in forms}
     examples = {name: [] for name in forms}
@@ -293,11 +311,48 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     }, review_rows
 
 
+def parse_allowlist(path: Path) -> set[str]:
+    """Load the project-maintained exact-domain allowlist; invalid entries fail closed."""
+    if not path.is_file():
+        raise FileNotFoundError(f"Project allowlist file is required: {path}")
+    domains = set()
+    for line_no, raw in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith(("#", "!")):
+            continue
+        if any(ch in line for ch in "/^$|*") or line.startswith("."):
+            raise ValueError(f"Invalid allowlist entry at {path}:{line_no}: expected an exact domain")
+        ok, normalized = valid_domain(line)
+        if not ok:
+            raise ValueError(f"Invalid allowlist domain at {path}:{line_no}: {normalized}")
+        if normalized in domains:
+            raise ValueError(f"Duplicate allowlist domain at {path}:{line_no}: {normalized}")
+        domains.add(normalized)
+    return domains
+
+
+def apply_allowlist(block_rules: set[str], allowlist_domains: set[str]):
+    """Remove matching blocks and emit explicit AdGuard exception rules."""
+    active_exceptions = {f"@@||{domain}^" for domain in allowlist_domains}
+    kept = set()
+    for rule in block_rules:
+        match = BLOCK_RE.fullmatch(rule) or BARE_RE.fullmatch(rule)
+        if not match:
+            raise ValueError(f"Unexpected block rule before allowlist application: {rule}")
+        domain = match.group(1)
+        if any(domain == allowed or domain.endswith("." + allowed) for allowed in allowlist_domains):
+            continue
+        kept.add(rule)
+    return kept, active_exceptions
+
+
 def build(args) -> Path:
     validate_licensing_files()
     cfg = load_config(Path(args.config))
     now = datetime.now(timezone.utc)
     version = VERSION_BASE
+    allowlist_path = ROOT / "config" / "allowlist.txt"
+    allowlist_domains = parse_allowlist(allowlist_path)
     parsed, exceptions, source_stats, rejected_rows, raw_snapshots = {}, {}, {}, [], {}
     input_dir = Path(args.input_dir) if args.input_dir else None
     for source in cfg["sources"]:
@@ -317,35 +372,37 @@ def build(args) -> Path:
         source_stats[key] = {"name": source["name"], "url": source["url"], "license": license_info["spdx"], "license_url": license_info["license_url"], "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data), "simple_block_rules": len(blocks), "simple_exception_rules": len(exc), "excluded_lines_by_reason": dict(rejected)}
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
-    merged = parsed[keys[0]] | parsed[keys[1]]
-    check_drift(source_stats, merged, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
+    source_merged = parsed[keys[0]] | parsed[keys[1]]
+    check_drift(source_stats, source_merged, Path(args.previous_manifest) if args.previous_manifest else None, args.max_source_change_percent, args.allow_large_change)
     common = parsed[keys[0]] & parsed[keys[1]]
+    merged, active_allowlist_rules = apply_allowlist(source_merged, allowlist_domains)
     syntax_summary, syntax_review_rows = syntax_audit(merged, parsed)
     if len(merged) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(merged):,} > {MAX_RULES:,}")
     if not merged: raise RuntimeError("Refusing empty output")
     all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
-    main = FILTER_HEADER + "\n".join(sorted(merged)) + "\n"
+    main = filter_header(version) + "\n".join(sorted(merged | active_allowlist_rules)) + "\n"
     main_bytes = main.encode("utf-8")
-    # Verify every output line and preserve the source rule syntax exactly.
+    # Validate every published line against the explicit syntax allowlist.
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
-    if len(lines) != len(merged) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
+    expected_lines = merged | active_allowlist_rules
+    if len(lines) != len(expected_lines) or len(set(lines)) != len(lines):
+        raise RuntimeError("Output count/duplicate validation failed")
     for line in lines:
-        m = (
-            BLOCK_RE.fullmatch(line)
-            or BARE_RE.fullmatch(line)
-            or LEADING_DOT_CARET_RE.fullmatch(line)
-            or LEADING_DOT_BARE_RE.fullmatch(line)
-        )
-        if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
+        m = BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line) or EXCEPTION_RE.fullmatch(line)
+        if not m: raise RuntimeError(f"Unsupported output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "block-only", "exceptions": "separate review artifact; not active in main list", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "preserved unchanged; covered by real-source parser regression", "source_drift_gate_percent": args.max_source_change_percent}}
-    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Separate exceptions: {len(all_exceptions):,}", f"Rule cap: {len(merged):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, uniqueness, rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
+        if line.startswith("@@") and line not in active_allowlist_rules:
+            raise RuntimeError(f"Unapproved exception rule in main output: {line}")
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_allowlist_rules": len(active_allowlist_rules), "allowlist_domains": sorted(allowlist_domains), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": len(all_exceptions), "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "block-only", "upstream_exceptions": "separate review artifact; never activated automatically", "project_allowlist": "exact entries in config/allowlist.txt generate active @@||domain^ exceptions", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "valid AdGuard DNS syntax; preserved unchanged", "leading_dot_domain_anchor": "excluded from public output as unsupported by the selected syntax contract", "source_drift_gate_percent": args.max_source_change_percent}}
+    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Upstream exceptions (review only): {len(all_exceptions):,}", f"Active project allowlist rules: {len(active_allowlist_rules):,}", f"Rule cap: {len(merged):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, supported AdGuard DNS syntax, active allowlist validation, uniqueness, rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
     try:
         stage = temp_parent / "latest"; stage.mkdir()
         (stage / "dns-filter.txt").write_bytes(main_bytes)
+        (stage / "NobleDNS.txt").write_bytes(main_bytes)
+        shutil.copy2(allowlist_path, stage / "project-allowlist.txt")
         shutil.copy2(LICENSE_PATH, stage / "LICENSE")
         shutil.copy2(THIRD_PARTY_NOTICES_PATH, stage / "THIRD-PARTY-NOTICES.md")
         staged_licenses = stage / "licenses"; staged_licenses.mkdir()
@@ -367,6 +424,7 @@ def build(args) -> Path:
         # Validate staged bytes before swapping latest; keep previous latest intact on failure.
         staged = (stage / "dns-filter.txt").read_bytes()
         if sha256(staged) != manifest["main_subscription_sha256"]: raise RuntimeError("Staged SHA256 mismatch")
+        if (stage / "NobleDNS.txt").read_bytes() != staged: raise RuntimeError("Legacy subscription differs from canonical output")
         latest = out / "latest"; backup = out / ".latest-previous"
         if backup.exists(): shutil.rmtree(backup)
         if latest.exists(): os.replace(latest, backup)
