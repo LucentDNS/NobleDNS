@@ -235,6 +235,34 @@ class RuleLivenessTests(unittest.TestCase):
         self.assertEqual(metrics["pairs_with_seven_day_complete_history"], 1)
         self.assertEqual(metrics["observation_span_days"], 9.0)
 
+    def test_each_pair_requires_seven_full_elapsed_days_not_calendar_dates(self):
+        rows = stable_nxdomain_observations()
+        target_pair = [
+            row for row in rows
+            if row["resolver"] == "cf1" and row["vantage"] == "us-west"
+        ]
+        rows = [row for row in rows if row not in target_pair]
+        for row in target_pair:
+            if row["observed_at_utc"].startswith("2026-11-01"):
+                row["observed_at_utc"] = row["observed_at_utc"].replace(
+                    "T12:00:00Z", "T23:59:00Z"
+                )
+                rows.append(row)
+            elif row["observed_at_utc"].startswith("2026-11-10"):
+                row["observed_at_utc"] = row["observed_at_utc"].replace(
+                    "2026-11-10T12:00:00Z", "2026-11-08T00:01:00Z"
+                )
+                rows.append(row)
+
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertEqual(metrics["pairs_with_seven_day_complete_history"], 5)
+        self.assertAlmostEqual(metrics["minimum_pair_observation_span_days"], 6.0, places=2)
+
     def test_nxdomain_short_window_is_not_stable(self):
         rows = mod.validate_observations({
             "schema_version": 1,
