@@ -68,7 +68,7 @@ class ParserTests(unittest.TestCase):
         self.assertIn("||ads.example.com^", rendered.splitlines())
 
     def test_complex_exception_is_not_activated(self):
-        blocks, exceptions, rejected, _ = self.parse("||ads.example.com^\\n@@||safe.example.com^$important\\n")
+        blocks, exceptions, rejected, _ = self.parse("||ads.example.com^\n@@||safe.example.com^$important\n")
         self.assertEqual(blocks, {"||ads.example.com^"})
         self.assertEqual(exceptions, set())
         self.assertEqual(rejected["modifier_important"], 1)
