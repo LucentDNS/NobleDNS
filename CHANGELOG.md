@@ -19,7 +19,7 @@ All notable changes to NobleDNS are documented here.
 - Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
 - Preserve the previous subscription modification date on identical rule content to avoid timestamp-only daily subscription churn.
 
-- Preserve documented leading-dot DNS rules (`.domain^` and `.domain`) with subdomain-only semantics; reject malformed hostnames rather than broadening their scope.
+- Exclude unverified leading-dot patterns (`.domain^` and `.domain`) from the public DNS subscription; do not infer subdomain-only semantics from their appearance in an upstream source.
 - Model bare `||domain` rules without `^` as hostname-start patterns without an end separator in the critical-service regression gate.
 - Apply exact supported `$badfilter` directives across the merged approved sources, record their targets and outcomes, and prevent disabled upstream rules from re-entering the subscription.
 - Preserve documented `||domain` rules without an explicit `^`; do not apply a blanket trailing-caret rejection.
