@@ -20,11 +20,18 @@ on:
   pull_request:
     paths:
       - '.github/workflows/**'
+      - '.github/**'
       - 'config/**'
+      - 'data/**'
       - 'tests/**'
+      - 'tools/**'
       - 'docs/**'
       - 'update.py'
+      - 'requirements*.txt'
       - 'README.md'
+      - 'README.zh-CN.md'
+      - 'NobleDNS.txt'
+      - 'CHANGELOG.md'
       - 'LICENSE'
       - 'THIRD-PARTY-NOTICES.md'
       - 'licenses/**'
