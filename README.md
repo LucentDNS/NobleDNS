@@ -20,7 +20,7 @@ We maintain **one balanced edition**—one subscription, one quality standard, o
 
 ## Current build at a glance
 
-Latest verified build: **2026-11-12 (UTC)**.
+v1.0.3 baseline snapshot, verified **2026-11-12 (UTC)**.
 
 - **303,625** unique blocking rules, plus **11** active upstream exceptions (**303,636** total subscription rules).
 - **189,716** supported simple blocking rules parsed from AdGuard DNS Filter are retained in the merged set.
