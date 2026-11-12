@@ -51,6 +51,8 @@ def validate_observations(document: object, now: datetime | None = None) -> list
 
     validated = []
     seen = set()
+    resolver_identities: dict[str, tuple[str, str]] = {}
+    endpoint_operators: dict[str, str] = {}
     for index, row in enumerate(rows):
         if not isinstance(row, dict) or not REQUIRED <= set(row) <= REQUIRED | OPTIONAL:
             raise ValueError(f"observation[{index}] has missing or unknown fields")
@@ -94,6 +96,17 @@ def validate_observations(document: object, now: datetime | None = None) -> list
             or parsed_endpoint.query or parsed_endpoint.fragment
         ):
             raise ValueError("resolver_endpoint must be a safe HTTPS or TLS endpoint")
+        endpoint_host = parsed_endpoint.hostname.lower()
+        operator_key = row["resolver_operator"].lower()
+        resolver_identity = (operator_key, endpoint)
+        previous_identity = resolver_identities.setdefault(row["resolver"], resolver_identity)
+        if previous_identity != resolver_identity:
+            raise ValueError(f"resolver ID {row['resolver']} maps to multiple operators or endpoints")
+        previous_operator = endpoint_operators.setdefault(endpoint_host, operator_key)
+        if previous_operator != operator_key:
+            raise ValueError(
+                f"resolver endpoint host {endpoint_host} is claimed by multiple operators"
+            )
         if "cname_chain" in row:
             chain = row["cname_chain"]
             if not isinstance(chain, list) or any(not isinstance(x, str) for x in chain):
