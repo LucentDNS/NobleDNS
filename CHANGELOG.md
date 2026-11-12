@@ -9,7 +9,7 @@ All notable changes to NobleDNS are documented here.
 - Enforce an additional absolute drift ceiling of 3,000 rule additions and 3,000 removals per build, alongside the existing percentage-based source drift gate.
 - Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.
 - Publish verified build statistics and clarify that compiled domains are included as DNS blocking targets only.
-- Bound active upstream exception rules at 250 after retaining documented domain/subdomain and exact-hostname forms; the gate still rejects abnormal allow-rule surges.
+- Preserve 193 documented upstream end-anchored exceptions (domain/subdomain and exact-hostname scope) and bound the active exception set at 250 to reject abnormal surges.
 - Document the exact workflow for adding regression fixtures and updating their pinned counts.
 - Add code and upstream rule-data license metadata to the generated subscription banner.
 - Split the maintainer guide into separate English and Simplified Chinese documents while keeping their operational instructions aligned.
