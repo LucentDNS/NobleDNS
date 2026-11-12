@@ -10,6 +10,16 @@ on:
       - "update.py"
       - "tests/fixtures/essential-domains.txt"
       - "tests/fixtures/known-ads.txt"
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+    paths:
+      - "tools/hg_awavenue_audit.py"
+      - ".github/workflows/hg-awavenue-offline-audit.yml"
+      - "update.py"
+      - "tests/fixtures/essential-domains.txt"
+      - "tests/fixtures/known-ads.txt"
   workflow_dispatch:
 
 permissions:
@@ -24,7 +34,7 @@ concurrency:
 
 jobs:
   audit:
-    if: github.ref == 'refs/heads/audit/hg-awavenue-offline-2026-11-12'
+    if: github.ref == 'refs/heads/audit/hg-awavenue-offline-2026-11-12' || (github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'audit/hg-awavenue-offline-2026-11-12')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
