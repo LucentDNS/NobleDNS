@@ -157,6 +157,8 @@ def parse_response(packet: bytes, query_id: int, qtype: str, hostname: str) -> d
             if hostname == owner or hostname.endswith("." + owner):
                 authority_soa_zones.append(owner)
         offset = end
+    if offset != len(packet):
+        raise ValueError("DNS response contains trailing bytes")
 
     cname_targets: dict[str, set[str]] = {}
     address_owners: set[str] = set()
