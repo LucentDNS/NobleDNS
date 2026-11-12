@@ -23,6 +23,7 @@ def observation(host="ads.example.com", day="2026-11-10", resolver="r1",
         "observed_at_utc": f"{day}T12:00:00Z",
         "resolver": resolver,
         "resolver_operator": operator,
+        "resolver_endpoint": "https://dns.example.test/dns-query",
         "vantage": vantage,
         "qtype": qtype,
         "rcode": rcode,
@@ -244,6 +245,15 @@ class RuleLivenessTests(unittest.TestCase):
         row = observation()
         row["dnssec_ad"] = "true"
         with self.assertRaisesRegex(ValueError, "dnssec_ad must be a boolean"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+
+    def test_resolver_endpoint_must_be_safe_tls_url(self):
+        row = observation()
+        row["resolver_endpoint"] = "https://user:pass@dns.example.test/dns-query"
+        with self.assertRaisesRegex(ValueError, "safe HTTPS or TLS endpoint"):
             mod.validate_observations(
                 {"schema_version": 1, "observations": [row]}, NOW
             )
