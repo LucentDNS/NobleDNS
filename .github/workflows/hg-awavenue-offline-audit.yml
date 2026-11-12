@@ -71,6 +71,14 @@ jobs:
       - name: Download snapshots and run offline comparison
         run: python tools/hg_awavenue_audit.py --out audit-output
 
+      - name: Verify upstream refs remained stable during snapshot download
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASELINE_MAIN_SHA"
+          test "$(git ls-remote https://github.com/2771936993/HG.git refs/heads/main | awk '{print $1}')" = "$HG_MAIN_SHA"
+          test "$(git ls-remote https://github.com/TG-Twilight/AWAvenue-Ads-Rule.git refs/heads/main | awk '{print $1}')" = "$AWAVENUE_MAIN_SHA"
+
       - name: Preserve exact source snapshots and machine-readable reports
         if: always()
         uses: actions/upload-artifact@v4
