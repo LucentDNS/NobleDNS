@@ -165,6 +165,20 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(audit[0][4], "applied")
         self.assertEqual(audit[0][5], "adguard_dns;hagezi_normal")
 
+    def test_badfilter_can_disable_an_exact_exception_rule(self):
+        parsed = {"adguard_dns": set(), "hagezi_normal": set()}
+        exceptions = {
+            "adguard_dns": {"@@||safe.example.com^"},
+            "hagezi_normal": {"@@||safe.example.com^"},
+        }
+        directives = [
+            ("adguard_dns", 4, "@@||safe.example.com^$badfilter", "@@||safe.example.com^", "pending")
+        ]
+        audit = mod.apply_badfilters(parsed, exceptions, directives)
+        self.assertEqual(exceptions["adguard_dns"], set())
+        self.assertEqual(exceptions["hagezi_normal"], set())
+        self.assertEqual(audit[0][4], "applied")
+
     def test_badfilter_missing_target_is_recorded_without_broad_removal(self):
         parsed = {"adguard_dns": {"||keep.example.com^"}, "hagezi_normal": set()}
         exceptions = {"adguard_dns": set(), "hagezi_normal": set()}
