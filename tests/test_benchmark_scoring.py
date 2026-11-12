@@ -63,7 +63,7 @@ class BenchmarkScorerTests(unittest.TestCase):
         self.assertEqual(result["by_category"]["essential"]["tn"], 1)
         self.assertEqual(result["by_category"]["tracking"]["fn"], 1)
 
-    def test_empty_or_unsupported_corpus_records_are_not_silently_scored(self) -> None:
+    def test_valid_high_confidence_corpus_record_passes_schema_validation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "corpus.csv"
             with path.open("w", encoding="utf-8", newline="") as f:
@@ -120,7 +120,7 @@ class BenchmarkScorerTests(unittest.TestCase):
                     "hostname": "service.example.test", "category": "essential", "expected": "block",
                     "evidence_ref": "test-evidence", "evidence_summary": "reviewed evidence",
                     "confidence": "high", "reviewed_on": "2026-11-01", "expires_on": "",
-                    "independent": "true", "reviewer": "reviewer-a",
+                    "independent": "true", "reviewer": "reviewer-a", "independent_reviewer": "reviewer-b",
                 })
             rows, errors = scorer.load_corpus(path, date(2026, 11, 12))
             self.assertEqual(rows, [])
