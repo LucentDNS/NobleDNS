@@ -122,7 +122,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 
 构建结果位于：
 
-`build-output/latest/`
+`build-output/latest/`。其中 `NobleDNS.txt` 与 `dns-filter.txt` 必须字节级一致；`project-allowlist.txt` 是本次构建使用的白名单输入副本。
 
 构建失败时，不得将失败结果复制到 `dist/`。
 
@@ -136,7 +136,8 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 | `manifest.json` | 来源、数量、哈希、构建信息 |
 | `validation-report.txt` | 构建验证报告 |
 | `parser-exclusions.csv` | 被排除规则及原因 |
-| `whitelist-review.txt` | 上游例外规则，仅供审查 |
+| `whitelist-review.txt` | 上游例外规则，仅供审查，不自动激活 |
+| `project-allowlist.txt` | 项目审核通过的白名单输入副本，生成实际放行规则 |
 | `sources/sources-manifest.json` | 上游快照及 SHA256 |
 
 特别关注：
@@ -159,7 +160,7 @@ git diff --check
 
 注意：该命令默认不检查未跟踪文件。新增文档还需单独检查 UTF-8、末尾换行和尾随空白。
 
-所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）也必须通过回归测试，不得只依赖临时人工测试。
+所有测试必须通过。真实上游前置点规则 fixture（`tests/fixtures/leading-dot-rules.txt`）必须验证这些规则全部被排除并写入排除报告。`||domain` 不带 `^` 是受支持的 AdGuard DNS 语法，不得仅因缺少 `^` 而删除。
 
 ### 4.5 审查规则变化
 
@@ -172,7 +173,7 @@ git diff --check
 - 上游来源变化。
 - 两个来源之间的重叠变化。
 - 复杂语法排除变化。
-- 前置点规则（`.domain^`、`.domain`）的保留与排除变化。
+- 前置点规则（`.domain^`、`.domain`）的排除数量变化。
 - 例外规则变化。
 
 对于大幅变化，先保留上游快照和构建结果，进行单独审查。
@@ -240,6 +241,8 @@ py -3.12 .\update.py --out .\build-output --previous-manifest .\dist\manifest.js
 build-output/
 └── latest/
     ├── dns-filter.txt
+    ├── NobleDNS.txt
+    ├── project-allowlist.txt
     ├── manifest.json
     ├── validation-report.txt
     ├── parser-exclusions.csv
