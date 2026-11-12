@@ -296,8 +296,8 @@ jobs:
     needs: build-test
 
     # Pull requests, non-default branches and builds without substantive updates must never publish.
-    # Main-branch pushes are safe: GITHUB_TOKEN publication commits do not
-    # recursively trigger another workflow run.
+    # Publisher-App pushes trigger a follow-up main-branch validation run.
+    # Once artifacts match the newly published manifest, that run will not republish.
     if: >-
       ${{
         github.event_name != 'pull_request' &&
