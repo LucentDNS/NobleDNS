@@ -43,7 +43,7 @@ Add this URL as a custom DNS blocklist in a compatible filtering client. Keep th
 - [Build manifest](dist/manifest.json)
 - [Latest validation report](dist/validation-report.txt)
 - [Active upstream exceptions](dist/allowlist-active.txt)
-- [Versioned releases](https://github.com/LucentDNS/NobleDNS/releases)
+- [Latest stable release](https://github.com/LucentDNS/NobleDNS/releases/latest)
 
 ## Filtering scope
 
@@ -75,6 +75,7 @@ We take compatibility seriously and publish the methods used to assess it. The t
 
 - [Quality and maintenance policy](docs/QUALITY.md)
 - [DNS client compatibility test plan](docs/COMPATIBILITY-TEST-PLAN.md)
+- [Real-world benchmark protocol](docs/REAL-WORLD-BENCHMARK-PLAN.md)
 - [Single-edition policy](docs/EDITION-POLICY.md)
 - [Validation report](dist/validation-report.txt)
 - [Syntax inventory](dist/syntax-audit.json)
