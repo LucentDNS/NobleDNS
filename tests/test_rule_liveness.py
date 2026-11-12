@@ -185,5 +185,41 @@ class RuleLivenessTests(unittest.TestCase):
             })
 
 
+    def test_future_observations_are_rejected(self):
+        row = observation(day="2026-11-13")
+        with self.assertRaisesRegex(ValueError, "in the future"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+    def test_a_record_requires_ipv4_address(self):
+        row = observation(rcode="NOERROR", answers=["2001:db8::1"], qtype="A")
+        with self.assertRaisesRegex(ValueError, "family does not match"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+    def test_aaaa_record_requires_ipv6_address(self):
+        row = observation(rcode="NOERROR", answers=["192.0.2.10"], qtype="AAAA")
+        with self.assertRaisesRegex(ValueError, "family does not match"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+    def test_non_ip_answer_is_rejected(self):
+        row = observation(rcode="NOERROR", answers=["edge.example.net"])
+        with self.assertRaisesRegex(ValueError, "non-IP address"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+    def test_dns_error_cannot_contain_address_answers(self):
+        row = observation(rcode="SERVFAIL", answers=["192.0.2.10"])
+        with self.assertRaisesRegex(ValueError, "unless rcode is NOERROR"):
+            mod.validate_observations(
+                {"schema_version": 1, "observations": [row]}, NOW
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
