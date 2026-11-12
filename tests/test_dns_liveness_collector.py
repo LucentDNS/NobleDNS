@@ -12,7 +12,7 @@ mod = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(mod)
 
 
-def response(host="ads.example.com", qtype="A", answer=None, rcode=0, cname=None):
+def response(host="ads.example.com", qtype="A", answer=None, rcode=0, cname=None, soa=False):
     query_id = 0x1234
     question = mod.encode_qname(host) + struct.pack("!HH", mod.QTYPE[qtype], 1)
     records = b""
@@ -25,8 +25,17 @@ def response(host="ads.example.com", qtype="A", answer=None, rcode=0, cname=None
         raw = mod.encode_qname(cname)
         records = b"\xc0\x0c" + struct.pack("!HHIH", 5, 1, 120, len(raw)) + raw
         answer_count = 1
+    authority = b""
+    authority_count = 0
+    if soa:
+        owner = mod.encode_qname("example.com")
+        mname = mod.encode_qname("ns1.example.com")
+        rname = mod.encode_qname("hostmaster.example.com")
+        soa_data = mname + rname + struct.pack("!IIIII", 1, 3600, 600, 86400, 300)
+        authority = owner + struct.pack("!HHIH", 6, 1, 300, len(soa_data)) + soa_data
+        authority_count = 1
     flags = 0x8180 | rcode
-    return struct.pack("!HHHHHH", query_id, flags, 1, answer_count, 0, 0) + question + records
+    return struct.pack("!HHHHHH", query_id, flags, 1, answer_count, authority_count, 0) + question + records + authority
 
 
 class DNSLivenessCollectorTests(unittest.TestCase):
@@ -54,6 +63,13 @@ class DNSLivenessCollectorTests(unittest.TestCase):
         )
         self.assertEqual(parsed["cname_chain"], ["edge.example.net"])
         self.assertEqual(parsed["answers"], [])
+
+    def test_parse_nxdomain_negative_soa_authority(self):
+        parsed = mod.parse_response(
+            response(rcode=3, soa=True), 0x1234, "A", "ads.example.com"
+        )
+        self.assertEqual(parsed["rcode"], "NXDOMAIN")
+        self.assertEqual(parsed["authority_soa_zones"], ["example.com"])
 
     def test_reject_response_for_wrong_hostname(self):
         with self.assertRaisesRegex(ValueError, "question does not match"):
