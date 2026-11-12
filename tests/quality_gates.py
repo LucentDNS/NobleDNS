@@ -23,6 +23,7 @@ ESSENTIAL = ROOT / "tests" / "fixtures" / "essential-domains.txt"
 KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
 
 RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+LEADING_DOT_RULE_RE = re.compile(r"^\.(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
 
 
 def read_domains(path: Path) -> list[str]:
@@ -46,14 +47,18 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
         if not line or line.startswith("!"):
             continue
         match = RULE_RE.fullmatch(line)
+        leading_dot = False
+        if not match:
+            match = LEADING_DOT_RULE_RE.fullmatch(line)
+            leading_dot = bool(match)
         if not match:
             invalid.append(line)
             continue
 
         domain = match.group("domain").lower()
-        is_exception = bool(match.group("exception"))
+        is_exception = bool(match.groupdict().get("exception"))
         has_caret = bool(match.group("caret"))
-        if is_exception and not has_caret:
+        if is_exception and (not has_caret or leading_dot):
             invalid.append(line)
             continue
         valid, _reason = mod.valid_domain(domain)
@@ -63,6 +68,8 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
 
         if is_exception:
             exceptions.add(domain)
+        elif leading_dot:
+            blocks.add("." + domain)
         else:
             blocks.add(domain)
 
@@ -70,7 +77,10 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
 
 
 def covers(rule_domain: str, hostname: str) -> bool:
-    """A parent hostname rule covers the hostname and its subdomains."""
+    """Return whether a rule covers a hostname, respecting leading-dot scope."""
+    if rule_domain.startswith("."):
+        domain = rule_domain[1:]
+        return hostname != domain and hostname.endswith("." + domain)
     return hostname == rule_domain or hostname.endswith("." + rule_domain)
 
 
@@ -81,7 +91,14 @@ def matching_rules(hostname: str, rules: set[str]) -> set[str]:
 
 
 def is_blocked(hostname: str, blocks: set[str], exceptions: set[str]) -> bool:
-    return bool(matching_rules(hostname, blocks)) and not bool(
+    parent_blocks = {rule for rule in blocks if not rule.startswith(".")}
+    subdomain_blocks = {rule[1:] for rule in blocks if rule.startswith(".")}
+    parent_match = bool(matching_rules(hostname, parent_blocks))
+    subdomain_match = any(
+        hostname != domain and hostname.endswith("." + domain)
+        for domain in subdomain_blocks
+    )
+    return (parent_match or subdomain_match) and not bool(
         matching_rules(hostname, exceptions)
     )
 
@@ -100,6 +117,13 @@ class QualityGateTests(unittest.TestCase):
             is_blocked("abchina.com", {"abchina.com"}, {"abchina.com"})
         )
         self.assertFalse(is_blocked("doubleclick.net", set(), set()))
+
+    def test_leading_dot_rule_blocks_subdomains_but_not_apex(self) -> None:
+        blocks = {".example.com"}
+        self.assertFalse(is_blocked("example.com", blocks, set()))
+        self.assertTrue(is_blocked("www.example.com", blocks, set()))
+        self.assertTrue(is_blocked("deep.www.example.com", blocks, set()))
+        self.assertFalse(is_blocked("notexample.com", blocks, set()))
 
     def test_exception_count_stays_small(self) -> None:
         """Exceptions are allow-rules; a sudden surge means the list is leaking."""
