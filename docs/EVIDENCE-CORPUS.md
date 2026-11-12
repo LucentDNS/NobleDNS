@@ -16,7 +16,7 @@ Every record must contain exactly these required fields (plus optional `expires_
 | `hostname` | Lowercase FQDN, validated by the same `valid_domain()` function used by the production builder |
 | `classification` | `confirmed_ad`, `confirmed_tracker`, `unwanted_telemetry`, `threat`, `essential_service`, or `unresolved` |
 | `evidence_type` | `controlled_traffic_capture`, `vendor_documentation`, `independent_research`, `threat_intelligence`, `upstream_rule`, `user_report`, or `synthetic_test` |
-| `evidence_reference` | Non-empty URL or repository artifact reference to the supporting evidence |
+| `evidence_reference` | HTTPS URL without embedded credentials or query parameters, or a safe repository-relative path under `docs/`, `tests/`, or `audit-artifacts/` |
 | `observed_at_utc` | ISO-8601 UTC timestamp ending in `Z` |
 | `reviewed_at_utc` | ISO-8601 UTC timestamp ending in `Z`, not earlier than observation |
 | `review_due_utc` | ISO-8601 UTC timestamp ending in `Z`, not earlier than review |
@@ -38,7 +38,8 @@ Optional `expires_at_utc` is an ISO-8601 UTC timestamp. It is mandatory for thre
 - `threat` requires high-confidence `threat_intelligence`, an expiry timestamp, and revalidation before expiry.
 - `essential_service` records must expect `allowed`.
 - Tracking and telemetry are distinct from advertising and must not be reclassified as ads without evidence.
-- Overdue reviews and expired evidence fail validation; re-review and update the evidence dates before reuse.
+- Observation and review timestamps cannot be in the future. Overdue reviews and expired evidence fail validation; re-review and update the evidence dates before reuse.
+- Evidence references must be traceable and safe: insecure HTTP, embedded credentials, query parameters, absolute paths and parent-directory traversal are rejected.
 - Unknown or missing fields fail closed. No private account identifiers, device identifiers, authentication tokens, or unsanitized personal traffic logs may be committed.
 
 ## Validation
