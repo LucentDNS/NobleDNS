@@ -29,6 +29,8 @@ MIN_SOURCE_BLOCKS = 10_000
 MAX_SOURCE_BYTES = 50 * 1024 * 1024
 TIMEOUT = 120
 BLOCK_RE = re.compile(r"^\|\|([^\^/$|]+)\^$")
+BLOCK_SUBDOMAIN_END_RE = re.compile(r"^\|\|(?P<domain>[^\^/$|]+)\^\|$")
+BLOCK_EXACT_HOST_RE = re.compile(r"^\|(?P<domain>[^\^/$|]+)\^(?P<end>\|)?$")
 EXCEPTION_RE = re.compile(r"^@@\|\|([^\^/$|]+)\^$")
 EXCEPTION_SUBDOMAIN_END_RE = re.compile(r"^@@\|\|(?P<domain>[^\^/$|]+)\^\|$")
 EXCEPTION_EXACT_END_RE = re.compile(r"^@@\|(?P<domain>[^\^/$|]+)\^\|$")
@@ -177,6 +179,14 @@ def normalize_badfilter_target(rule: str) -> str | None:
     if match:
         ok, domain = valid_domain(match.group(1))
         return f"||{domain}^" if ok else None
+    match = BLOCK_SUBDOMAIN_END_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group("domain"))
+        return f"||{domain}^|" if ok else None
+    match = BLOCK_EXACT_HOST_RE.fullmatch(rule)
+    if match:
+        ok, domain = valid_domain(match.group("domain"))
+        return f"|{domain}^" + ("|" if match.group("end") else "") if ok else None
     match = BARE_RE.fullmatch(rule)
     if match:
         ok, domain = valid_domain(match.group(1))
@@ -232,7 +242,7 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
                 rejected[result] += 1
                 rows.append((source_key, line_no, result, line))
             continue
-        kind, match, bare, exception_form = "block", BLOCK_RE.fullmatch(line), False, None
+        kind, match, bare, exception_form, block_form = "block", BLOCK_RE.fullmatch(line), False, None, None
         if not match:
             m = BARE_RE.fullmatch(line)
             if m and not m.group(1).endswith("."):
@@ -249,6 +259,14 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
                         match = EXCEPTION_EXACT_END_RE.fullmatch(line)
                         if match:
                             kind, exception_form = "exception", "exact_hostname"
+                        else:
+                            match = BLOCK_SUBDOMAIN_END_RE.fullmatch(line)
+                            if match:
+                                block_form = "domain_and_subdomains_end"
+                            else:
+                                match = BLOCK_EXACT_HOST_RE.fullmatch(line)
+                                if match:
+                                    block_form = "exact_hostname"
         if match:
             candidate = match.group(1)
             if "*" in candidate:
@@ -263,6 +281,10 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
                         exceptions.add(f"@@|{result}^|")
                     else:
                         exceptions.add(f"@@||{result}^")
+                elif block_form == "domain_and_subdomains_end":
+                    blocks.add(f"||{result}^|")
+                elif block_form == "exact_hostname":
+                    blocks.add(f"|{result}^" + ("|" if match.group("end") else ""))
                 else:
                     blocks.add(f"||{result}" + ("" if bare else "^"))
             else:
@@ -395,13 +417,16 @@ def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     """Inventory documented DNS rule forms; flag only forms needing semantic review."""
     forms = {
         "domain_and_subdomains": re.compile(r"^\|\|[^\^/$|]+\^$"),
+        "domain_and_subdomains_end_anchored": re.compile(r"^\|\|[^\^/$|]+\^\|$"),
+        "exact_hostname": re.compile(r"^\|(?!\|)[^\^/$|]+\^(?:\|)?$"),
         "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^\^/$|]+$"),
         "subdomains_only": re.compile(r"^\.[^\^/$|]+\^?$"),
     }
     semantics = {
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
+        "domain_and_subdomains_end_anchored": "Blocks the domain and its subdomains with an explicit hostname-end anchor.",
+        "exact_hostname": "Blocks only the exact hostname, using a hostname-start anchor and hostname-end separator.",
         "domain_anchor_without_end_boundary": "Valid hostname-start anchor without an end separator; a hostname may continue after the literal pattern, so retain unchanged and test its broader matching scope.",
-
         "subdomains_only": "Blocks subdomains of the specified domain, but not the apex domain; preserved using AdGuard's documented leading-dot DNS syntax.",
     }
     counts = {name: 0 for name in forms}
@@ -540,7 +565,7 @@ def build(args) -> Path:
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
     if len(lines) != len(published_rules) or len(set(lines)) != len(lines): raise RuntimeError("Output count/duplicate validation failed")
     for line in lines:
-        m = EXCEPTION_RE.fullmatch(line) or EXCEPTION_SUBDOMAIN_END_RE.fullmatch(line) or EXCEPTION_EXACT_END_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BARE_RE.fullmatch(line) or LEADING_DOT_RE.fullmatch(line)
+        m = EXCEPTION_RE.fullmatch(line) or EXCEPTION_SUBDOMAIN_END_RE.fullmatch(line) or EXCEPTION_EXACT_END_RE.fullmatch(line) or BLOCK_RE.fullmatch(line) or BLOCK_SUBDOMAIN_END_RE.fullmatch(line) or BLOCK_EXACT_HOST_RE.fullmatch(line) or BARE_RE.fullmatch(line) or LEADING_DOT_RE.fullmatch(line)
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
@@ -549,7 +574,7 @@ def build(args) -> Path:
         "domain_and_subdomains_end_anchored": sum(1 for rule in all_exceptions if rule.startswith("@@||") and rule.endswith("^|")),
         "exact_hostname": sum(1 for rule in all_exceptions if rule.startswith("@@|") and not rule.startswith("@@||") and rule.endswith("^|")),
     }
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "badfilter_audit": {"directives": len(badfilter_audit_rows), "applied": badfilter_status_counts["applied"], "already_applied": badfilter_status_counts["already_applied"], "target_not_found": badfilter_status_counts["target_not_found"], "unsupported": badfilter_status_counts["unsupported_target_syntax"] + badfilter_status_counts["unsupported_modifier_combination"], "removed_rules": badfilter_removed_rules}, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "active_exception_rules_by_form": active_exception_rules_by_form, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "validated upstream exceptions in supported domain/subdomain and exact-hostname forms active in the main subscription; unsupported patterns remain excluded", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_subdomain_only": "preserved; matches subdomains only, not the apex domain", "supported_exception_forms": ["@@||domain^", "@@||domain^|", "@@|domain^|"], "badfilter": "supported exact $badfilter directives disable matching rules across the merged approved sources; all directives are recorded in badfilter-audit.csv", "source_drift_gate_percent": args.max_source_change_percent}}
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "badfilter_audit": {"directives": len(badfilter_audit_rows), "applied": badfilter_status_counts["applied"], "already_applied": badfilter_status_counts["already_applied"], "target_not_found": badfilter_status_counts["target_not_found"], "unsupported": badfilter_status_counts["unsupported_target_syntax"] + badfilter_status_counts["unsupported_modifier_combination"], "removed_rules": badfilter_removed_rules}, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "active_exception_rules_by_form": active_exception_rules_by_form, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "validated upstream exceptions in supported domain/subdomain and exact-hostname forms active in the main subscription; unsupported patterns remain excluded", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_subdomain_only": "preserved; matches subdomains only, not the apex domain", "supported_exception_forms": ["@@||domain^", "@@||domain^|", "@@|domain^|"], "supported_block_forms": ["||domain^", "||domain", "||domain^|", "|domain^", ".domain^", ".domain"], "badfilter": "supported exact $badfilter directives disable matching rules across the merged approved sources; all directives are recorded in badfilter-audit.csv", "source_drift_gate_percent": args.max_source_change_percent}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Badfilter directives: {len(badfilter_audit_rows)} (applied: {badfilter_status_counts['applied']}, target not found: {badfilter_status_counts['target_not_found']}, unsupported: {badfilter_status_counts['unsupported_target_syntax'] + badfilter_status_counts['unsupported_modifier_combination']}); removed rules: {badfilter_removed_rules}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
