@@ -2,6 +2,12 @@ name: NobleDNS upstream source audit
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "audit/**"
+    paths:
+      - "tools/upstream_audit.py"
+      - ".github/workflows/upstream-source-audit.yml"
   pull_request:
     paths:
       - "tools/upstream_audit.py"
