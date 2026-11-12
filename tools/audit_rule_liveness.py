@@ -237,6 +237,13 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                     row["vantage"],
                 )].add(row["qtype"])
             complete_pairs = [pair for pair, qtypes in qtypes_by_pair.items() if qtypes == {"A", "AAAA"}]
+            operator_vantages = defaultdict(set)
+            for _resolver, operator, vantage in complete_pairs:
+                operator_vantages[operator].add(vantage)
+            cross_vantage_operators = {
+                operator for operator, observed_vantages in operator_vantages.items()
+                if len(observed_vantages) >= 2
+            }
             # A seven-day span must be demonstrated independently by every
             # resolver/operator/vantage pair. Do not combine one old result
             # from pair A with a recent quorum from pairs B/C to manufacture
@@ -272,6 +279,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
             quorum = (
                 len(operators) >= 3
                 and len(vantages) >= 2
+                and len(cross_vantage_operators) >= 3
                 and len(complete_pairs) >= 3
                 and span >= 7
                 and len(complete_pairs) == len(pairs)
@@ -304,6 +312,7 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 "resolver_operators": sorted(operators),
                 "vantages": sorted(vantages),
                 "complete_resolver_vantage_pairs": len(complete_pairs),
+                "operators_with_multi_vantage_coverage": len(cross_vantage_operators),
                 "pairs_with_seven_day_complete_history": len(temporal_pairs),
                 "minimum_pair_observation_span_days": round(min(pair_spans.values(), default=0.0), 2),
                 "observation_span_days": round(span, 2),
