@@ -60,8 +60,8 @@ RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)
 
 def fetch_snapshot(url: str) -> bytes:
     """Fetch HTTPS text with bounded size, strict UTF-8, and no proxy inheritance."""
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     last_error = None
+    print(f"Fetching snapshot: {url}", flush=True)
     for attempt in range(1, 4):
         try:
             request = urllib.request.Request(
@@ -72,7 +72,7 @@ def fetch_snapshot(url: str) -> bytes:
                     "Cache-Control": "no-cache",
                 },
             )
-            with opener.open(request, timeout=120) as response:
+            with urllib.request.urlopen(request, timeout=60) as response:
                 if getattr(response, "status", 200) != 200:
                     raise ValueError(f"unexpected HTTP status: {response.status}")
                 final_url = response.geturl()
@@ -87,6 +87,7 @@ def fetch_snapshot(url: str) -> bytes:
             data.decode("utf-8-sig", errors="strict")
             if data[:500].lstrip().lower().startswith((b"<html", b"<!doctype html")):
                 raise ValueError("HTML response instead of a rule file")
+            print(f"Fetched {len(data):,} bytes from {url}", flush=True)
             return data
         except (urllib.error.URLError, TimeoutError, OSError, ValueError, UnicodeDecodeError) as exc:
             last_error = exc
@@ -572,6 +573,7 @@ def main() -> int:
         (snapshots / f"{key}.txt").write_bytes(data)
         downloaded[key] = data
         parsed[key] = parse_snapshot(key, data)
+        print(f"Parsed {key}: {len(parsed[key]['blocks']):,} supported block rules", flush=True)
 
     changelog_data = fetch_snapshot(AWA_CHANGELOG_URL)
     (snapshots / "awavenue-changelog.md").write_bytes(changelog_data)
