@@ -47,6 +47,7 @@ Use a dedicated temporary custom list containing only these synthetic rules:
 ||bare.nobledns.test
 ||exception-parent.nobledns.test^
 @@||allow.exception-parent.nobledns.test^
+||child.allowed.nobledns.test^
 @@||allowed.nobledns.test^
 .subonly.nobledns.test^
 ```
@@ -69,8 +70,9 @@ Do not add these synthetic rules to the public subscription.
 | `||exception-parent.nobledns.test^` | apex | Block |
 | `||exception-parent.nobledns.test^` | `allow.exception-parent.nobledns.test` | Block rule is overridden by the narrower exception |
 | `@@||allow.exception-parent.nobledns.test^` | `deep.allow.exception-parent.nobledns.test` | Allow |
+| `||child.allowed.nobledns.test^` | `child.allowed.nobledns.test` | Block before applying the parent exception |
 | `@@||allowed.nobledns.test^` | apex | Allow |
-| `@@||allowed.nobledns.test^` | `child.allowed.nobledns.test` | Allow |
+| `@@||allowed.nobledns.test^` | `child.allowed.nobledns.test` | Allow; the parent exception overrides the child block |
 | `.subonly.nobledns.test^` | apex | Allow |
 | `.subonly.nobledns.test^` | `child.subonly.nobledns.test` | Block |
 
