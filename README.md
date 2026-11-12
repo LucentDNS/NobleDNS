@@ -52,6 +52,8 @@ Rule count alone is not a measure of filtering quality. See:
 - [Quality and acceptance policy](docs/QUALITY.md)
 - [Current published manifest](dist/manifest.json)
 - [Validation report](dist/validation-report.txt)
+- [DNS syntax inventory](dist/syntax-audit.json)
+- [Syntax review candidates](dist/syntax-review.csv)
 - [Parser exclusions](dist/parser-exclusions.csv)
 - [Third-party notices](THIRD-PARTY-NOTICES.md)
 
