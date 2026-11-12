@@ -50,8 +50,6 @@ jobs:
 
     outputs:
       publish_update: ${{ steps.compare.outputs.publish_update }}
-      new_hash: ${{ steps.compare.outputs.new_hash }}
-      release_hash: ${{ steps.compare.outputs.release_hash }}
 
     steps:
       - name: Checkout
@@ -248,21 +246,11 @@ jobs:
 
           expected_source_keys = {"adguard_dns", "hagezi_normal"}
           if set(new_sources) != expected_source_keys:
-              raise ValueError("Release identity requires exactly the two approved source hashes")
+              raise ValueError("Build requires exactly the two approved source hashes")
 
           if len(new_hash) != 64 or any(len(value) != 64 for value in new_sources.values()):
               raise ValueError("Invalid SHA256 length in build manifest")
 
-          release_identity = {
-              "main_subscription_sha256": new_hash,
-              "sources": new_sources,
-          }
-          release_payload = json.dumps(
-              release_identity,
-              sort_keys=True,
-              separators=(",", ":"),
-          ).encode("utf-8")
-          release_hash = hashlib.sha256(release_payload).hexdigest()
           old_sources = {
               key: value["sha256"]
               for key, value in old.get("sources", {}).items()
@@ -279,8 +267,6 @@ jobs:
               f.write(f"sources_changed={str(sources_changed).lower()}\n")
               f.write(f"publish_update={str(publish_update).lower()}\n")
               f.write(f"file_changed={str(file_changed).lower()}\n")
-              f.write(f"new_hash={new_hash}\n")
-              f.write(f"release_hash={release_hash}\n")
 
           print(f"Rules changed: {rules_changed}")
           print(f"Sources changed: {sources_changed}")
@@ -288,7 +274,6 @@ jobs:
           print(f"Syntax audit changed: {audit_changed}")
           print(f"Publish update required: {publish_update}")
           print(f"New rule SHA256: {new_hash}")
-          print(f"Release identity SHA256: {release_hash}")
           PY
 
       - name: Archive build and source audit evidence
@@ -300,7 +285,7 @@ jobs:
           retention-days: 30
 
   publish:
-    name: Publish public release
+    name: Publish validated subscription and versioned release
     needs: build-test
 
     # Pull requests, non-default branches and builds without substantive updates must never publish.
@@ -443,115 +428,8 @@ jobs:
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
 
-      - name: Create or synchronize content-addressed Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_HASH: ${{ needs.build-test.outputs.release_hash }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          CHANNEL=$(python -c "import json; print(json.load(open('config/sources.json', encoding='utf-8'))['release_channel'])")
-
-          TAG="nobledns-${RELEASE_HASH}"
-          TITLE="NobleDNS ${CHANNEL} ${RELEASE_HASH:0:12}"
-
-          echo "Release tag: $TAG"
-          echo "Release channel: $CHANNEL"
-
-          ASSETS=(
-            dist/dns-filter.txt
-            NobleDNS.txt
-            dist/manifest.json
-            dist/validation-report.txt
-            dist/allowlist-active.txt
-            dist/parser-exclusions.csv
-            dist/syntax-audit.json
-            dist/syntax-review.csv
-            LICENSE
-            THIRD-PARTY-NOTICES.md
-            licenses/GPL-3.0.txt
-          )
-
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release exists; checking its status and assets."
-
-            IS_PRERELEASE="$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')"
-            if [ "$IS_PRERELEASE" != "true" ]; then
-              echo "Ensuring existing Release is not marked as a prerelease."
-              gh release edit "$TAG" --prerelease=false
-            fi
-
-            EXISTING_ASSETS="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
-            MISSING_ASSETS=()
-
-            for asset in "${ASSETS[@]}"; do
-              asset_name="${asset##*/}"
-              if ! grep -Fqx -- "$asset_name" <<< "$EXISTING_ASSETS"; then
-                MISSING_ASSETS+=("$asset_name")
-              fi
-            done
-
-            VERIFY_DIR="$(mktemp -d)"
-            trap 'rm -rf "$VERIFY_DIR"' EXIT
-
-            if [ "${#MISSING_ASSETS[@]}" -gt 0 ]; then
-              echo "Release has missing assets; synchronizing all assets."
-              printf 'Missing asset: %s\n' "${MISSING_ASSETS[@]}"
-              gh release upload "$TAG" "${ASSETS[@]}" --clobber
-            fi
-
-            gh release download "$TAG" --dir "$VERIFY_DIR"
-
-            MISMATCHED_ASSETS=()
-            for asset in "${ASSETS[@]}"; do
-              asset_name="${asset##*/}"
-              if [ ! -f "$VERIFY_DIR/$asset_name" ] ||
-                 ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
-                MISMATCHED_ASSETS+=("$asset_name")
-              fi
-            done
-
-            if [ "${#MISMATCHED_ASSETS[@]}" -gt 0 ]; then
-              echo "Release assets are missing or differ from local files."
-              printf 'Mismatched asset: %s\n' "${MISMATCHED_ASSETS[@]}"
-
-              gh release upload "$TAG" "${ASSETS[@]}" --clobber
-
-              rm -f "$VERIFY_DIR"/*
-              gh release download "$TAG" --dir "$VERIFY_DIR"
-
-              MISMATCHED_ASSETS=()
-              for asset in "${ASSETS[@]}"; do
-                asset_name="${asset##*/}"
-                if [ ! -f "$VERIFY_DIR/$asset_name" ] ||
-                   ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
-                  MISMATCHED_ASSETS+=("$asset_name")
-                fi
-              done
-
-              if [ "${#MISMATCHED_ASSETS[@]}" -gt 0 ]; then
-                echo "::error::Release asset verification failed after upload."
-                printf 'Still mismatched: %s\n' "${MISMATCHED_ASSETS[@]}"
-                exit 1
-              fi
-            else
-              echo "All configured Release assets match local files."
-            fi
-
-            # Recover a draft left behind by an interrupted release creation.
-            gh release edit "$TAG" --draft=false --prerelease=false
-            echo "Release is published."
-          else
-            echo "Release does not exist; creating a public release."
-
-            gh release create "$TAG" \
-              "${ASSETS[@]}" \
-              --target "$(git rev-parse HEAD)" \
-              --title "$TITLE" \
-              --generate-notes
-          fi
-
+      # GitHub Releases are reserved for immutable SemVer product versions.
+      # Daily validated subscription updates are published to the main branch only.
       - name: Publish immutable SemVer release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -578,7 +456,7 @@ jobs:
             fi
 
             echo "Stable version release already exists; leaving it immutable."
-            echo "The current daily build is tracked by its content-addressed Release."
+            echo "Daily subscription updates are published on main; this SemVer release remains immutable."
             exit 0
           fi
 
