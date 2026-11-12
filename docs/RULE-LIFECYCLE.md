@@ -14,7 +14,7 @@ The offline tool `tools/audit_rule_liveness.py` consumes:
 - a versioned JSON file of externally collected DNS observations, including the exact HTTPS/DoT resolver endpoint for every observation;
 - the exact source snapshots and `sources-manifest.json` from the same build (required by the CLI).
 
-It verifies source snapshot SHA-256 values and records which approved source(s) still contain each observed hostname.
+It verifies source snapshot SHA-256 values and records which approved source(s) still contain each observed hostname. Subscription membership and source attribution are suffix-aware: an observed subdomain is attributed to an exact blocking rule or any matching parent-domain rule, rather than being incorrectly treated as outside the subscription merely because the full hostname is not itself a literal rule.
 
 | Status | Meaning | Action |
 |---|---|---|
