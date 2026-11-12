@@ -311,13 +311,27 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
+    # The default GITHUB_TOKEN is read-only. A repository-scoped GitHub App
+    # installation token is minted only in this protected release environment.
     permissions:
-      contents: write
+      contents: read
+
+    environment:
+      name: release
 
     steps:
+      - name: Create repository-scoped publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.NOBLEDNS_PUBLISHER_CLIENT_ID }}
+          private-key: ${{ secrets.NOBLEDNS_PUBLISHER_PRIVATE_KEY }}
+          permission-contents: write
+
       - name: Checkout exact build commit
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          token: ${{ steps.publisher-token.outputs.token }}
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: true
@@ -439,7 +453,7 @@ jobs:
       # Daily validated subscription updates are published to the main branch only.
       - name: Publish immutable SemVer release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
