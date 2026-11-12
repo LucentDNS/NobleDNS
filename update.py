@@ -165,9 +165,20 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         if not line or line.startswith(("!", "#", "[", "//")):
             continue
         if line.startswith("."):
-            reason = "unsupported_leading_dot_dns_syntax"
-            rejected[reason] += 1
-            rows.append((source_key, line_no, reason, line))
+            leading_dot = LEADING_DOT_RE.fullmatch(line)
+            if not leading_dot:
+                reason = "unsupported_leading_dot_dns_syntax"
+                rejected[reason] += 1
+                rows.append((source_key, line_no, reason, line))
+                continue
+            ok, result = valid_domain(leading_dot.group("domain"))
+            if ok:
+                # AdGuard DNS semantics: a leading dot matches subdomains only,
+                # not the apex domain. Preserve the source's optional caret.
+                blocks.add("." + result + ("^" if leading_dot.group("caret") else ""))
+            else:
+                rejected[result] += 1
+                rows.append((source_key, line_no, result, line))
             continue
         kind, match, bare = "block", BLOCK_RE.fullmatch(line), False
         if not match:
