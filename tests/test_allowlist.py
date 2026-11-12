@@ -38,6 +38,13 @@ class AllowlistTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "exact domain"):
                 mod.parse_allowlist(path)
 
+    def test_allowlist_rejects_overlapping_parent_and_child_domains(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "allowlist.txt"
+            path.write_text("example.com\\nsub.example.com\\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Overlapping allowlist"):
+                mod.parse_allowlist(path)
+
     def test_proxy_validation_rejects_credentials_and_unsupported_schemes(self):
         with self.assertRaisesRegex(ValueError, "credentials"):
             mod.validate_proxy("http://user:pass@127.0.0.1:7890")
