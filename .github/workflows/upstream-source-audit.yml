@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: nobledns-upstream-audit-${{ github.ref }}
-  cancel-in-progress: false
+  group: nobledns-upstream-audit
+  cancel-in-progress: true
 
 jobs:
   audit:
