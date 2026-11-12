@@ -140,8 +140,7 @@ def score(rows: list[dict], blocks: set[str], exceptions: set[str]) -> dict:
     for row in rows:
         actual, matched = decide(row["hostname"], blocks, exceptions)
         expected = row["expected"]
-        key = row["category"]
-        item = categories[key]
+        item = categories[row["category"]]
         item["total"] += 1
         if expected == "block" and actual == "block":
             item["tp"] += 1
@@ -156,20 +155,28 @@ def score(rows: list[dict], blocks: set[str], exceptions: set[str]) -> dict:
             item["tn"] += 1
             outcome = "TN"
         outcomes.append({
-            "hostname": row["hostname"], "category": key, "expected": expected,
+            "hostname": row["hostname"], "category": row["category"], "expected": expected,
             "actual": actual, "outcome": outcome, "matched_rules": matched,
             "evidence_ref": row["evidence_ref"],
         })
+    overall = {"tp": 0, "fp": 0, "tn": 0, "fn": 0, "total": len(rows)}
     summary = {}
     for category, values in sorted(categories.items()):
+        for key in ("tp", "fp", "tn", "fn"):
+            overall[key] += values[key]
+        policy = "block" if category in {"ad", "tracking", "telemetry", "threat"} else "allow"
         tp, fp, tn, fn = (values[k] for k in ("tp", "fp", "tn", "fn"))
         summary[category] = {
             **values,
-            "precision": round(tp / (tp + fp), 6) if tp + fp else None,
-            "recall": round(tp / (tp + fn), 6) if tp + fn else None,
-            "specificity": round(tn / (tn + fp), 6) if tn + fp else None,
+            "expected_policy": policy,
+            "block_recall": round(tp / (tp + fn), 6) if policy == "block" and tp + fn else None,
+            "false_block_rate": round(fp / (fp + tn), 6) if policy == "allow" and fp + tn else None,
         }
-    return {"scored_records": len(rows), "by_category": summary, "outcomes": outcomes}
+    tp, fp, tn, fn = (overall[k] for k in ("tp", "fp", "tn", "fn"))
+    overall["precision"] = round(tp / (tp + fp), 6) if tp + fp else None
+    overall["recall"] = round(tp / (tp + fn), 6) if tp + fn else None
+    overall["specificity"] = round(tn / (tn + fp), 6) if tn + fp else None
+    return {"scored_records": len(rows), "overall": overall, "by_category": summary, "outcomes": outcomes}
 
 
 def main() -> int:
