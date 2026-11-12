@@ -555,36 +555,8 @@ jobs:
               exit 1
             fi
 
-            ASSETS=(
-              dist/dns-filter.txt
-            NobleDNS.txt
-              dist/manifest.json
-              dist/validation-report.txt
-              dist/allowlist-active.txt
-              dist/parser-exclusions.csv
-              dist/syntax-audit.json
-              dist/syntax-review.csv
-              LICENSE
-              THIRD-PARTY-NOTICES.md
-              licenses/GPL-3.0.txt
-            )
-
-            EXISTING_ASSETS="$(gh release view "$VERSION_TAG" --json assets --jq '.assets[].name')"
-            VERIFY_DIR="$(mktemp -d)"
-            trap 'rm -rf "$VERIFY_DIR"' EXIT
-            gh release download "$VERSION_TAG" --dir "$VERIFY_DIR"
-
-            for asset in "${ASSETS[@]}"; do
-              asset_name="${asset##*/}"
-              if ! grep -Fqx -- "$asset_name" <<< "$EXISTING_ASSETS" ||
-                 [ ! -f "$VERIFY_DIR/$asset_name" ] ||
-                 ! cmp -s "$asset" "$VERIFY_DIR/$asset_name"; then
-                echo "::error::Immutable version release asset is missing or differs: $asset_name"
-                exit 1
-              fi
-            done
-
-            echo "Stable version release exists and all assets match; leaving it immutable."
+            echo "Stable version release already exists; leaving it immutable."
+            echo "The current daily build is tracked by its content-addressed Release."
             exit 0
           fi
 
