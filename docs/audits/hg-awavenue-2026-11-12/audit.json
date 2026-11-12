@@ -1,0 +1,1829 @@
+{
+  "schema_version": 1,
+  "audit_time_utc": "2026-11-12T08:24:21.395923+00:00",
+  "baseline_main_commit": "7cdf2d36e9333d244e3f236ec964e9b268cf1141",
+  "baseline_url": "https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt",
+  "baseline_sha256": "527d913bb6e385c3dace940a49c462b91b03b5c8845b7c313be36314a88d8fda",
+  "baseline_bytes": 7282883,
+  "baseline_block_rules": 303625,
+  "baseline_exception_rules": 11,
+  "baseline_total_rules": 303636,
+  "fixtures": {
+    "essential_count": 72,
+    "known_ads_count": 20
+  },
+  "sources": {
+    "hg1": {
+      "name": "HG main blocking list (hg1.txt)",
+      "url": "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt",
+      "repository": "https://github.com/2771936993/HG",
+      "license_assessment": "No public LICENSE file was found at the repository root during this audit. The user previously reported direct permission from the maintainer; the scope of public redistribution and license compatibility still needs a retained written record.",
+      "sha256": "feba1cec35500510b8f8590fa49e5c0312c6e5c4e86af2bf6b65eea3ff48e12e",
+      "bytes": 275409,
+      "raw_rule_lines": 13164,
+      "unique_block_rules": 11954,
+      "unique_exception_rules": 1,
+      "bare_block_rules": 35,
+      "rejected": {
+        "invalid_domain_label": 6,
+        "invalid_domain_length_or_trailing_dot": 1,
+        "ip_literal_not_domain": 1004,
+        "other_anchor_syntax": 8,
+        "other_modifier": 2,
+        "regex_or_path_syntax": 6,
+        "single_label_not_fqdn": 17,
+        "wildcard_syntax": 164
+      },
+      "metrics": {
+        "unique_block_domains": 11953,
+        "caret_block_domains": 11919,
+        "bare_block_domains": 35,
+        "exception_domains": 1,
+        "exact_overlap_with_baseline": 468,
+        "exact_unique_vs_baseline": 11485,
+        "unique_but_already_covered_by_baseline_parent": 475,
+        "unique_not_covered_by_baseline_parent": 11010,
+        "candidate_rules_broadening_existing_baseline_scope": 519,
+        "baseline_block_domains_affected_by_candidate_parent_rules": 9326,
+        "candidate_blocks_overlapping_baseline_exceptions": 2,
+        "candidate_exceptions_overlapping_baseline_blocks": 0,
+        "essential_fixture_hits": [
+          {
+            "hostname": "bank.pingan.com",
+            "matching_rules": [
+              "||pingan.com^"
+            ]
+          },
+          {
+            "hostname": "pinduoduo.com",
+            "matching_rules": [
+              "||pinduoduo.com^"
+            ]
+          }
+        ],
+        "known_ad_fixture_hits": [
+          {
+            "hostname": "doubleclick.net",
+            "matching_rules": [
+              "||doubleclick.net^"
+            ]
+          }
+        ],
+        "parent_covered_examples": [
+          {
+            "candidate": "29b08169.skr001.cc",
+            "baseline_cover": [
+              "skr001.cc"
+            ]
+          },
+          {
+            "candidate": "2atlua.tdum.alibaba.com",
+            "baseline_cover": [
+              "tdum.alibaba.com"
+            ]
+          },
+          {
+            "candidate": "360fenxi.mediav.com",
+            "baseline_cover": [
+              "mediav.com"
+            ]
+          },
+          {
+            "candidate": "4mkcs.wlz.xn--czru2dx3eszw3lat53b.com",
+            "baseline_cover": [
+              "xn--czru2dx3eszw3lat53b.com"
+            ]
+          },
+          {
+            "candidate": "59316cb8.skr001.cc",
+            "baseline_cover": [
+              "skr001.cc"
+            ]
+          },
+          {
+            "candidate": "665628.directcpmfwr.com",
+            "baseline_cover": [
+              "directcpmfwr.com"
+            ]
+          },
+          {
+            "candidate": "6ah0gj.tdum.alibaba.com",
+            "baseline_cover": [
+              "tdum.alibaba.com"
+            ]
+          },
+          {
+            "candidate": "7372b4ec.skr001.cc",
+            "baseline_cover": [
+              "skr001.cc"
+            ]
+          },
+          {
+            "candidate": "7f3a6f04180ed.chatnow.mstatik.com",
+            "baseline_cover": [
+              "mstatik.com"
+            ]
+          },
+          {
+            "candidate": "a.adtng.com",
+            "baseline_cover": [
+              "adtng.com"
+            ]
+          },
+          {
+            "candidate": "a.fxltsbl.com",
+            "baseline_cover": [
+              "fxltsbl.com"
+            ]
+          },
+          {
+            "candidate": "a.gdt.qq.com",
+            "baseline_cover": [
+              "gdt.qq.com"
+            ]
+          },
+          {
+            "candidate": "a.qchannel03.cn",
+            "baseline_cover": [
+              "qchannel03.cn"
+            ]
+          },
+          {
+            "candidate": "a.wkanx.com",
+            "baseline_cover": [
+              "wkanx.com"
+            ]
+          },
+          {
+            "candidate": "a9naypotnrs9z.v1d.pkoplink.com",
+            "baseline_cover": [
+              "pkoplink.com"
+            ]
+          },
+          {
+            "candidate": "aaid.uyunad.com",
+            "baseline_cover": [
+              "uyunad.com"
+            ]
+          },
+          {
+            "candidate": "abk.lingsiqiwu.com",
+            "baseline_cover": [
+              "lingsiqiwu.com"
+            ]
+          },
+          {
+            "candidate": "abroad-sdk-push.dutils.com",
+            "baseline_cover": [
+              "dutils.com"
+            ]
+          },
+          {
+            "candidate": "abroad-sdk-push.hiaiabc.com",
+            "baseline_cover": [
+              "hiaiabc.com"
+            ]
+          },
+          {
+            "candidate": "abtest.volceapplog.com",
+            "baseline_cover": [
+              "volceapplog.com"
+            ]
+          },
+          {
+            "candidate": "access.pangolin-sdk-toutiao-b.com",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao-b.com"
+            ]
+          },
+          {
+            "candidate": "activity.tuia.cn",
+            "baseline_cover": [
+              "tuia.cn"
+            ]
+          },
+          {
+            "candidate": "ad-open2.fancydsp.com",
+            "baseline_cover": [
+              "fancydsp.com"
+            ]
+          },
+          {
+            "candidate": "ad.doubleclick.net",
+            "baseline_cover": [
+              "doubleclick.net"
+            ]
+          },
+          {
+            "candidate": "ad.openinstall.io",
+            "baseline_cover": [
+              "openinstall.io"
+            ]
+          },
+          {
+            "candidate": "ad.tapdb.net",
+            "baseline_cover": [
+              "tapdb.net"
+            ]
+          },
+          {
+            "candidate": "ad.wkanx.com",
+            "baseline_cover": [
+              "wkanx.com"
+            ]
+          },
+          {
+            "candidate": "ad.xmmnsl.com",
+            "baseline_cover": [
+              "xmmnsl.com"
+            ]
+          },
+          {
+            "candidate": "adimg.uve.weibo.com",
+            "baseline_cover": [
+              "uve.weibo.com"
+            ]
+          },
+          {
+            "candidate": "adlog.e.kuaishou.cn",
+            "baseline_cover": [
+              "e.kuaishou.cn"
+            ]
+          }
+        ],
+        "broadening_examples": [
+          {
+            "candidate_parent_rule": "1-1ads.com",
+            "baseline_domains": [
+              "1-1ads.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "2026cname.com",
+            "baseline_domains": [
+              "2026cname.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "3.cn",
+            "baseline_domains": [
+              "atom-log.3.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "365dmp.com",
+            "baseline_domains": [
+              "365dmp.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "69688qp.com",
+            "baseline_domains": [
+              "69688qp.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ab.qq.com",
+            "baseline_domains": [
+              "qqdata.ab.qq.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "abtest-ch.snssdk.com",
+            "baseline_domains": [
+              "abtest-ch.snssdk.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "acs4baichuan.m.taobao.com",
+            "baseline_domains": [
+              "acs4baichuan.m.taobao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-log-upload.mihoyo.com",
+            "baseline_domains": [
+              "ad-log-upload.mihoyo.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.bwton.com",
+            "baseline_domains": [
+              "ad.bwton.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.cyapi.cn",
+            "baseline_domains": [
+              "ad.cyapi.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.partner.gifshow.com",
+            "baseline_domains": [
+              "ad.partner.gifshow.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.tencentmusic.com",
+            "baseline_domains": [
+              "ad.tencentmusic.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.v3mh.com",
+            "baseline_domains": [
+              "ad.v3mh.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.weibo.com",
+            "baseline_domains": [
+              "ad.weibo.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.xiaomi.com",
+            "baseline_domains": [
+              "ad.xiaomi.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.zijieapi.com",
+            "baseline_domains": [
+              "ad.zijieapi.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ada.baidu.com",
+            "baseline_domains": [
+              "ada.baidu.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adashbc.ut.taobao.com",
+            "baseline_domains": [
+              "adashbc.ut.taobao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adashx.m.taobao.com",
+            "baseline_domains": [
+              "adashx.m.taobao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adashx.ut.amap.com",
+            "baseline_domains": [
+              "adashx.ut.amap.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adashx.ut.youku.com",
+            "baseline_domains": [
+              "adashx.ut.youku.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adashxgc.ut.taobao.com",
+            "baseline_domains": [
+              "adashxgc.ut.taobao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adbehavior.ximalaya.com",
+            "baseline_domains": [
+              "adbehavior.ximalaya.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adhuanxiao.com",
+            "baseline_domains": [
+              "sdk.adhuanxiao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adintl.cn",
+            "baseline_domains": [
+              "adintl.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adkwai.com",
+            "baseline_domains": [
+              "adkwai.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adlaunch.moji.com",
+            "baseline_domains": [
+              "adlaunch.moji.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adlog-js.e.kuaishou.com",
+            "baseline_domains": [
+              "adlog-js.e.kuaishou.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "adlog.e.kuaishou.com",
+            "baseline_domains": [
+              "adlog.e.kuaishou.com"
+            ]
+          }
+        ],
+        "block_exception_conflict_examples": [
+          [
+            "m1.ad.10010.com",
+            "ad.10010.com"
+          ],
+          [
+            "pingan.com",
+            "adcdn.pingan.com"
+          ]
+        ],
+        "exception_block_conflict_examples": []
+      }
+    },
+    "hg2": {
+      "name": "HG allowlist (hg2.txt; companion context only)",
+      "url": "https://raw.githubusercontent.com/2771936993/HG/main/hg2.txt",
+      "repository": "https://github.com/2771936993/HG",
+      "license_assessment": "Same HG repository licensing uncertainty as hg1.txt.",
+      "sha256": "a2bb1450384550c89bf83d5cb2601184a1426e001ba51cc6eece8a5bc2e8c4e8",
+      "bytes": 9042,
+      "raw_rule_lines": 328,
+      "unique_block_rules": 0,
+      "unique_exception_rules": 322,
+      "bare_block_rules": 0,
+      "rejected": {
+        "other_exception_syntax": 3,
+        "other_syntax": 2
+      },
+      "metrics": null
+    },
+    "awavenue_full": {
+      "name": "AWAvenue full protection",
+      "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt",
+      "repository": "https://github.com/TG-Twilight/AWAvenue-Ads-Rule",
+      "license_assessment": "GPL-3.0; repository LICENSE file is present. Preserve attribution and comply with the license and any applicable upstream terms.",
+      "sha256": "fdf930d67659f6f1405c81e67c1fb7797145c54296c5ba0398729aa4d846808c",
+      "bytes": 23470,
+      "raw_rule_lines": 976,
+      "unique_block_rules": 969,
+      "unique_exception_rules": 0,
+      "bare_block_rules": 0,
+      "rejected": {
+        "wildcard_syntax": 4
+      },
+      "metrics": {
+        "unique_block_domains": 969,
+        "caret_block_domains": 969,
+        "bare_block_domains": 0,
+        "exception_domains": 0,
+        "exact_overlap_with_baseline": 730,
+        "exact_unique_vs_baseline": 239,
+        "unique_but_already_covered_by_baseline_parent": 190,
+        "unique_not_covered_by_baseline_parent": 49,
+        "candidate_rules_broadening_existing_baseline_scope": 733,
+        "baseline_block_domains_affected_by_candidate_parent_rules": 822,
+        "candidate_blocks_overlapping_baseline_exceptions": 1,
+        "candidate_exceptions_overlapping_baseline_blocks": 0,
+        "essential_fixture_hits": [],
+        "known_ad_fixture_hits": [
+          {
+            "hostname": "googleadservices.com",
+            "matching_rules": [
+              "||googleadservices.com^"
+            ]
+          },
+          {
+            "hostname": "adservice.google.com",
+            "matching_rules": [
+              "||adservice.google.com^"
+            ]
+          },
+          {
+            "hostname": "moatads.com",
+            "matching_rules": [
+              "||moatads.com^"
+            ]
+          },
+          {
+            "hostname": "adcolony.com",
+            "matching_rules": [
+              "||adcolony.com^"
+            ]
+          },
+          {
+            "hostname": "vungle.com",
+            "matching_rules": [
+              "||vungle.com^"
+            ]
+          },
+          {
+            "hostname": "applovin.com",
+            "matching_rules": [
+              "||applovin.com^"
+            ]
+          },
+          {
+            "hostname": "unityads.unity3d.com",
+            "matching_rules": [
+              "||unityads.unity3d.com^"
+            ]
+          }
+        ],
+        "parent_covered_examples": [
+          {
+            "candidate": "aaid.umeng.com",
+            "baseline_cover": [
+              "umeng.com"
+            ]
+          },
+          {
+            "candidate": "ad.doubleclick.net",
+            "baseline_cover": [
+              "doubleclick.net"
+            ]
+          },
+          {
+            "candidate": "adclick.g.doubleclick.net",
+            "baseline_cover": [
+              "doubleclick.net",
+              "g.doubleclick.net"
+            ]
+          },
+          {
+            "candidate": "adimg.uve.weibo.com",
+            "baseline_cover": [
+              "uve.weibo.com"
+            ]
+          },
+          {
+            "candidate": "adm.zhangyuyidong.cn",
+            "baseline_cover": [
+              "zhangyuyidong.cn"
+            ]
+          },
+          {
+            "candidate": "ads-sdk-api.ranfenghd.com",
+            "baseline_cover": [
+              "ranfenghd.com"
+            ]
+          },
+          {
+            "candidate": "ads.servebom.com",
+            "baseline_cover": [
+              "servebom.com"
+            ]
+          },
+          {
+            "candidate": "adserver.unityads.unity3d.com",
+            "baseline_cover": [
+              "unityads.unity3d.com"
+            ]
+          },
+          {
+            "candidate": "adservice.sigmob.cn",
+            "baseline_cover": [
+              "sigmob.cn"
+            ]
+          },
+          {
+            "candidate": "adsmind.ugdtimg.com",
+            "baseline_cover": [
+              "ugdtimg.com"
+            ]
+          },
+          {
+            "candidate": "adtracker.medproad.com",
+            "baseline_cover": [
+              "medproad.com"
+            ]
+          },
+          {
+            "candidate": "adui.tg.meitu.com",
+            "baseline_cover": [
+              "tg.meitu.com"
+            ]
+          },
+          {
+            "candidate": "adx-bj-req.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-bj.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-cn.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-os.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-saas.advlion.com",
+            "baseline_cover": [
+              "advlion.com"
+            ]
+          },
+          {
+            "candidate": "adx-strategy-api-cn.statisticslinks.com",
+            "baseline_cover": [
+              "statisticslinks.com"
+            ]
+          },
+          {
+            "candidate": "adx.ads.heytapmobi.com",
+            "baseline_cover": [
+              "ads.heytapmobi.com"
+            ]
+          },
+          {
+            "candidate": "adx.ads.oppomobile.com",
+            "baseline_cover": [
+              "ads.oppomobile.com"
+            ]
+          },
+          {
+            "candidate": "adx.tuia.cn",
+            "baseline_cover": [
+              "tuia.cn"
+            ]
+          },
+          {
+            "candidate": "adxserver.ad.cmvideo.cn",
+            "baseline_cover": [
+              "ad.cmvideo.cn"
+            ]
+          },
+          {
+            "candidate": "agn.aty.sohu.com",
+            "baseline_cover": [
+              "aty.sohu.com"
+            ]
+          },
+          {
+            "candidate": "alog.umeng.com",
+            "baseline_cover": [
+              "umeng.com"
+            ]
+          },
+          {
+            "candidate": "alogus.umeng.com",
+            "baseline_cover": [
+              "umeng.com"
+            ]
+          },
+          {
+            "candidate": "analytics.rayjump.com",
+            "baseline_cover": [
+              "rayjump.com"
+            ]
+          },
+          {
+            "candidate": "api-access.pangolin-sdk-toutiao-b.com",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao-b.com"
+            ]
+          },
+          {
+            "candidate": "api-access.pangolin-sdk-toutiao.com",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao.com"
+            ]
+          },
+          {
+            "candidate": "api-gd.hiaiabc.com",
+            "baseline_cover": [
+              "hiaiabc.com"
+            ]
+          },
+          {
+            "candidate": "api-htp.beizi.biz",
+            "baseline_cover": [
+              "beizi.biz"
+            ]
+          }
+        ],
+        "broadening_examples": [
+          {
+            "candidate_parent_rule": "1500020991.vodplayer.wxamedia.com",
+            "baseline_domains": [
+              "1500020991.vodplayer.wxamedia.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "1500022744.vodplayer.wxamedia.com",
+            "baseline_domains": [
+              "1500022744.vodplayer.wxamedia.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "1500026601.vodplayer.wxamedia.com",
+            "baseline_domains": [
+              "1500026601.vodplayer.wxamedia.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "1rtb.com",
+            "baseline_domains": [
+              "1rtb.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "8le8le.com",
+            "baseline_domains": [
+              "8le8le.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "8rn1y79f02-1.algolianet.com",
+            "baseline_domains": [
+              "8rn1y79f02-1.algolianet.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "a.market.xiaomi.com",
+            "baseline_domains": [
+              "a.market.xiaomi.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "abtest-ch.snssdk.com",
+            "baseline_domains": [
+              "abtest-ch.snssdk.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-api.4pyun.com",
+            "baseline_domains": [
+              "ad-api.4pyun.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-cdn.qingting.fm",
+            "baseline_domains": [
+              "ad-cdn.qingting.fm"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-cmp.hismarttv.com",
+            "baseline_domains": [
+              "ad-cmp.hismarttv.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-download.hismarttv.com",
+            "baseline_domains": [
+              "ad-download.hismarttv.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-files.4pyun.com",
+            "baseline_domains": [
+              "ad-files.4pyun.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-scope.com",
+            "baseline_domains": [
+              "ad-scope.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-scope.com.cn",
+            "baseline_domains": [
+              "ad-scope.com.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-sdk-config.youdao.com",
+            "baseline_domains": [
+              "ad-sdk-config.youdao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-splash-tracking.hktvmall.com",
+            "baseline_domains": [
+              "ad-splash-tracking.hktvmall.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-splash.hktvmall.com",
+            "baseline_domains": [
+              "ad-splash.hktvmall.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.12306.cn",
+            "baseline_domains": [
+              "ad.12306.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.51wnl.com",
+            "baseline_domains": [
+              "ad.51wnl.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.api.3g.youku.com",
+            "baseline_domains": [
+              "ad.api.3g.youku.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.bn.netease.com",
+            "baseline_domains": [
+              "ad.bn.netease.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.bwton.com",
+            "baseline_domains": [
+              "ad.bwton.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.cctv.com",
+            "baseline_domains": [
+              "ad.cctv.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.cyapi.cn",
+            "baseline_domains": [
+              "ad.cyapi.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.duoduo.link",
+            "baseline_domains": [
+              "ad.duoduo.link"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.gameley.com",
+            "baseline_domains": [
+              "ad.gameley.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.hpplay.cn",
+            "baseline_domains": [
+              "ad.hpplay.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.iot.360.cn",
+            "baseline_domains": [
+              "ad.iot.360.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.jia.360.cn",
+            "baseline_domains": [
+              "ad.jia.360.cn"
+            ]
+          }
+        ],
+        "block_exception_conflict_examples": [
+          [
+            "m1.ad.10010.com",
+            "ad.10010.com"
+          ]
+        ],
+        "exception_block_conflict_examples": []
+      }
+    },
+    "awavenue_only_ads": {
+      "name": "AWAvenue Ads-only variant (comparison only)",
+      "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
+      "repository": "https://github.com/TG-Twilight/AWAvenue-Ads-Rule",
+      "license_assessment": "GPL-3.0; repository LICENSE file is present. Preserve attribution and comply with the license and any applicable upstream terms.",
+      "sha256": "f4b660efb332b59960d7c8f2313db2c42af347f41d28c24c0834713bc7809928",
+      "bytes": 16004,
+      "raw_rule_lines": 665,
+      "unique_block_rules": 658,
+      "unique_exception_rules": 0,
+      "bare_block_rules": 0,
+      "rejected": {
+        "wildcard_syntax": 4
+      },
+      "metrics": {
+        "unique_block_domains": 658,
+        "caret_block_domains": 658,
+        "bare_block_domains": 0,
+        "exception_domains": 0,
+        "exact_overlap_with_baseline": 461,
+        "exact_unique_vs_baseline": 197,
+        "unique_but_already_covered_by_baseline_parent": 166,
+        "unique_not_covered_by_baseline_parent": 31,
+        "candidate_rules_broadening_existing_baseline_scope": 463,
+        "baseline_block_domains_affected_by_candidate_parent_rules": 527,
+        "candidate_blocks_overlapping_baseline_exceptions": 1,
+        "candidate_exceptions_overlapping_baseline_blocks": 0,
+        "essential_fixture_hits": [],
+        "known_ad_fixture_hits": [
+          {
+            "hostname": "googleadservices.com",
+            "matching_rules": [
+              "||googleadservices.com^"
+            ]
+          },
+          {
+            "hostname": "adservice.google.com",
+            "matching_rules": [
+              "||adservice.google.com^"
+            ]
+          },
+          {
+            "hostname": "moatads.com",
+            "matching_rules": [
+              "||moatads.com^"
+            ]
+          },
+          {
+            "hostname": "adcolony.com",
+            "matching_rules": [
+              "||adcolony.com^"
+            ]
+          },
+          {
+            "hostname": "vungle.com",
+            "matching_rules": [
+              "||vungle.com^"
+            ]
+          },
+          {
+            "hostname": "applovin.com",
+            "matching_rules": [
+              "||applovin.com^"
+            ]
+          },
+          {
+            "hostname": "unityads.unity3d.com",
+            "matching_rules": [
+              "||unityads.unity3d.com^"
+            ]
+          }
+        ],
+        "parent_covered_examples": [
+          {
+            "candidate": "ad.doubleclick.net",
+            "baseline_cover": [
+              "doubleclick.net"
+            ]
+          },
+          {
+            "candidate": "adclick.g.doubleclick.net",
+            "baseline_cover": [
+              "doubleclick.net",
+              "g.doubleclick.net"
+            ]
+          },
+          {
+            "candidate": "adimg.uve.weibo.com",
+            "baseline_cover": [
+              "uve.weibo.com"
+            ]
+          },
+          {
+            "candidate": "adm.zhangyuyidong.cn",
+            "baseline_cover": [
+              "zhangyuyidong.cn"
+            ]
+          },
+          {
+            "candidate": "ads-sdk-api.ranfenghd.com",
+            "baseline_cover": [
+              "ranfenghd.com"
+            ]
+          },
+          {
+            "candidate": "ads.servebom.com",
+            "baseline_cover": [
+              "servebom.com"
+            ]
+          },
+          {
+            "candidate": "adserver.unityads.unity3d.com",
+            "baseline_cover": [
+              "unityads.unity3d.com"
+            ]
+          },
+          {
+            "candidate": "adservice.sigmob.cn",
+            "baseline_cover": [
+              "sigmob.cn"
+            ]
+          },
+          {
+            "candidate": "adsmind.ugdtimg.com",
+            "baseline_cover": [
+              "ugdtimg.com"
+            ]
+          },
+          {
+            "candidate": "adtracker.medproad.com",
+            "baseline_cover": [
+              "medproad.com"
+            ]
+          },
+          {
+            "candidate": "adui.tg.meitu.com",
+            "baseline_cover": [
+              "tg.meitu.com"
+            ]
+          },
+          {
+            "candidate": "adx-bj-req.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-bj.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-cn.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-os.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "adx-saas.advlion.com",
+            "baseline_cover": [
+              "advlion.com"
+            ]
+          },
+          {
+            "candidate": "adx-strategy-api-cn.statisticslinks.com",
+            "baseline_cover": [
+              "statisticslinks.com"
+            ]
+          },
+          {
+            "candidate": "adx.ads.heytapmobi.com",
+            "baseline_cover": [
+              "ads.heytapmobi.com"
+            ]
+          },
+          {
+            "candidate": "adx.ads.oppomobile.com",
+            "baseline_cover": [
+              "ads.oppomobile.com"
+            ]
+          },
+          {
+            "candidate": "adx.tuia.cn",
+            "baseline_cover": [
+              "tuia.cn"
+            ]
+          },
+          {
+            "candidate": "adxserver.ad.cmvideo.cn",
+            "baseline_cover": [
+              "ad.cmvideo.cn"
+            ]
+          },
+          {
+            "candidate": "agn.aty.sohu.com",
+            "baseline_cover": [
+              "aty.sohu.com"
+            ]
+          },
+          {
+            "candidate": "analytics.rayjump.com",
+            "baseline_cover": [
+              "rayjump.com"
+            ]
+          },
+          {
+            "candidate": "api-access.pangolin-sdk-toutiao-b.com",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao-b.com"
+            ]
+          },
+          {
+            "candidate": "api-access.pangolin-sdk-toutiao.com",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao.com"
+            ]
+          },
+          {
+            "candidate": "api-gd.hiaiabc.com",
+            "baseline_cover": [
+              "hiaiabc.com"
+            ]
+          },
+          {
+            "candidate": "api-htp.beizi.biz",
+            "baseline_cover": [
+              "beizi.biz"
+            ]
+          },
+          {
+            "candidate": "api.ad.xiaomi.com",
+            "baseline_cover": [
+              "ad.xiaomi.com"
+            ]
+          },
+          {
+            "candidate": "api.anythinktech.com",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate": "api.aqyad.com",
+            "baseline_cover": [
+              "aqyad.com"
+            ]
+          }
+        ],
+        "broadening_examples": [
+          {
+            "candidate_parent_rule": "1500020991.vodplayer.wxamedia.com",
+            "baseline_domains": [
+              "1500020991.vodplayer.wxamedia.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "1500022744.vodplayer.wxamedia.com",
+            "baseline_domains": [
+              "1500022744.vodplayer.wxamedia.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "1500026601.vodplayer.wxamedia.com",
+            "baseline_domains": [
+              "1500026601.vodplayer.wxamedia.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "1rtb.com",
+            "baseline_domains": [
+              "1rtb.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "8le8le.com",
+            "baseline_domains": [
+              "8le8le.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "a.market.xiaomi.com",
+            "baseline_domains": [
+              "a.market.xiaomi.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-api.4pyun.com",
+            "baseline_domains": [
+              "ad-api.4pyun.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-cdn.qingting.fm",
+            "baseline_domains": [
+              "ad-cdn.qingting.fm"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-cmp.hismarttv.com",
+            "baseline_domains": [
+              "ad-cmp.hismarttv.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-download.hismarttv.com",
+            "baseline_domains": [
+              "ad-download.hismarttv.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-files.4pyun.com",
+            "baseline_domains": [
+              "ad-files.4pyun.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-scope.com",
+            "baseline_domains": [
+              "ad-scope.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-scope.com.cn",
+            "baseline_domains": [
+              "ad-scope.com.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-sdk-config.youdao.com",
+            "baseline_domains": [
+              "ad-sdk-config.youdao.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-splash-tracking.hktvmall.com",
+            "baseline_domains": [
+              "ad-splash-tracking.hktvmall.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad-splash.hktvmall.com",
+            "baseline_domains": [
+              "ad-splash.hktvmall.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.12306.cn",
+            "baseline_domains": [
+              "ad.12306.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.51wnl.com",
+            "baseline_domains": [
+              "ad.51wnl.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.api.3g.youku.com",
+            "baseline_domains": [
+              "ad.api.3g.youku.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.bn.netease.com",
+            "baseline_domains": [
+              "ad.bn.netease.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.bwton.com",
+            "baseline_domains": [
+              "ad.bwton.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.cctv.com",
+            "baseline_domains": [
+              "ad.cctv.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.cyapi.cn",
+            "baseline_domains": [
+              "ad.cyapi.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.duoduo.link",
+            "baseline_domains": [
+              "ad.duoduo.link"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.gameley.com",
+            "baseline_domains": [
+              "ad.gameley.com"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.hpplay.cn",
+            "baseline_domains": [
+              "ad.hpplay.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.iot.360.cn",
+            "baseline_domains": [
+              "ad.iot.360.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.jia.360.cn",
+            "baseline_domains": [
+              "ad.jia.360.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.life.360.cn",
+            "baseline_domains": [
+              "ad.life.360.cn"
+            ]
+          },
+          {
+            "candidate_parent_rule": "ad.maoyan.com",
+            "baseline_domains": [
+              "ad.maoyan.com"
+            ]
+          }
+        ],
+        "block_exception_conflict_examples": [
+          [
+            "m1.ad.10010.com",
+            "ad.10010.com"
+          ]
+        ],
+        "exception_block_conflict_examples": []
+      }
+    }
+  },
+  "cross_source": {
+    "hg1_vs_awavenue_full_exact_rule_overlap": 241,
+    "hg1_vs_awavenue_full_domain_overlap": 241,
+    "hg1_vs_awavenue_full_domain_union": 12681,
+    "hg1_vs_awavenue_only_ads_domain_overlap": 185,
+    "hg1_vs_awavenue_only_ads_domain_union": 12426,
+    "full_vs_only_ads": {
+      "full_unique_domains": 969,
+      "only_ads_unique_domains": 658,
+      "common_domains": 658,
+      "full_only_domains": 311,
+      "only_ads_only_domains": 0
+    }
+  },
+  "hg2_allowlist": {
+    "parsed_exception_domains": 322,
+    "rejected": {
+      "other_exception_syntax": 3,
+      "other_syntax": 2
+    },
+    "overlap_with_nobledns_baseline_blocks": 65,
+    "overlap_with_hg1_blocks": 40,
+    "baseline_conflict_examples": [
+      [
+        "aaid.umeng.com",
+        "umeng.com"
+      ],
+      [
+        "ads.privacy.qq.com",
+        "ads.privacy.qq.com"
+      ],
+      [
+        "adserviceretry.kugou.com",
+        "adserviceretry.kugou.com"
+      ],
+      [
+        "adverts.1foo.com",
+        "adverts.1foo.com"
+      ],
+      [
+        "aeventlog.beacon.qq.com",
+        "beacon.qq.com"
+      ],
+      [
+        "analytics.xmmnsl.com",
+        "xmmnsl.com"
+      ],
+      [
+        "android.rqd.qq.com",
+        "rqd.qq.com"
+      ],
+      [
+        "api.tuisong.baidu.com",
+        "tuisong.baidu.com"
+      ],
+      [
+        "api2.e.kuaishou.com",
+        "api2.e.kuaishou.com"
+      ],
+      [
+        "api4.tuisong.baidu.com",
+        "tuisong.baidu.com"
+      ],
+      [
+        "applog.uc.cn",
+        "applog.uc.cn"
+      ],
+      [
+        "blog.csdn.net",
+        "medal.blog.csdn.net"
+      ],
+      [
+        "cc-api-data.adobe.io",
+        "cc-api-data.adobe.io"
+      ],
+      [
+        "cdn.bootcdn.net",
+        "bootcdn.net"
+      ],
+      [
+        "collector.githubapp.com",
+        "collector.githubapp.com"
+      ],
+      [
+        "data.mistat.xiaomi.com",
+        "data.mistat.xiaomi.com"
+      ],
+      [
+        "data.mistat.xiaomi.com",
+        "mistat.xiaomi.com"
+      ],
+      [
+        "dpm.demdex.net",
+        "demdex.net"
+      ],
+      [
+        "errlog.umeng.com",
+        "umeng.com"
+      ],
+      [
+        "etl-xlmc-ssl.sandai.net",
+        "etl-xlmc-ssl.sandai.net"
+      ],
+      [
+        "game.eve.mdt.qq.com",
+        "mdt.qq.com"
+      ],
+      [
+        "h-adashx.ut.ele.me",
+        "h-adashx.ut.ele.me"
+      ],
+      [
+        "hot.browser.miui.com",
+        "browser.miui.com"
+      ],
+      [
+        "huatuocode.huatuo.qq.com",
+        "huatuo.qq.com"
+      ],
+      [
+        "hub5pn.wap.sandai.net",
+        "hub5pn.wap.sandai.net"
+      ],
+      [
+        "incoming.telemetry.mozilla.org",
+        "incoming.telemetry.mozilla.org"
+      ],
+      [
+        "incoming.telemetry.mozilla.org",
+        "telemetry.mozilla.org"
+      ],
+      [
+        "ini.update.360safe.com",
+        "ini.update.360safe.com"
+      ],
+      [
+        "log-sdk.ksapisrv.com",
+        "log-sdk.ksapisrv.com"
+      ],
+      [
+        "log.snssdk.com",
+        "log.snssdk.com"
+      ],
+      [
+        "logapi-and.zhipin.com",
+        "logapi-and.zhipin.com"
+      ],
+      [
+        "login.360kuai.com",
+        "360kuai.com"
+      ],
+      [
+        "logout2.shouji.360.cn",
+        "shouji.360.cn"
+      ],
+      [
+        "member.shouji.360.cn",
+        "shouji.360.cn"
+      ],
+      [
+        "metrics.ubuntu.com",
+        "metrics.ubuntu.com"
+      ],
+      [
+        "miniapp.bilibili.com",
+        "miniapp.bilibili.com"
+      ],
+      [
+        "mssdk3-normal-hj.zijieapi.com",
+        "mssdk3-normal-hj.zijieapi.com"
+      ],
+      [
+        "o7coj731m.bkt.clouddn.com",
+        "bkt.clouddn.com"
+      ],
+      [
+        "open.snssdk.com",
+        "open.snssdk.com"
+      ],
+      [
+        "oth.eve.mdt.qq.com",
+        "mdt.qq.com"
+      ],
+      [
+        "oth.str.mdt.qq.com",
+        "mdt.qq.com"
+      ],
+      [
+        "othstr.beacon.qq.com",
+        "beacon.qq.com"
+      ],
+      [
+        "pf.s.360.cn",
+        "s.360.cn"
+      ],
+      [
+        "pw.cnzz.com",
+        "cnzz.com"
+      ],
+      [
+        "qqdata.ab.qq.com",
+        "qqdata.ab.qq.com"
+      ],
+      [
+        "qurl.f.360.cn",
+        "qurl.f.360.cn"
+      ],
+      [
+        "report.qqweb.qq.com",
+        "report.qqweb.qq.com"
+      ],
+      [
+        "sa.tuisong.baidu.com",
+        "tuisong.baidu.com"
+      ],
+      [
+        "sdk.open.talk.gepush.com",
+        "gepush.com"
+      ],
+      [
+        "sdk.s.360.cn",
+        "s.360.cn"
+      ]
+    ],
+    "hg1_conflict_examples": [
+      [
+        "adserviceretry.kugou.com",
+        "adserviceretry.kugou.com"
+      ],
+      [
+        "aeventlog.beacon.qq.com",
+        "aeventlog.beacon.qq.com"
+      ],
+      [
+        "allcdn.china.qiniu.qnydns.com",
+        "allcdn.china.qiniu.qnydns.com"
+      ],
+      [
+        "android.rqd.qq.com",
+        "android.rqd.qq.com"
+      ],
+      [
+        "api5-normal-lq.toutiaoapi.com",
+        "api5-normal-lq.toutiaoapi.com"
+      ],
+      [
+        "applog.uc.cn",
+        "applog.uc.cn"
+      ],
+      [
+        "client.api.gdhczc.com",
+        "api.gdhczc.com"
+      ],
+      [
+        "contile.services.mozilla.com",
+        "contile.services.mozilla.com"
+      ],
+      [
+        "d5-magic.a.kwimgs.com",
+        "d5-magic.a.kwimgs.com"
+      ],
+      [
+        "errlog.umeng.com",
+        "errlog.umeng.com"
+      ],
+      [
+        "etl-xlmc-ssl.sandai.net",
+        "etl-xlmc-ssl.sandai.net"
+      ],
+      [
+        "game-infoc.biligame.com",
+        "biligame.com"
+      ],
+      [
+        "hsk-api-v2.oray.com",
+        "hsk-api-v2.oray.com"
+      ],
+      [
+        "hsk-api.oray.com",
+        "hsk-api.oray.com"
+      ],
+      [
+        "hub5pn.wap.sandai.net",
+        "hub5pn.wap.sandai.net"
+      ],
+      [
+        "jstatic2.3.cn",
+        "3.cn"
+      ],
+      [
+        "ks.push.yximgs.com",
+        "ks.push.yximgs.com"
+      ],
+      [
+        "miniapi.ksapisrv.com",
+        "miniapi.ksapisrv.com"
+      ],
+      [
+        "ns.wg.hismarttv.com",
+        "ns.wg.hismarttv.com"
+      ],
+      [
+        "oth.eve.mdt.qq.com",
+        "oth.eve.mdt.qq.com"
+      ],
+      [
+        "p1.bdxiguaimg.com",
+        "bdxiguaimg.com"
+      ],
+      [
+        "passport.biligame.com",
+        "biligame.com"
+      ],
+      [
+        "pp.myapp.com",
+        "pp.myapp.com"
+      ],
+      [
+        "qiyukf.com",
+        "da.qiyukf.com"
+      ],
+      [
+        "qqdata.ab.qq.com",
+        "ab.qq.com"
+      ],
+      [
+        "qqdata.ab.qq.com",
+        "qqdata.ab.qq.com"
+      ],
+      [
+        "res.duobaobuyu.net",
+        "res.duobaobuyu.net"
+      ],
+      [
+        "res.zonecointernationl.com",
+        "zonecointernationl.com"
+      ],
+      [
+        "restsdk.amap.com",
+        "restsdk.amap.com"
+      ],
+      [
+        "s2.pstatp.com",
+        "s2.pstatp.com"
+      ],
+      [
+        "sdk.s.360.cn",
+        "sdk.s.360.cn"
+      ],
+      [
+        "sentry.kuaishou.com",
+        "sentry.kuaishou.com"
+      ],
+      [
+        "sf0.market.xiaomi.com",
+        "sf0.market.xiaomi.com"
+      ],
+      [
+        "static.biligame.com",
+        "biligame.com"
+      ],
+      [
+        "tnc3-alisc1.zijieapi.com",
+        "tnc3-alisc1.zijieapi.com"
+      ],
+      [
+        "tnc3-bjlgy.zijieapi.com",
+        "tnc3-bjlgy.zijieapi.com"
+      ],
+      [
+        "tracking.miui.com",
+        "tracking.miui.com"
+      ],
+      [
+        "uosdk.biligame.com",
+        "biligame.com"
+      ],
+      [
+        "xapi.yi1228.com",
+        "xapi.yi1228.com"
+      ],
+      [
+        "yoda.kwd.inkuai.com",
+        "yoda.kwd.inkuai.com"
+      ]
+    ]
+  },
+  "merged_increment": {
+    "exact_new_rules_vs_baseline": 11649,
+    "new_unique_domains_vs_baseline": 11647,
+    "new_domains_not_covered_by_baseline_parent": 11055,
+    "candidate_rules_broadening_existing_baseline_scope": 1088,
+    "essential_fixture_hits": [
+      {
+        "hostname": "bank.pingan.com",
+        "matching_rules": [
+          "||pingan.com^"
+        ]
+      },
+      {
+        "hostname": "pinduoduo.com",
+        "matching_rules": [
+          "||pinduoduo.com^"
+        ]
+      }
+    ],
+    "known_ad_fixture_hits": [
+      {
+        "hostname": "doubleclick.net",
+        "matching_rules": [
+          "||doubleclick.net^"
+        ]
+      },
+      {
+        "hostname": "googleadservices.com",
+        "matching_rules": [
+          "||googleadservices.com^"
+        ]
+      },
+      {
+        "hostname": "adservice.google.com",
+        "matching_rules": [
+          "||adservice.google.com^"
+        ]
+      },
+      {
+        "hostname": "moatads.com",
+        "matching_rules": [
+          "||moatads.com^"
+        ]
+      },
+      {
+        "hostname": "adcolony.com",
+        "matching_rules": [
+          "||adcolony.com^"
+        ]
+      },
+      {
+        "hostname": "vungle.com",
+        "matching_rules": [
+          "||vungle.com^"
+        ]
+      },
+      {
+        "hostname": "applovin.com",
+        "matching_rules": [
+          "||applovin.com^"
+        ]
+      },
+      {
+        "hostname": "unityads.unity3d.com",
+        "matching_rules": [
+          "||unityads.unity3d.com^"
+        ]
+      }
+    ],
+    "projected_subscription_rule_count_if_all_exact_new_rules_added": 315285,
+    "rule_cap": 500000,
+    "under_rule_cap": true
+  },
+  "decision": "RESEARCH_ONLY_NO_RULES_ACCEPTED",
+  "production_files_modified": false,
+  "limitations": [
+    "This is an offline syntax, overlap, scope, provenance and fixture audit; it is not a live DNS or application compatibility test.",
+    "The essential-service and known-ad fixtures are small regression sentinels, not a representative real-world corpus.",
+    "Hostname tokens and upstream membership are not proof of endpoint function or safe blocking.",
+    "HG's public repository root has no LICENSE file; direct permission must explicitly cover public redistribution and license terms before inclusion.",
+    "AWAvenue full protection includes advertising, privacy and unwelcome categories; its README identifies forced updates, P2P/PCDN, push and cloud-control delivery among unwelcome items.",
+    "The AWAvenue Ads-only variant is included as a comparison, not substituted for the exact full-protection URL requested."
+  ]
+}
