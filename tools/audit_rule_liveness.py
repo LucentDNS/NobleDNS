@@ -23,7 +23,7 @@ REQUIRED = {
     "hostname", "observed_at_utc", "resolver", "resolver_operator",
     "resolver_endpoint", "vantage", "qtype", "rcode", "answers",
 }
-OPTIONAL = {"sinkhole_evidence_reference", "resolver_endpoint", "cname_chain", "dnssec_ad"}
+OPTIONAL = {"sinkhole_evidence_reference", "cname_chain", "dnssec_ad", "authority_soa_zones"}
 RULE_RE = re.compile(r"^(?:\|\|([^\\^/$|]+)(?:\^)?|@@\|\|([^\\^/$|]+)\^)$")
 
 
@@ -104,6 +104,17 @@ def validate_observations(document: object, now: datetime | None = None) -> list
                     raise ValueError(f"invalid CNAME target {target}: {reason}")
         if "dnssec_ad" in row and type(row["dnssec_ad"]) is not bool:
             raise ValueError("dnssec_ad must be a boolean")
+        if "authority_soa_zones" in row:
+            zones = row["authority_soa_zones"]
+            if not isinstance(zones, list) or any(not isinstance(x, str) for x in zones):
+                raise ValueError("authority_soa_zones must be an array of lowercase FQDNs")
+            for zone in zones:
+                valid, reason = builder.valid_domain(zone)
+                if (
+                    not valid or zone != zone.lower()
+                    or not (hostname == zone or hostname.endswith("." + zone))
+                ):
+                    raise ValueError(f"invalid or unrelated SOA authority zone {zone}: {reason}")
         if "sinkhole_evidence_reference" in row:
             reference = row["sinkhole_evidence_reference"]
             if not isinstance(reference, str):
@@ -212,12 +223,18 @@ def classify(host_rows: list[dict], now: datetime, max_age_days: int) -> tuple[s
                 and span >= 7
                 and len(complete_pairs) == len(pairs)
             )
-            if quorum:
+            soa_complete = all(row.get("authority_soa_zones") for row in current)
+            if quorum and not soa_complete:
+                status = "nxdomain_without_authority_soa_manual_review"
+            elif quorum:
                 status = "stable_nxdomain_candidate_manual_review"
             else:
                 status = "insufficient_nxdomain_evidence"
             return status, {
                 "fresh_observations": len(fresh),
+                "nxdomain_observations_with_soa": sum(
+                    1 for row in current if row.get("authority_soa_zones")
+                ),
                 "resolver_operators": sorted(operators),
                 "vantages": sorted(vantages),
                 "complete_resolver_vantage_pairs": len(complete_pairs),
@@ -252,7 +269,10 @@ def audit(rules: dict[str, set[str]], observations: list[dict], provenance: dict
             **metrics,
             "action": (
                 "manual_review_only"
-                if status == "stable_nxdomain_candidate_manual_review" and hostname in rules
+                if status in {
+                    "stable_nxdomain_candidate_manual_review",
+                    "nxdomain_without_authority_soa_manual_review",
+                } and hostname in rules
                 else "no_change"
             ),
         })
@@ -284,7 +304,7 @@ def write_outputs(report: dict, output_dir: Path) -> None:
         "hostname", "status", "in_current_subscription", "matched_rules",
         "source_keys", "observation_count", "fresh_observations",
         "resolver_operators", "vantages", "complete_resolver_vantage_pairs",
-        "observation_span_days", "action",
+        "nxdomain_observations_with_soa", "observation_span_days", "action",
     ]
     with (output_dir / "candidates.csv").open("w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
@@ -296,6 +316,7 @@ def write_outputs(report: dict, output_dir: Path) -> None:
                 "source_keys": ";".join(row.get("source_keys", [])),
                 "resolver_operators": ";".join(row.get("resolver_operators", [])),
                 "vantages": ";".join(row.get("vantages", [])),
+                "authority_soa_zones": ";".join(row.get("authority_soa_zones", [])),
             })
 
 
