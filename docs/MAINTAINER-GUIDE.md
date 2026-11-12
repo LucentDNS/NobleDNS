@@ -137,7 +137,7 @@ Pay particular attention to these files:
 | `validation-report.txt` | Build validation report |
 | `parser-exclusions.csv` | Excluded rules and their reasons |
 | `badfilter-audit.csv` | Supported `$badfilter` directives, exact targets, outcomes and affected sources |
-| `allowlist-active.txt` | Simple upstream exception rules included in the main subscription |
+| `allowlist-active.txt` | Supported upstream exception rules included in the main subscription |
 | `sources/sources-manifest.json` | Upstream snapshots and SHA256 hashes |
 
 In particular, verify that:
