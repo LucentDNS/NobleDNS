@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "audit_time_utc": "2026-11-12T09:03:55.289167+00:00",
+  "audit_time_utc": "2026-11-12T09:05:15.820928+00:00",
   "baseline_main_commit": "4a34cc73e5b90880aa968d23537fec3b615d03a3",
   "snapshot_artifact_run_id": 43184256306,
   "snapshot_git_blob_sha": {
@@ -116,183 +116,183 @@
         ],
         "parent_covered_examples": [
           {
-            "candidate_rule": "||c3-cache.browser.miui.com^",
-            "baseline_cover": [
-              "browser.miui.com"
-            ]
-          },
-          {
-            "candidate_rule": "||sdkapp.uve.weibo.com^",
-            "baseline_cover": [
-              "uve.weibo.com"
-            ]
-          },
-          {
-            "candidate_rule": "||a.fxltsbl.com^",
-            "baseline_cover": [
-              "fxltsbl.com"
-            ]
-          },
-          {
-            "candidate_rule": "||sv.adintl.cn^",
-            "baseline_cover": [
-              "adintl.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||m-adnet.dutils.com^",
-            "baseline_cover": [
-              "dutils.com"
-            ]
-          },
-          {
-            "candidate_rule": "||site.e.mi.com^",
-            "baseline_cover": [
-              "e.mi.com"
-            ]
-          },
-          {
-            "candidate_rule": "||bjuser.jpush.cn^",
-            "baseline_cover": [
-              "jpush.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||exquisite.shouji.360.cn^",
-            "baseline_cover": [
-              "shouji.360.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||lllyt.jnwpzq.com^",
-            "baseline_cover": [
-              "jnwpzq.com"
-            ]
-          },
-          {
-            "candidate_rule": "||e.cn.miaozhen.com^",
-            "baseline_cover": [
-              "miaozhen.com"
-            ]
-          },
-          {
-            "candidate_rule": "||f.gm.mob.com^",
-            "baseline_cover": [
-              "mob.com"
-            ]
-          },
-          {
-            "candidate_rule": "||gcb40ce.cdn.skr001.cc^",
-            "baseline_cover": [
-              "skr001.cc"
-            ]
-          },
-          {
-            "candidate_rule": "||2atlua.tdum.alibaba.com^",
-            "baseline_cover": [
-              "tdum.alibaba.com"
-            ]
-          },
-          {
-            "candidate_rule": "||pg-chatn4.bjmantis.net^",
+            "candidate_rule": "||pg-chatn11.bjmantis.net^",
             "baseline_cover": [
               "bjmantis.net"
             ]
           },
           {
-            "candidate_rule": "||7372b4ec.skr001.cc^",
+            "candidate_rule": "||cdn.bncloudfl.com^",
             "baseline_cover": [
-              "skr001.cc"
+              "bncloudfl.com"
             ]
           },
           {
-            "candidate_rule": "||cdn-file.taojike.com.cn^",
+            "candidate_rule": "||report-sy.adview.cn^",
             "baseline_cover": [
-              "taojike.com.cn"
+              "adview.cn"
             ]
           },
           {
-            "candidate_rule": "||show-g.mediav.com^",
+            "candidate_rule": "||cm.he2d.com^",
             "baseline_cover": [
-              "mediav.com"
+              "he2d.com"
             ]
           },
           {
-            "candidate_rule": "||api.htp.hubcloud.com.cn^",
-            "baseline_cover": [
-              "hubcloud.com.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||y6lrm5fmqam21.v1d.pkoplink.com^",
-            "baseline_cover": [
-              "pkoplink.com"
-            ]
-          },
-          {
-            "candidate_rule": "||p2-yxjz.adbkwai.com^",
-            "baseline_cover": [
-              "adbkwai.com"
-            ]
-          },
-          {
-            "candidate_rule": "||ddns.360os.com^",
-            "baseline_cover": [
-              "360os.com"
-            ]
-          },
-          {
-            "candidate_rule": "||kicp.kuaishang.cn^",
-            "baseline_cover": [
-              "kuaishang.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||p4-ad.adbkwai.com^",
-            "baseline_cover": [
-              "adbkwai.com"
-            ]
-          },
-          {
-            "candidate_rule": "||dc.sigmob.cn^",
-            "baseline_cover": [
-              "sigmob.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||h.m.mpl.dutils.com^",
+            "candidate_rule": "||api-fd.dutils.com^",
             "baseline_cover": [
               "dutils.com"
             ]
           },
           {
-            "candidate_rule": "||p1-lm.adkwai.com^",
+            "candidate_rule": "||star.jsyunmy.com^",
             "baseline_cover": [
-              "adkwai.com"
+              "jsyunmy.com"
             ]
           },
           {
-            "candidate_rule": "||ga.cpatrk.net^",
+            "candidate_rule": "||web1.openinstall.io^",
             "baseline_cover": [
-              "cpatrk.net"
+              "openinstall.io"
             ]
           },
           {
-            "candidate_rule": "||hj.cloud.360os.com^",
-            "baseline_cover": [
-              "360os.com"
-            ]
-          },
-          {
-            "candidate_rule": "||cdn-wx-v6-lds.ludashi.com^",
+            "candidate_rule": "||s.ludashi.com^",
             "baseline_cover": [
               "ludashi.com"
             ]
           },
           {
-            "candidate_rule": "||bv.brg0.com^",
+            "candidate_rule": "||p3-be-pack-sign.pglstatp-toutiao.com^",
             "baseline_cover": [
-              "brg0.com"
+              "pglstatp-toutiao.com"
+            ]
+          },
+          {
+            "candidate_rule": "||plistcpe.360os.com^",
+            "baseline_cover": [
+              "360os.com"
+            ]
+          },
+          {
+            "candidate_rule": "||sis-ipv6.jpush.cn^",
+            "baseline_cover": [
+              "jpush.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||sdk.beizi.biz^",
+            "baseline_cover": [
+              "beizi.biz"
+            ]
+          },
+          {
+            "candidate_rule": "||bd-b-1.appmobile.cn^",
+            "baseline_cover": [
+              "appmobile.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||ads.umeng.com^",
+            "baseline_cover": [
+              "umeng.com"
+            ]
+          },
+          {
+            "candidate_rule": "||h5dl.pcdn.xmcdn.com^",
+            "baseline_cover": [
+              "pcdn.xmcdn.com"
+            ]
+          },
+          {
+            "candidate_rule": "||pull-stream3-live-ssl.a.88cdn.com^",
+            "baseline_cover": [
+              "88cdn.com"
+            ]
+          },
+          {
+            "candidate_rule": "||aeventlog.beacon.qq.com^",
+            "baseline_cover": [
+              "beacon.qq.com"
+            ]
+          },
+          {
+            "candidate_rule": "||360fenxi.mediav.com^",
+            "baseline_cover": [
+              "mediav.com"
+            ]
+          },
+          {
+            "candidate_rule": "||api.fu.xcultur.com^",
+            "baseline_cover": [
+              "xcultur.com"
+            ]
+          },
+          {
+            "candidate_rule": "||errlog.umeng.com^",
+            "baseline_cover": [
+              "umeng.com"
+            ]
+          },
+          {
+            "candidate_rule": "||yz.vujzkkz.cn^",
+            "baseline_cover": [
+              "vujzkkz.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||bdsp.x.jd.com^",
+            "baseline_cover": [
+              "x.jd.com"
+            ]
+          },
+          {
+            "candidate_rule": "||node90.aizhantj.com^",
+            "baseline_cover": [
+              "aizhantj.com"
+            ]
+          },
+          {
+            "candidate_rule": "||beautify.shanhutech.cn^",
+            "baseline_cover": [
+              "shanhutech.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||truth.qchannel03.cn^",
+            "baseline_cover": [
+              "qchannel03.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||cn-tk.anythinktech.com^",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate_rule": "||p1-web.adkwai.com^",
+            "baseline_cover": [
+              "adkwai.com"
+            ]
+          },
+          {
+            "candidate_rule": "||use1.fptls.com^",
+            "baseline_cover": [
+              "fptls.com"
+            ]
+          },
+          {
+            "candidate_rule": "||all.lush0aeth1hoos7d.cc.accelerate.web.comm.x1abo.com^",
+            "baseline_cover": [
+              "x1abo.com"
+            ]
+          },
+          {
+            "candidate_rule": "||zzhc.vnet.cn^",
+            "baseline_cover": [
+              "vnet.cn"
             ]
           }
         ],
@@ -655,141 +655,21 @@
         ],
         "parent_covered_examples": [
           {
-            "candidate_rule": "||tracelog-debug.yunxish.com^",
-            "baseline_cover": [
-              "yunxish.com"
-            ]
-          },
-          {
-            "candidate_rule": "||pgdt.ugdtimg.com^",
-            "baseline_cover": [
-              "ugdtimg.com"
-            ]
-          },
-          {
-            "candidate_rule": "||adserver.unityads.unity3d.com^",
-            "baseline_cover": [
-              "unityads.unity3d.com"
-            ]
-          },
-          {
-            "candidate_rule": "||adservice.sigmob.cn^",
-            "baseline_cover": [
-              "sigmob.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||adx-bj-req.anythinktech.com^",
-            "baseline_cover": [
-              "anythinktech.com"
-            ]
-          },
-          {
-            "candidate_rule": "||lftxali.fancyapi.com^",
-            "baseline_cover": [
-              "fancyapi.com"
-            ]
-          },
-          {
-            "candidate_rule": "||wv.inner-active.mobi^",
-            "baseline_cover": [
-              "inner-active.mobi"
-            ]
-          },
-          {
-            "candidate_rule": "||adx-strategy-api-cn.statisticslinks.com^",
-            "baseline_cover": [
-              "statisticslinks.com"
-            ]
-          },
-          {
             "candidate_rule": "||mores.toponad.com^",
             "baseline_cover": [
               "toponad.com"
             ]
           },
           {
-            "candidate_rule": "||cnlogs.umeng.com^",
+            "candidate_rule": "||cn-api.anythinktech.com^",
             "baseline_cover": [
-              "umeng.com"
+              "anythinktech.com"
             ]
           },
           {
-            "candidate_rule": "||tdsdk.cpatrk.net^",
+            "candidate_rule": "||m.ad.zhangyue.com^",
             "baseline_cover": [
-              "cpatrk.net"
-            ]
-          },
-          {
-            "candidate_rule": "||sdkapp.uve.weibo.com^",
-            "baseline_cover": [
-              "uve.weibo.com"
-            ]
-          },
-          {
-            "candidate_rule": "||s1.cdn-sg.advlion.com^",
-            "baseline_cover": [
-              "advlion.com"
-            ]
-          },
-          {
-            "candidate_rule": "||ccs.umeng.com^",
-            "baseline_cover": [
-              "umeng.com"
-            ]
-          },
-          {
-            "candidate_rule": "||res1.hubcloud.com.cn^",
-            "baseline_cover": [
-              "hubcloud.com.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||api.ad.xiaomi.com^",
-            "baseline_cover": [
-              "ad.xiaomi.com"
-            ]
-          },
-          {
-            "candidate_rule": "||ulogs.umeng.com^",
-            "baseline_cover": [
-              "umeng.com"
-            ]
-          },
-          {
-            "candidate_rule": "||adxserver.ad.cmvideo.cn^",
-            "baseline_cover": [
-              "ad.cmvideo.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||init.supersonicads.com^",
-            "baseline_cover": [
-              "supersonicads.com"
-            ]
-          },
-          {
-            "candidate_rule": "||i.l.inmobicdn.net^",
-            "baseline_cover": [
-              "inmobicdn.net"
-            ]
-          },
-          {
-            "candidate_rule": "||sms.ads.oppomobile.com^",
-            "baseline_cover": [
-              "ads.oppomobile.com"
-            ]
-          },
-          {
-            "candidate_rule": "||cdn.liftoff-creatives.io^",
-            "baseline_cover": [
-              "liftoff-creatives.io"
-            ]
-          },
-          {
-            "candidate_rule": "||o-sdk.mediation.unity3d.com^",
-            "baseline_cover": [
-              "mediation.unity3d.com"
+              "ad.zhangyue.com"
             ]
           },
           {
@@ -799,40 +679,160 @@
             ]
           },
           {
-            "candidate_rule": "||tracking.rus.miui.com^",
+            "candidate_rule": "||oth.eve.mdt.qq.com^",
             "baseline_cover": [
-              "rus.miui.com"
+              "mdt.qq.com"
             ]
           },
           {
-            "candidate_rule": "||plbslog.umeng.com^",
+            "candidate_rule": "||s1.cdn-sg.advlion.com^",
+            "baseline_cover": [
+              "advlion.com"
+            ]
+          },
+          {
+            "candidate_rule": "||rlog.popin.cc^",
+            "baseline_cover": [
+              "popin.cc"
+            ]
+          },
+          {
+            "candidate_rule": "||p3-lm.adkwai.com^",
+            "baseline_cover": [
+              "adkwai.com"
+            ]
+          },
+          {
+            "candidate_rule": "||p6-be-pack-sign.pglstatp-toutiao.com^",
+            "baseline_cover": [
+              "pglstatp-toutiao.com"
+            ]
+          },
+          {
+            "candidate_rule": "||audid.umeng.com^",
             "baseline_cover": [
               "umeng.com"
             ]
           },
           {
-            "candidate_rule": "||adclick.g.doubleclick.net^",
+            "candidate_rule": "||yumao.puata.info^",
+            "baseline_cover": [
+              "puata.info"
+            ]
+          },
+          {
+            "candidate_rule": "||ccs.umeng.com^",
+            "baseline_cover": [
+              "umeng.com"
+            ]
+          },
+          {
+            "candidate_rule": "||adsmind.ugdtimg.com^",
+            "baseline_cover": [
+              "ugdtimg.com"
+            ]
+          },
+          {
+            "candidate_rule": "||adm.zhangyuyidong.cn^",
+            "baseline_cover": [
+              "zhangyuyidong.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||mpcfg.fancydsp.com^",
+            "baseline_cover": [
+              "fancydsp.com"
+            ]
+          },
+          {
+            "candidate_rule": "||yk-ssp.ad.youku.com^",
+            "baseline_cover": [
+              "ad.youku.com"
+            ]
+          },
+          {
+            "candidate_rule": "||de.tynt.com^",
+            "baseline_cover": [
+              "tynt.com"
+            ]
+          },
+          {
+            "candidate_rule": "||p.s.360.cn^",
+            "baseline_cover": [
+              "s.360.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||t7z.cupid.ptqy.gitv.tv^",
+            "baseline_cover": [
+              "cupid.ptqy.gitv.tv"
+            ]
+          },
+          {
+            "candidate_rule": "||p2-be-pack-sign.pglstatp-toutiao.com^",
+            "baseline_cover": [
+              "pglstatp-toutiao.com"
+            ]
+          },
+          {
+            "candidate_rule": "||v.adx.hubcloud.com.cn^",
+            "baseline_cover": [
+              "hubcloud.com.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||i.l-new.inmobicdn.net^",
+            "baseline_cover": [
+              "inmobicdn.net"
+            ]
+          },
+          {
+            "candidate_rule": "||api.htp.hubcloud.com.cn^",
+            "baseline_cover": [
+              "hubcloud.com.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||da.anythinktech.com^",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate_rule": "||wv.inner-active.mobi^",
+            "baseline_cover": [
+              "inner-active.mobi"
+            ]
+          },
+          {
+            "candidate_rule": "||securepubads.g.doubleclick.net^",
             "baseline_cover": [
               "doubleclick.net",
               "g.doubleclick.net"
             ]
           },
           {
-            "candidate_rule": "||wildcard.moatads.com.edgekey.net^",
+            "candidate_rule": "||volc.bj.ad.track.66mobi.com^",
             "baseline_cover": [
-              "moatads.com.edgekey.net"
+              "bj.ad.track.66mobi.com"
             ]
           },
           {
-            "candidate_rule": "||sdk.aqyad.com^",
+            "candidate_rule": "||aaid.umeng.com^",
             "baseline_cover": [
-              "aqyad.com"
+              "umeng.com"
             ]
           },
           {
-            "candidate_rule": "||ms4.applvn.com^",
+            "candidate_rule": "||log.ad.xiaomi.com^",
             "baseline_cover": [
-              "applvn.com"
+              "ad.xiaomi.com"
+            ]
+          },
+          {
+            "candidate_rule": "||api-access.pangolin-sdk-toutiao.com^",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao.com"
             ]
           }
         ],
@@ -1000,123 +1000,21 @@
         ],
         "parent_covered_examples": [
           {
-            "candidate_rule": "||tracelog-debug.yunxish.com^",
-            "baseline_cover": [
-              "yunxish.com"
-            ]
-          },
-          {
-            "candidate_rule": "||pgdt.ugdtimg.com^",
-            "baseline_cover": [
-              "ugdtimg.com"
-            ]
-          },
-          {
-            "candidate_rule": "||adserver.unityads.unity3d.com^",
-            "baseline_cover": [
-              "unityads.unity3d.com"
-            ]
-          },
-          {
-            "candidate_rule": "||adservice.sigmob.cn^",
-            "baseline_cover": [
-              "sigmob.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||adx-bj-req.anythinktech.com^",
-            "baseline_cover": [
-              "anythinktech.com"
-            ]
-          },
-          {
-            "candidate_rule": "||lftxali.fancyapi.com^",
-            "baseline_cover": [
-              "fancyapi.com"
-            ]
-          },
-          {
-            "candidate_rule": "||wv.inner-active.mobi^",
-            "baseline_cover": [
-              "inner-active.mobi"
-            ]
-          },
-          {
-            "candidate_rule": "||adx-strategy-api-cn.statisticslinks.com^",
-            "baseline_cover": [
-              "statisticslinks.com"
-            ]
-          },
-          {
             "candidate_rule": "||mores.toponad.com^",
             "baseline_cover": [
               "toponad.com"
             ]
           },
           {
-            "candidate_rule": "||tdsdk.cpatrk.net^",
+            "candidate_rule": "||cn-api.anythinktech.com^",
             "baseline_cover": [
-              "cpatrk.net"
+              "anythinktech.com"
             ]
           },
           {
-            "candidate_rule": "||sdkapp.uve.weibo.com^",
+            "candidate_rule": "||m.ad.zhangyue.com^",
             "baseline_cover": [
-              "uve.weibo.com"
-            ]
-          },
-          {
-            "candidate_rule": "||s1.cdn-sg.advlion.com^",
-            "baseline_cover": [
-              "advlion.com"
-            ]
-          },
-          {
-            "candidate_rule": "||res1.hubcloud.com.cn^",
-            "baseline_cover": [
-              "hubcloud.com.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||api.ad.xiaomi.com^",
-            "baseline_cover": [
-              "ad.xiaomi.com"
-            ]
-          },
-          {
-            "candidate_rule": "||adxserver.ad.cmvideo.cn^",
-            "baseline_cover": [
-              "ad.cmvideo.cn"
-            ]
-          },
-          {
-            "candidate_rule": "||init.supersonicads.com^",
-            "baseline_cover": [
-              "supersonicads.com"
-            ]
-          },
-          {
-            "candidate_rule": "||i.l.inmobicdn.net^",
-            "baseline_cover": [
-              "inmobicdn.net"
-            ]
-          },
-          {
-            "candidate_rule": "||sms.ads.oppomobile.com^",
-            "baseline_cover": [
-              "ads.oppomobile.com"
-            ]
-          },
-          {
-            "candidate_rule": "||cdn.liftoff-creatives.io^",
-            "baseline_cover": [
-              "liftoff-creatives.io"
-            ]
-          },
-          {
-            "candidate_rule": "||o-sdk.mediation.unity3d.com^",
-            "baseline_cover": [
-              "mediation.unity3d.com"
+              "ad.zhangyue.com"
             ]
           },
           {
@@ -1126,34 +1024,15 @@
             ]
           },
           {
-            "candidate_rule": "||adclick.g.doubleclick.net^",
+            "candidate_rule": "||s1.cdn-sg.advlion.com^",
             "baseline_cover": [
-              "doubleclick.net",
-              "g.doubleclick.net"
+              "advlion.com"
             ]
           },
           {
-            "candidate_rule": "||wildcard.moatads.com.edgekey.net^",
+            "candidate_rule": "||rlog.popin.cc^",
             "baseline_cover": [
-              "moatads.com.edgekey.net"
-            ]
-          },
-          {
-            "candidate_rule": "||sdk.aqyad.com^",
-            "baseline_cover": [
-              "aqyad.com"
-            ]
-          },
-          {
-            "candidate_rule": "||ms4.applvn.com^",
-            "baseline_cover": [
-              "applvn.com"
-            ]
-          },
-          {
-            "candidate_rule": "||static.ads-twitter.com^",
-            "baseline_cover": [
-              "ads-twitter.com"
+              "popin.cc"
             ]
           },
           {
@@ -1163,21 +1042,142 @@
             ]
           },
           {
-            "candidate_rule": "||adx-saas.advlion.com^",
+            "candidate_rule": "||p6-be-pack-sign.pglstatp-toutiao.com^",
             "baseline_cover": [
-              "advlion.com"
+              "pglstatp-toutiao.com"
             ]
           },
           {
-            "candidate_rule": "||pixon.ads-pixiv.net^",
+            "candidate_rule": "||yumao.puata.info^",
             "baseline_cover": [
-              "ads-pixiv.net"
+              "puata.info"
+            ]
+          },
+          {
+            "candidate_rule": "||adsmind.ugdtimg.com^",
+            "baseline_cover": [
+              "ugdtimg.com"
+            ]
+          },
+          {
+            "candidate_rule": "||adm.zhangyuyidong.cn^",
+            "baseline_cover": [
+              "zhangyuyidong.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||mpcfg.fancydsp.com^",
+            "baseline_cover": [
+              "fancydsp.com"
+            ]
+          },
+          {
+            "candidate_rule": "||yk-ssp.ad.youku.com^",
+            "baseline_cover": [
+              "ad.youku.com"
+            ]
+          },
+          {
+            "candidate_rule": "||t7z.cupid.ptqy.gitv.tv^",
+            "baseline_cover": [
+              "cupid.ptqy.gitv.tv"
+            ]
+          },
+          {
+            "candidate_rule": "||v.adx.hubcloud.com.cn^",
+            "baseline_cover": [
+              "hubcloud.com.cn"
             ]
           },
           {
             "candidate_rule": "||p2-be-pack-sign.pglstatp-toutiao.com^",
             "baseline_cover": [
               "pglstatp-toutiao.com"
+            ]
+          },
+          {
+            "candidate_rule": "||i.l-new.inmobicdn.net^",
+            "baseline_cover": [
+              "inmobicdn.net"
+            ]
+          },
+          {
+            "candidate_rule": "||api.htp.hubcloud.com.cn^",
+            "baseline_cover": [
+              "hubcloud.com.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||da.anythinktech.com^",
+            "baseline_cover": [
+              "anythinktech.com"
+            ]
+          },
+          {
+            "candidate_rule": "||wv.inner-active.mobi^",
+            "baseline_cover": [
+              "inner-active.mobi"
+            ]
+          },
+          {
+            "candidate_rule": "||securepubads.g.doubleclick.net^",
+            "baseline_cover": [
+              "doubleclick.net",
+              "g.doubleclick.net"
+            ]
+          },
+          {
+            "candidate_rule": "||volc.bj.ad.track.66mobi.com^",
+            "baseline_cover": [
+              "bj.ad.track.66mobi.com"
+            ]
+          },
+          {
+            "candidate_rule": "||log.ad.xiaomi.com^",
+            "baseline_cover": [
+              "ad.xiaomi.com"
+            ]
+          },
+          {
+            "candidate_rule": "||api-access.pangolin-sdk-toutiao.com^",
+            "baseline_cover": [
+              "pangolin-sdk-toutiao.com"
+            ]
+          },
+          {
+            "candidate_rule": "||adx.ads.heytapmobi.com^",
+            "baseline_cover": [
+              "ads.heytapmobi.com"
+            ]
+          },
+          {
+            "candidate_rule": "||jp.ad.gameley.com^",
+            "baseline_cover": [
+              "ad.gameley.com"
+            ]
+          },
+          {
+            "candidate_rule": "||init.supersonicads.com^",
+            "baseline_cover": [
+              "supersonicads.com"
+            ]
+          },
+          {
+            "candidate_rule": "||datacollection.uve.weibo.com^",
+            "baseline_cover": [
+              "uve.weibo.com"
+            ]
+          },
+          {
+            "candidate_rule": "||sdk.zhangyuyidong.cn^",
+            "baseline_cover": [
+              "zhangyuyidong.cn"
+            ]
+          },
+          {
+            "candidate_rule": "||api.ad.xiaomi.com^",
+            "baseline_cover": [
+              "ad.xiaomi.com"
             ]
           }
         ],
