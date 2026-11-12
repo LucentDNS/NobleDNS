@@ -289,8 +289,7 @@ def build(args) -> Path:
     if len(merged) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(merged):,} > {MAX_RULES:,}")
     if not merged: raise RuntimeError("Refusing empty output")
     all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
-    header = (f"! {PROJECT} DNS Filter\n! Sources: AdGuard DNS Filter + HaGeZi Multi Normal\n! Block-only subscription; source exceptions are excluded and provided for review.\n! Complex syntax not proven equivalent is excluded; see parser-exclusions.csv.\n")
-    main = header + "\n".join(sorted(merged)) + "\n"
+    main = FILTER_HEADER + "\n".join(sorted(merged)) + "\n"
     main_bytes = main.encode("utf-8")
     # Verify every output line and preserve the source rule syntax exactly.
     lines = [x for x in main.splitlines() if x and not x.startswith("!")]
