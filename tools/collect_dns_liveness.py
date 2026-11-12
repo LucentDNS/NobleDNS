@@ -227,7 +227,7 @@ def query_doh(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
     except (TimeoutError, socket.timeout):
         return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
     except (HTTPError, URLError, OSError, ValueError):
-        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
+        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
 
 
 def _recv_exact(connection: ssl.SSLSocket, length: int) -> bytes:
@@ -255,9 +255,9 @@ def query_dot(endpoint: str, hostname: str, qtype: str, timeout: int) -> dict:
                 response = _recv_exact(tls, response_length)
         return parse_response(response, query_id, qtype, hostname)
     except (TimeoutError, socket.timeout):
-        return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "dnssec_ad": False}
+        return {"rcode": "TIMEOUT", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
     except (OSError, ssl.SSLError, ValueError):
-        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "dnssec_ad": False}
+        return {"rcode": "OTHER", "answers": [], "cname_chain": [], "authority_soa_zones": [], "dnssec_ad": False}
 
 
 def query_resolver(resolver: dict, hostname: str, qtype: str, timeout: int) -> dict:
