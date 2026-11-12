@@ -183,11 +183,25 @@ def validate_record(record: Any, index: int, now: datetime) -> list[str]:
 
     if classification == "unresolved" and policy != "observe_only":
         errors.append(f"{prefix}: unresolved records must use observe_only policy")
+    strong_evidence = {
+        "controlled_traffic_capture",
+        "vendor_documentation",
+        "independent_research",
+    }
     if classification == "confirmed_ad":
         if policy != "blocked":
             errors.append(f"{prefix}: confirmed_ad records must expect blocked policy")
-        if evidence_type in {"upstream_rule", "user_report", "synthetic_test"} or confidence != "high":
-            errors.append(f"{prefix}: confirmed_ad requires high-confidence non-upstream evidence")
+        if evidence_type not in strong_evidence or confidence != "high":
+            errors.append(
+                f"{prefix}: confirmed_ad requires high-confidence controlled, vendor, "
+                "or independent evidence"
+            )
+    if classification in {"confirmed_tracker", "unwanted_telemetry"}:
+        if evidence_type not in strong_evidence or confidence != "high":
+            errors.append(
+                f"{prefix}: confirmed privacy-risk records require high-confidence "
+                "controlled, vendor, or independent evidence"
+            )
     if classification == "threat":
         if policy != "blocked":
             errors.append(f"{prefix}: threat records must expect blocked policy")
@@ -216,8 +230,9 @@ def validate_corpus(data: Any, now: datetime | None = None) -> list[str]:
         errors.append(f"corpus missing fields: {', '.join(sorted(missing))}")
     if unknown:
         errors.append(f"corpus has unknown fields: {', '.join(sorted(unknown))}")
-    if data.get("schema_version") != CORPUS_VERSION:
-        errors.append(f"schema_version must equal {CORPUS_VERSION}")
+    # bool is a subclass of int in Python; reject true/false and 1.0 explicitly.
+    if type(data.get("schema_version")) is not int or data.get("schema_version") != CORPUS_VERSION:
+        errors.append(f"schema_version must be the integer {CORPUS_VERSION}")
     records = data.get("records")
     if not isinstance(records, list):
         errors.append("records must be an array")
