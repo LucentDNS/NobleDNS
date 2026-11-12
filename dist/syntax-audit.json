@@ -1,0 +1,60 @@
+{
+  "total": 303621,
+  "forms": {
+    "domain_and_subdomains": 303525,
+    "domain_anchor_without_end_boundary": 69,
+    "subdomains_only_with_end_boundary": 23,
+    "subdomains_only": 4
+  },
+  "semantics": {
+    "domain_and_subdomains": "Blocks the domain and all subdomains.",
+    "domain_anchor_without_end_boundary": "Hostname-start anchor without explicit end boundary; retain source form and review client matching semantics.",
+    "subdomains_only_with_end_boundary": "Blocks subdomains only; does not block the apex domain.",
+    "subdomains_only": "Blocks subdomains only; does not block the apex domain."
+  },
+  "review_required": 69,
+  "examples": {
+    "domain_and_subdomains": [
+      "||0--d.com^",
+      "||0-02.net^",
+      "||0-btc.com^",
+      "||0-energy.com^",
+      "||0-tox.com^",
+      "||0.07c225f3.online^",
+      "||0.avmarket.rs^",
+      "||0.myikas.com^",
+      "||0.net.easyjet.com^",
+      "||0.org^"
+    ],
+    "domain_anchor_without_end_boundary": [
+      "||afdads.com",
+      "||allmt.com",
+      "||almosto.com",
+      "||analysis.polarisoffice.com",
+      "||api-ad-callback.mobiuspace.net",
+      "||api.cloudmobi.net",
+      "||ats.gmarket.co.kr",
+      "||banner-in.net",
+      "||banner.kiev.ua",
+      "||c.bigmir.net"
+    ],
+    "subdomains_only_with_end_boundary": [
+      ".1.1.1.l80.js^",
+      ".adonweb.ru^",
+      ".allalla.com^",
+      ".ay.delivery^",
+      ".bbelements.com^",
+      ".cpa1.ru^",
+      ".doublepimp.com^",
+      ".ecommtools.com^",
+      ".gameleads.ru^",
+      ".infox.sg^"
+    ],
+    "subdomains_only": [
+      ".3.n.2.1.l50.js",
+      ".3.n.2.2.l30.js",
+      ".prod.pr.analytics.console.aws.a2z.com",
+      ".stape.net"
+    ]
+  }
+}

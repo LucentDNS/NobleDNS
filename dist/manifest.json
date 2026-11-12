@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.0-rc3-20261112-015615-UTC",
+  "version": "1.0.0-20261112-022126-UTC",
   "status": "CANDIDATE_NOT_PRODUCTION_QUALIFIED",
-  "release_channel": "candidate",
-  "built_at_utc": "2026-11-12T01:56:15.785819+00:00",
+  "release_channel": "public",
+  "built_at_utc": "2026-11-12T02:21:26.246416+00:00",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -35,9 +35,9 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4658723,
-      "sha256": "2979ecfaf52da96c8235c3d7254a08b82908640284b97822dcb65370c02ff6d5",
-      "simple_block_rules": 189676,
+      "bytes": 4659508,
+      "sha256": "064df1e05681607adf00762378f8cc2e6c6cd02b66614882fe1153e4ff5a9af5",
+      "simple_block_rules": 189711,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -66,15 +66,75 @@
       "excluded_lines_by_reason": {}
     }
   },
-  "blocking_rules": 303587,
-  "common_rules": 94271,
+  "blocking_rules": 303621,
+  "common_rules": 94272,
   "source_only_rules": {
-    "adguard_dns": 95405,
-    "hagezi_normal": 113911
+    "adguard_dns": 95439,
+    "hagezi_normal": 113910
   },
   "exception_rules_separate": 11,
   "max_rules": 500000,
-  "main_subscription_sha256": "0b08b0adfaf117288adffcb22c82fee9300e5373e91a264a5a14e5f41bc60e11",
+  "main_subscription_sha256": "85529d3615746bae9fd24697cbc9189e28c127d7f1e19d2053f2bc931e48b994",
+  "syntax_audit": {
+    "total": 303621,
+    "forms": {
+      "domain_and_subdomains": 303525,
+      "domain_anchor_without_end_boundary": 69,
+      "subdomains_only_with_end_boundary": 23,
+      "subdomains_only": 4
+    },
+    "semantics": {
+      "domain_and_subdomains": "Blocks the domain and all subdomains.",
+      "domain_anchor_without_end_boundary": "Hostname-start anchor without explicit end boundary; retain source form and review client matching semantics.",
+      "subdomains_only_with_end_boundary": "Blocks subdomains only; does not block the apex domain.",
+      "subdomains_only": "Blocks subdomains only; does not block the apex domain."
+    },
+    "review_required": 69,
+    "examples": {
+      "domain_and_subdomains": [
+        "||0--d.com^",
+        "||0-02.net^",
+        "||0-btc.com^",
+        "||0-energy.com^",
+        "||0-tox.com^",
+        "||0.07c225f3.online^",
+        "||0.avmarket.rs^",
+        "||0.myikas.com^",
+        "||0.net.easyjet.com^",
+        "||0.org^"
+      ],
+      "domain_anchor_without_end_boundary": [
+        "||afdads.com",
+        "||allmt.com",
+        "||almosto.com",
+        "||analysis.polarisoffice.com",
+        "||api-ad-callback.mobiuspace.net",
+        "||api.cloudmobi.net",
+        "||ats.gmarket.co.kr",
+        "||banner-in.net",
+        "||banner.kiev.ua",
+        "||c.bigmir.net"
+      ],
+      "subdomains_only_with_end_boundary": [
+        ".1.1.1.l80.js^",
+        ".adonweb.ru^",
+        ".allalla.com^",
+        ".ay.delivery^",
+        ".bbelements.com^",
+        ".cpa1.ru^",
+        ".doublepimp.com^",
+        ".ecommtools.com^",
+        ".gameleads.ru^",
+        ".infox.sg^"
+      ],
+      "subdomains_only": [
+        ".3.n.2.1.l50.js",
+        ".3.n.2.2.l30.js",
+        ".prod.pr.analytics.console.aws.a2z.com",
+        ".stape.net"
+      ]
+    }
+  },
   "policy": {
     "main_list": "block-only",
     "exceptions": "separate review artifact; not active in main list",
