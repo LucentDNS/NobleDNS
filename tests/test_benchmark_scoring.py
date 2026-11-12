@@ -42,9 +42,9 @@ class BenchmarkScorerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"
             path.write_text(
-                "||caret.example.test^\\n||bare.example.test\\n"
-                ".subonly.example.test^\\n.subonlybare.example.test\\n"
-                "@@||safe.example.test^\\n",
+                "||caret.example.test^\n||bare.example.test\n"
+                ".subonly.example.test^\n.subonlybare.example.test\n"
+                "@@||safe.example.test^\n",
                 encoding="utf-8",
             )
             blocks, exceptions, unsupported = scorer.load_rules(path)
