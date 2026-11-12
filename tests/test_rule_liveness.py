@@ -124,6 +124,24 @@ class RuleLivenessTests(unittest.TestCase):
         status, _ = mod.classify(rows, NOW, 30)
         self.assertEqual(status, "insufficient_nxdomain_evidence")
 
+    def test_three_operators_must_each_be_seen_from_both_vantages(self):
+        rows = [
+            row for row in stable_nxdomain_observations()
+            if not (
+                row["resolver"] in {"gg1", "q91"}
+                and row["vantage"] == "cn-lanzhou"
+            )
+        ]
+        validated = mod.validate_observations({
+            "schema_version": 1,
+            "observations": rows,
+        })
+        status, metrics = mod.classify(validated, NOW, 30)
+        self.assertEqual(status, "insufficient_nxdomain_evidence")
+        self.assertEqual(len(metrics["resolver_operators"]), 3)
+        self.assertEqual(len(metrics["vantages"]), 2)
+        self.assertEqual(metrics["operators_with_multi_vantage_coverage"], 1)
+
     def test_failed_dns_query_invalidates_that_pair_day_round(self):
         rows = stable_nxdomain_observations()
         failed = observation(
