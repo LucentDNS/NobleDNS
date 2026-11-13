@@ -4,13 +4,13 @@ Status: PUBLIC
 Original project code license: GPL-3.0-only
 Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.
 Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.
-Merged block rules: 304,551
-Common rules: 94,635
+Merged block rules: 306,173
+Common rules: 95,262
 Active exception rules: 11
-Main subscription rules: 304,562
+Main subscription rules: 306,184
 Subscription last modified (UTC): 2026-11-13
-Rule cap: 304,562/500,000
-Main SHA256: 022d1f476ac5a4e7352c146ac4554163cd95d9beb14a5da4e9733e09298f7270
+Rule cap: 306,184/500,000
+Main SHA256: 79958824482c3a0517776a12cc6c5a2157ac73091407806838abaa9d9ccccdfc
 
 Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.
 Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests.
