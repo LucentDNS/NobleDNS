@@ -69,9 +69,20 @@ class WorkflowSecurityTests(unittest.TestCase):
         )
         self.assertEqual(
             permission_blocks,
-            ["      contents: read\n", "      contents: write\n"],
-            "Only build-test may read contents and publish may write contents",
+            ["      contents: read\n", "      contents: read\n"],
+            "Both jobs must keep the default GITHUB_TOKEN read-only",
         )
+        self.assertIn("environment:", workflow)
+        self.assertIn("name: release", workflow)
+        self.assertIn(
+            "uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510",
+            workflow,
+        )
+        self.assertIn("permission-contents: write", workflow)
+        self.assertIn("private-key: ${{ secrets.NOBLEDNS_PUBLISHER_PRIVATE_KEY }}", workflow)
+        self.assertIn("token: ${{ steps.publisher-token.outputs.token }}", workflow)
+        self.assertIn("GH_TOKEN: ${{ steps.publisher-token.outputs.token }}", workflow)
+        self.assertNotIn("GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}", workflow)
         self.assertIn("github.event_name != 'pull_request'", workflow)
         self.assertIn("needs.build-test.outputs.publish_update == 'true'", workflow)
         self.assertEqual(workflow.count("persist-credentials: false"), 1)

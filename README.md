@@ -66,6 +66,7 @@ The project enforces a 500,000-rule ceiling, source-drift checks and automated r
 - [Real-world benchmark protocol](docs/REAL-WORLD-BENCHMARK-PLAN.md)
 - [Single-edition policy](docs/EDITION-POLICY.md)
 - [Feedback and rule correction guide](docs/FEEDBACK.md)
+- [Release authentication and least-privilege setup](docs/RELEASE-AUTHENTICATION.md)
 - [Third-party notices and licensing](THIRD-PARTY-NOTICES.md)
 
 ## Report a problem

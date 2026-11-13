@@ -66,6 +66,7 @@ DNS 过滤只是网络防护的一环，无法拦截所有广告，尤其是第�
 - [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md)
 - [单一均衡版政策](docs/EDITION-POLICY.md)
 - [问题反馈与规则修正指南](docs/FEEDBACK.md)
+- [发布身份验证与最小权限配置](docs/RELEASE-AUTHENTICATION.md)
 - [第三方来源与许可证说明](THIRD-PARTY-NOTICES.md)
 
 ## 问题反馈
