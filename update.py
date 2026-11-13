@@ -34,6 +34,23 @@ BARE_RE = re.compile(r"^\|\|([^\^/$|]+)$")
 LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.I)
 IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
+# Frozen inherited exceptions from the audited 2026-11-12 AdGuard DNS snapshot.
+# These remain active as a temporary compatibility baseline, not as NobleDNS approvals.
+LEGACY_PENDING_EXCEPTION_BASELINE = {
+    "@@||ad.10010.com^",
+    "@@||ad.abchina.com^",
+    "@@||ad.kazakinfo.com^",
+    "@@||ad.ourgame.com^",
+    "@@||adcdn.pingan.com^",
+    "@@||advert.kf5.com^",
+    "@@||api.ads.tvb.com^",
+    "@@||app-advertise.zhihuishu.com^",
+    "@@||buyad.bi-xenon.cn^",
+    "@@||captcha.su.baidu.com^",
+    "@@||img.ads.tvb.com^",
+}
+
+
 PROJECT_CODE_LICENSE = "GPL-3.0-only"
 LICENSE_PATH = ROOT / "LICENSE"
 LICENSE_COPY_PATH = ROOT / "licenses" / "GPL-3.0.txt"
@@ -369,6 +386,100 @@ def render_subscription(
     return FILTER_HEADER + metadata + "\n".join(sorted(rules)) + "\n"
 
 
+
+def validate_exception_register(
+    exceptions_by_source: dict[str, set[str]],
+    register_path: Path = ROOT / "data" / "exception-review.csv",
+) -> dict[str, set[str]]:
+    """Fail closed on unregistered exception drift; return only permitted active exceptions.
+
+    The exact inherited pending set is temporarily grandfathered to avoid silently
+    changing today's filtering behavior. It is not represented as independently approved.
+    Every later exception must be explicitly reviewed before activation.
+    """
+    required_columns = {
+        "rule", "source", "source_url", "source_sha256", "source_line",
+        "review_status", "decision", "reviewer", "reviewed_at_utc",
+        "rationale", "evidence_url", "scope_assessment", "recheck_due_utc",
+        "baseline_active",
+    }
+    with register_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames or not required_columns.issubset(reader.fieldnames):
+            missing = sorted(required_columns - set(reader.fieldnames or []))
+            raise ValueError("Exception register missing columns: " + ", ".join(missing))
+        rows = list(reader)
+
+    records: dict[str, dict] = {}
+    active: dict[str, set[str]] = {key: set() for key in exceptions_by_source}
+    source_registered: dict[str, set[str]] = {key: set() for key in exceptions_by_source}
+    pending_baseline: set[str] = set()
+    evidence_fields = ("reviewer", "reviewed_at_utc", "rationale", "evidence_url", "scope_assessment")
+
+    for row in rows:
+        rule = (row.get("rule") or "").strip()
+        source = (row.get("source") or "").strip()
+        status = (row.get("review_status") or "").strip()
+        decision = (row.get("decision") or "").strip()
+        baseline_active = (row.get("baseline_active") or "").strip().lower() == "true"
+        if not rule or not EXCEPTION_RE.fullmatch(rule):
+            raise ValueError(f"Exception register contains invalid rule: {rule!r}")
+        if rule in records:
+            raise ValueError(f"Duplicate exception register entry: {rule}")
+        if source not in exceptions_by_source:
+            raise ValueError(f"Exception register has unknown source {source!r}: {rule}")
+        for field in ("source_url", "source_sha256", "source_line"):
+            if not (row.get(field) or "").strip():
+                raise ValueError(f"Exception register missing {field}: {rule}")
+        records[rule] = row
+        if status == "retired":
+            if decision != "retired" or baseline_active:
+                raise ValueError(f"Retired exception has inconsistent decision/baseline flag: {rule}")
+            if any(not (row.get(field) or "").strip() for field in evidence_fields):
+                raise ValueError(f"Retired exception lacks review evidence: {rule}")
+            continue
+
+        source_registered[source].add(rule)
+        if status == "pending":
+            if decision or not baseline_active or rule not in LEGACY_PENDING_EXCEPTION_BASELINE:
+                raise ValueError(f"Only the frozen legacy baseline may remain pending and active: {rule}")
+            pending_baseline.add(rule)
+            active[source].add(rule)
+        elif status == "approved":
+            if decision != "approved" or baseline_active:
+                raise ValueError(f"Approved exception has inconsistent decision/baseline flag: {rule}")
+            if any(not (row.get(field) or "").strip() for field in evidence_fields):
+                raise ValueError(f"Approved exception lacks review evidence: {rule}")
+            if not (row["evidence_url"].startswith("https://") or row["evidence_url"].startswith("http://")):
+                raise ValueError(f"Approved exception evidence_url must be HTTP(S): {rule}")
+            active[source].add(rule)
+        elif status in {"rejected", "needs-more-evidence"}:
+            if decision != status or baseline_active:
+                raise ValueError(f"Non-active exception has inconsistent decision/baseline flag: {rule}")
+            if any(not (row.get(field) or "").strip() for field in evidence_fields):
+                raise ValueError(f"Reviewed exception lacks evidence: {rule}")
+        else:
+            raise ValueError(f"Unsupported exception review_status {status!r}: {rule}")
+
+    if not pending_baseline.issubset(LEGACY_PENDING_EXCEPTION_BASELINE):
+        raise ValueError("Pending exceptions exceed the frozen legacy baseline")
+    if not LEGACY_PENDING_EXCEPTION_BASELINE.issubset(records):
+        missing = sorted(LEGACY_PENDING_EXCEPTION_BASELINE - set(records))
+        raise ValueError("Frozen legacy exception history is incomplete: " + ", ".join(missing))
+
+    for source, parsed_rules in exceptions_by_source.items():
+        registered_rules = source_registered[source]
+        if parsed_rules != registered_rules:
+            added = sorted(parsed_rules - registered_rules)
+            removed = sorted(registered_rules - parsed_rules)
+            details = []
+            if added:
+                details.append("unregistered upstream exceptions: " + ", ".join(added[:10]))
+            if removed:
+                details.append("registered exceptions missing upstream: " + ", ".join(removed[:10]))
+            raise ValueError(f"{source}: exception register/source mismatch; " + "; ".join(details))
+    return active
+
 def build(args) -> Path:
     validate_licensing_files()
     cfg = load_config(Path(args.config))
@@ -394,7 +505,8 @@ def build(args) -> Path:
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
     merged = parsed[keys[0]] | parsed[keys[1]]
-    all_exceptions = exceptions[keys[0]] | exceptions[keys[1]]
+    active_exceptions = validate_exception_register(exceptions, Path(args.exception_review))
+    all_exceptions = active_exceptions[keys[0]] | active_exceptions[keys[1]]
     published_rules = merged | all_exceptions
     previous_manifest = Path(args.previous_manifest) if args.previous_manifest else None
     check_drift(source_stats, published_rules, previous_manifest, args.max_source_change_percent, args.allow_large_change)
@@ -413,7 +525,7 @@ def build(args) -> Path:
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(exceptions[key]) for key in keys}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, active exception validation, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
@@ -428,11 +540,11 @@ def build(args) -> Path:
         shutil.copy2(LICENSE_COPY_PATH, staged_licenses / "GPL-3.0.txt")
         (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (stage / "validation-report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
-        active_allowlist_lines = ["! Simple upstream exception rules active in dns-filter.txt; complex exception syntax remains excluded."]
+        active_allowlist_lines = ["! Approved exceptions and frozen legacy pending exceptions active in dns-filter.txt.", "! Pending legacy entries are not independently approved by NobleDNS."]
         for key in keys:
-            if exceptions[key]:
+            if active_exceptions[key]:
                 active_allowlist_lines.append(f"! Source: {key}")
-                active_allowlist_lines.extend(sorted(exceptions[key]))
+                active_allowlist_lines.extend(sorted(active_exceptions[key]))
         (stage / "allowlist-active.txt").write_text("\n".join(active_allowlist_lines) + "\n", encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
         write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "documented_semantics", "source"], syntax_review_rows)
@@ -470,6 +582,7 @@ def main():
     p.add_argument("--proxy")
     p.add_argument("--out", default="build-output")
     p.add_argument("--input-dir", help="Offline source snapshots directory")
+    p.add_argument("--exception-review", default=str(ROOT / "data" / "exception-review.csv"), help="Exception approval register")
     p.add_argument("--previous-manifest", help="Last published manifest for source drift checks")
     p.add_argument("--max-source-change-percent", type=float, default=15.0)
     p.add_argument("--allow-large-change", action="store_true", help="Manual override; inspect upstream changes first")
