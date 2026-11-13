@@ -1,5 +1,7 @@
+import csv
 import importlib.util
 from pathlib import Path
+import tempfile
 import unittest
 
 SPEC = importlib.util.spec_from_file_location("nobledns_update", Path(__file__).parents[1] / "update.py")
@@ -149,4 +151,94 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(exceptions, set())
         self.assertEqual(rejected["unsupported_leading_dot_dns_syntax"], 28)
         self.assertEqual(len(rows), 28)
+
+
+class ExceptionRegisterTests(unittest.TestCase):
+    fields = [
+        "rule", "source", "source_url", "source_sha256", "source_line",
+        "review_status", "decision", "reviewer", "reviewed_at_utc",
+        "rationale", "evidence_url", "scope_assessment", "recheck_due_utc",
+        "baseline_active",
+    ]
+
+    def baseline_rows(self):
+        return [
+            {
+                "rule": rule,
+                "source": "adguard_dns",
+                "source_url": "https://example.invalid/filter.txt",
+                "source_sha256": "a" * 64,
+                "source_line": str(178918 + index),
+                "review_status": "pending",
+                "decision": "",
+                "reviewer": "",
+                "reviewed_at_utc": "",
+                "rationale": "",
+                "evidence_url": "",
+                "scope_assessment": "",
+                "recheck_due_utc": "",
+                "baseline_active": "true",
+            }
+            for index, rule in enumerate(sorted(mod.LEGACY_PENDING_EXCEPTION_BASELINE))
+        ]
+
+    def validate_rows(self, rows, parsed=None):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "exception-review.csv"
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=self.fields)
+                writer.writeheader()
+                writer.writerows(rows)
+            if parsed is None:
+                parsed = {
+                    "adguard_dns": set(mod.LEGACY_PENDING_EXCEPTION_BASELINE),
+                    "hagezi_normal": set(),
+                }
+            return mod.validate_exception_register(parsed, path)
+
+    def test_frozen_pending_baseline_remains_active_but_unapproved(self):
+        active = self.validate_rows(self.baseline_rows())
+        self.assertEqual(active["adguard_dns"], mod.LEGACY_PENDING_EXCEPTION_BASELINE)
+        self.assertEqual(active["hagezi_normal"], set())
+
+    def test_unregistered_upstream_exception_fails_closed(self):
+        parsed = {
+            "adguard_dns": set(mod.LEGACY_PENDING_EXCEPTION_BASELINE) | {"@@||new.example.com^"},
+            "hagezi_normal": set(),
+        }
+        with self.assertRaisesRegex(ValueError, "unregistered upstream exceptions"):
+            self.validate_rows(self.baseline_rows(), parsed)
+
+    def test_new_pending_exception_cannot_expand_legacy_baseline(self):
+        rows = self.baseline_rows()
+        rows.append({
+            "rule": "@@||new.example.com^", "source": "adguard_dns",
+            "source_url": "https://example.invalid/filter.txt", "source_sha256": "b" * 64,
+            "source_line": "200000", "review_status": "pending", "decision": "",
+            "reviewer": "", "reviewed_at_utc": "", "rationale": "",
+            "evidence_url": "", "scope_assessment": "", "recheck_due_utc": "",
+            "baseline_active": "false",
+        })
+        parsed = {
+            "adguard_dns": set(mod.LEGACY_PENDING_EXCEPTION_BASELINE) | {"@@||new.example.com^"},
+            "hagezi_normal": set(),
+        }
+        with self.assertRaisesRegex(ValueError, "Only the frozen legacy baseline"):
+            self.validate_rows(rows, parsed)
+
+    def test_rejected_exception_is_not_emitted(self):
+        rows = self.baseline_rows()
+        row = rows[0]
+        row.update({
+            "review_status": "rejected", "decision": "rejected", "baseline_active": "false",
+            "reviewer": "maintainer", "reviewed_at_utc": "2026-11-13T00:00:00Z",
+            "rationale": "Test-only reviewed rejection.",
+            "evidence_url": "https://example.com/evidence",
+            "scope_assessment": "Test-only narrow scope assessment.",
+        })
+        active = self.validate_rows(rows)
+        self.assertNotIn(row["rule"], active["adguard_dns"])
+        self.assertEqual(len(active["adguard_dns"]), len(mod.LEGACY_PENDING_EXCEPTION_BASELINE) - 1)
+
+
 if __name__ == "__main__": unittest.main()
