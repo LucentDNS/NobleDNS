@@ -42,7 +42,7 @@ The current build uses two general-purpose upstream sources:
 
 These are not mainland-China-specific datasets. NobleDNS independently controls its build process and is not affiliated with or endorsed by either upstream project.
 
-The compiled subscription contains supported rules parsed from the configured sources. Unsupported or complex syntax is excluded rather than guessed or silently rewritten. The main subscription also includes simple upstream exception rules accepted by the parser; these preserve upstream compatibility intent and can override matching block rules in compatible clients. Active exceptions are listed separately for inspection.
+The compiled subscription contains supported rules parsed from the configured sources. Unsupported or complex syntax is excluded rather than guessed or silently rewritten. The main subscription also includes simple upstream exception rules accepted by the parser; these can override matching block rules in compatible clients. Upstream inclusion establishes provenance, not proof that an exception is necessary or correctly scoped. The 11 inherited entries currently present in the published build remain marked pending in the [exception review register](data/exception-review.csv); they have not been independently approved by NobleDNS. Active exceptions are listed separately for inspection.
 
 A rule count is not a measure of quality, and inclusion in the compiled list does not mean every domain has been individually reviewed by NobleDNS.
 
@@ -60,6 +60,8 @@ The project enforces a 500,000-rule ceiling, source-drift checks and automated r
 
 ## Quality and documentation
 
+- [Security policy](SECURITY.md)
+- [Contribution guide](CONTRIBUTING.md)
 - [Exception rule review register](docs/EXCEPTION-REVIEW.md)
 - [Quality and maintenance policy](docs/QUALITY.md)
 - [DNS client compatibility test plan](docs/COMPATIBILITY-TEST-PLAN.md)
