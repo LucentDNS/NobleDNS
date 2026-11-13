@@ -243,7 +243,7 @@ jobs:
           def normalized_audit_bytes(path):
               # Git normalizes text files to LF; compare semantic text, not checkout
               # newline/BOM representation, or every App-triggered rebuild can republish.
-              return path.read_text(encoding="utf-8-sig").replace("\\r\\n", "\\n").replace("\\r", "\\n").encode("utf-8")
+              return path.read_text(encoding="utf-8-sig").replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
 
           audit_changed = any(
               not (Path("dist") / name).exists()
