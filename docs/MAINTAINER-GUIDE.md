@@ -74,7 +74,7 @@ The project currently uses three complementary upstream sources:
 | Source | Purpose |
 |---|---|
 | AdGuard DNS Filter | DNS advertising and tracking protection |
-| HaGeZi Multi Normal | General DNS advertising and tracking protection |
+| HaGeZi Multi Pro | General DNS advertising and tracking protection |
 | AWAvenue Ads Rule (Only Ads) | Focused app / smart-device advertising coverage; Ads-only variant |
 
 Configuration file:
@@ -425,4 +425,4 @@ The register is currently an audit record, not a build-time enforcement gate. Th
 
 ## Upstream license and disclaimer review
 
-Before each public release, verify the current license and applicable notices for both configured upstream lists. For HaGeZi Multi Normal, review the [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.
+Before each public release, verify the current license and applicable notices for all three configured upstream lists. For HaGeZi Multi Pro, review the [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.
