@@ -25,13 +25,37 @@ The line counts below are a static syntax classification of this snapshot, not a
 | Exceptions | 1,153 |
 | Cosmetic / element rules | 7,657 |
 | Domain rules with modifiers | 703 |
-| Simple hostname-pattern syntax | 5,966 (5,958 pass hostname validation; 8 are rejected) |
+| Simple hostname-pattern syntax passing validation | 5,958 |
+| Invalid simple hostname-pattern lines | 8 |
 | Wildcard-bearing domain rules (not all are portable DNS wildcards) | 829 |
-| URL / regex-like rules | 817 |
-| Other / conditional / unsupported syntax | 3,233 |
+| URL / regex-like rules | 819 |
+| Other domain syntax | 3,103 |
+| Other / conditional / unsupported syntax | 128 |
 | **Total** | **20,358** |
 
 The 703 modifier-bearing domain rules include contextual conditions such as \`$third-party\` and \`$domain=\`. Removing those modifiers changes the original rule's meaning. DNS filtering cannot preserve request-party or page-domain context. Exceptions are also not automatically portable: they require exact precedence and scope handling.
+
+
+## Results from the first recurring CI audit
+
+The CI run above extracted **5,958 syntactically simple, valid hostname candidates**. The conservative suffix/wildcard comparison found:
+
+- **5,954 already covered** by the current NobleDNS subscription.
+- **4 not covered** by that comparison.
+- **0 candidates approved or added** to the production subscription.
+
+The four uncovered candidates were individually triaged:
+
+| Candidate | Source context / independent signal | Decision |
+|---|---|---|
+| `kqzyfj.com` | Appears in an advertising-domain blocklist and is identified as a CJ Affiliate redirect/tracking domain. Blocking the whole redirect domain can interfere with legitimate affiliate links and attribution. | Hold; no production import without a narrower, demonstrably safe DNS use case |
+| `h1.azuimeh.top` | No sufficiently reliable independent evidence was found to establish its current purpose and impact. | Unresolved; do not block on source presence alone |
+| `symaa.cn` | Appears under an upstream `NOT_OPTIMIZED PLATFORM(ios, ext_android_cb, ext_safari)` condition. DNS cannot preserve this client/platform scope; the domain's purpose is not independently established. | Exclude from DNS conversion |
+| `https-filtering-check.adtidy.org` | The upstream section labels this endpoint as an AdGuard HTTPS-filtering detection check, not an advertising hostname. | Do not block; preserve legitimate security/filter diagnostics |
+
+The `kqzyfj.com` corroborating references are [IPFire's advertising-domain entry](https://www.ipfire.org/dbl/lists/ads/domains/kqzyfj.com) and an [affiliate-link reference identifying CJ's rotating redirect domains](https://dailyintelservice.com/learn/affiliate-link-anatomy-identify-a-network-from-a-url). These are supporting signals, not proof that the domain should be globally blocked.
+
+This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the four uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review.
 
 ## Mandatory exclusions
 
