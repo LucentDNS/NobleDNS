@@ -495,6 +495,8 @@ jobs:
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
           cp build-output/latest/syntax-audit.json dist/syntax-audit.json
           cp build-output/latest/syntax-review.csv dist/syntax-review.csv
+          cp build-output/latest/domain-compression-audit.csv dist/domain-compression-audit.csv
+          cp build-output/latest/public-suffix-metadata.json dist/public-suffix-metadata.json
 
       - name: Commit updated public artifacts
         shell: bash
@@ -548,6 +550,8 @@ jobs:
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
           test -s dist/syntax-review.csv
+          test -s dist/domain-compression-audit.csv
+          test -s dist/public-suffix-metadata.json
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
@@ -608,6 +612,8 @@ jobs:
             dist/bare-anchor-audit.csv \
             dist/adguard-chinese-dns-audit.json \
             dist/adguard-chinese-dns-candidates.csv \
+            dist/domain-compression-audit.csv \
+            dist/public-suffix-metadata.json \
             LICENSE \
             THIRD-PARTY-NOTICES.md \
             licenses/GPL-3.0.txt \
