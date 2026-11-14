@@ -18,7 +18,7 @@ NobleDNS maintains **one balanced public edition**, designed with mainland China
 
 - The only supported public product is the **NobleDNS Balanced Edition**.
 - Do not create separate aggressive, strict, lite, regional or app-specific public variants unless the project explicitly revises this policy after evidence and maintenance-capacity review.
-- The main subscription contains blocking rules and only the simple upstream exception rules accepted by the parser (`@@||domain^`). These source exceptions remain active because they express intentional upstream compatibility behavior. Complex or unsupported exception syntax is excluded. Every active exception is domain-validated, counted in the manifest, included in the subscription, and listed in `dist/allowlist-active.txt`. Project-authored allowlist additions still require independent evidence, narrow scope, cross-source conflict review and precedence regression tests.
+- The main subscription contains supported blocking rules plus only exceptions permitted by `data/exception-review.csv`. The 11 inherited exceptions from the audited 2026-11-12 snapshot are a frozen, temporary compatibility baseline: they remain active to avoid silently changing existing behavior, but are still marked `pending` and are **not** NobleDNS approvals. The build rejects unregistered upstream exception additions or removals. Any exception outside that exact legacy baseline must be independently reviewed and recorded as `approved` with reviewer, UTC date, rationale, evidence URL and scope assessment before activation. Complex or unsupported exception syntax remains excluded.
 - A source is not accepted merely because it is popular or large. Review its purpose, license, syntax, update behavior, rule scope, overlap, provenance and likely compatibility impact.
 - Upstream lists currently configured are general-purpose lists, not mainland-China-specific datasets. Do not imply that their upstream maintainers have validated them for mainland services.
 
@@ -92,6 +92,7 @@ Do not expand parser scope or alter source semantics merely to increase coverage
 - Per-source parsed rule count does not drift more than 15% from the last published manifest without review/override.
 - Main output has valid supported syntax, no duplicates, nonzero rules and no more than 500,000 rules.
 - Regression tests pass.
+- Parsed upstream exceptions exactly match the review register; only approved exceptions and the frozen legacy pending baseline can be emitted.
 - Public artifacts are generated from the same validated build and checked before publication.
 - Release assets are verified against the published files.
 
@@ -99,7 +100,7 @@ Automated checks do not replace testing every app, site, device or DNS client. I
 
 ## Exception rule governance
 
-DNS exception rules can override matching block rules. The current 11 simple upstream exceptions are recorded in [`data/exception-review.csv`](../data/exception-review.csv) and documented in the [exception review procedure](EXCEPTION-REVIEW.md). They are marked `pending`, not independently approved by NobleDNS. Their presence in an upstream source is provenance, not proof of necessity or appropriate scope. This register does not yet enforce a build-time approval gate; the existing 11 inherited exceptions remain active until a separately reviewed policy change is made. New exceptions must not be treated as approved by default.
+DNS exception rules can override matching block rules. The current 11 simple upstream exceptions are recorded in [`data/exception-review.csv`](../data/exception-review.csv) and documented in the [exception review procedure](EXCEPTION-REVIEW.md). They remain `pending` and active only as an explicitly frozen legacy baseline; their upstream presence is provenance, not proof of necessity or appropriate scope. The build now checks the parsed exception set against this register and fails closed on additions, removals, malformed records, or unreviewed new entries. A new exception can become active only after a complete `approved` record is supplied. This gate prevents silent expansion; it does not retroactively approve the 11 legacy entries.
 
 ## Feedback
 

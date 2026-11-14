@@ -17,6 +17,7 @@ This register records the current simple upstream exceptions found in the AdGuar
 - Simple exceptions parsed into the current main subscription: 11.
 - Independently reviewed and approved by NobleDNS in this audit: **0**.
 - Status of all 11 entries: `pending`.
+- All 11 are explicitly marked `baseline_active=true`: this freezes the inherited behavior temporarily; it is not an approval decision.
 
 Compared with the previously registered snapshot (SHA-256 `51b8e02e339093a858c744cd475948ca3e34e87cae31a29c6adb475e15e48205`, lines 178892–178902), the exact text of all 11 registered exception rules is unchanged: no registered rule was added, removed or modified. Their source line numbers moved forward by 26. The current source bytes and fingerprint above were read from the build artifact, not inferred from a search result.
 
@@ -45,16 +46,18 @@ A reviewer must not mark a rule approved merely because it appears in an upstrea
 
 ## Change control
 
-- New upstream exceptions must be detected and reviewed before they are allowed to expand the NobleDNS exception set.
-- Removed upstream exceptions must be reconciled against this register; do not silently delete the audit record.
+- The build compares each source's parsed exception set with this register and fails closed on any unregistered addition or unreconciled removal.
+- New upstream exceptions must be added to the register with complete provenance and evidence, then independently approved before activation. A new `pending` entry cannot pass the build.
+- Removed upstream exceptions must be reconciled and marked `retired` with reviewer, date, rationale, evidence and scope assessment; do not silently delete the audit record.
 - Changes to an exception's exact hostname or syntax are new rules and require a new review.
 - Rejected exceptions must not be activated.
+- The 11 frozen legacy entries may remain active only while they remain in the hard-coded baseline and are explicitly marked `pending` with `baseline_active=true`. This is a temporary compatibility hold, not an approval.
 - Pending entries must remain visibly pending; do not fill evidence fields with guesses or generic statements.
-- Any future build gate must validate this register against the parsed upstream exception set and must fail closed for unreviewed additions. The gate must not silently convert exceptions into blocking rules or alter DNS semantics.
+- Rejected and `needs-more-evidence` entries remain in the audit register but are not emitted as active exceptions. The gate must not silently convert exceptions into blocking rules or alter DNS semantics.
 
-## Important limitation of this register
+## Build-time enforcement and remaining limitation
 
-This initial register documents the existing 11 exceptions and their provenance. It does not yet implement a build-time approval gate and does not change the current subscription. Until the review decisions and gate are completed, the 11 inherited upstream exceptions remain present in the current build. This limitation is intentional and explicit; no rule has been silently removed or newly approved.
+The build now validates the exact parsed upstream exception set against this register. Unregistered additions, unreconciled removals, invalid states and new pending entries fail the build. Approved entries are emitted; rejected and `needs-more-evidence` entries are retained for audit but not emitted. The 11 inherited entries are temporarily grandfathered as an exact, code-pinned pending baseline so the gate does not silently change existing filtering behavior. They are still **not approved**. This is a containment measure, not a substitute for the required per-rule evidence review. The three entries with observed overlap against current block rules deserve priority, especially the two TVB exceptions whose parent-domain scope covers `ads.tvb.com` and its subdomains.
 
 ## Related evidence
 
