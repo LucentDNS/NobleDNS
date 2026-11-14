@@ -74,7 +74,7 @@ The project currently uses three complementary upstream sources:
 | Source | Purpose |
 |---|---|
 | AdGuard DNS Filter | DNS advertising and tracking protection |
-| HaGeZi Multi Normal | General DNS advertising and tracking protection |
+| HaGeZi Multi PRO | General DNS advertising, tracking and broader protection |
 | AWAvenue Ads Rule (Only Ads) | Focused app / smart-device advertising coverage; Ads-only variant |
 
 Configuration file:
@@ -144,7 +144,7 @@ Pay particular attention to these files:
 In particular, verify that:
 
 - The total rule count does not exceed 500,000.
-- All four configured upstream sources were fetched successfully.
+- All three configured upstream sources were fetched successfully.
 - Source rule counts have not changed unexpectedly.
 - Addition and removal ratios are reasonable.
 - Exclusion reasons have not increased abnormally.
@@ -425,4 +425,4 @@ The build-time enforcement gate is active. The builder compares the parsed upstr
 
 ## Upstream license and disclaimer review
 
-Before each public release, verify the current license and applicable notices for all four configured upstream rule sources: AdGuard DNS Filter, HaGeZi Multi Normal, HaGeZi Multi PRO, and AWAvenue Ads Rule (Only Ads). For both HaGeZi variants, review the [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.
+Before each public release, verify the current license and applicable notices for all three configured upstream rule sources: AdGuard DNS Filter, HaGeZi Multi PRO, and AWAvenue Ads Rule (Only Ads). Review the HaGeZi [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.
