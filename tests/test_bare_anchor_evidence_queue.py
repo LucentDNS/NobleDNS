@@ -77,7 +77,7 @@ class BareAnchorEvidenceQueueTests(unittest.TestCase):
         self.assertTrue(any("missing 1 current audit rules" in error for error in errors))
 
     def test_historical_source_line_survives_upstream_reordering(self):
-        row = "||example.test,adguard_dns,999,medium,Observed context,upstream_classification,https://example.test/evidence,Evidence does not establish safety,unresolved_test_required\\n"
+        row = "||example.test,adguard_dns,999,medium,Observed context,upstream_classification,https://example.test/evidence,Evidence does not establish safety,unresolved_test_required\n"
         with tempfile.TemporaryDirectory() as tmp:
             audit, queue = self._write_fixtures(tmp, row)
             _, errors = module.validate(audit, queue)
