@@ -3,7 +3,7 @@
   "version": "1.0.3",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T02:49:05.118028+00:00",
+  "built_at_utc": "2026-11-14T05:05:45.494662+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -24,6 +24,13 @@
         "spdx": "GPL-3.0",
         "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
         "qualification": "upstream project license; third-party input terms may apply"
+      },
+      {
+        "key": "awavenue_ads",
+        "name": "AWAvenue Ads Rule (Only Ads)",
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE",
+        "qualification": "upstream project license; only the dedicated Ads-only AdGuard variant is used"
       }
     ],
     "third_party_notices": "THIRD-PARTY-NOTICES.md",
@@ -36,9 +43,9 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4678121,
-      "sha256": "9361c8911858d2067370ec9b460f732f6a7bde3a6d9ae94f18f21ff48b124c2a",
-      "simple_block_rules": 190502,
+      "bytes": 4678883,
+      "sha256": "0ab3e6393db16f26343dc0cd66060366418b3c6713fd4639e06ff11a38b49174",
+      "simple_block_rules": 190534,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -65,13 +72,28 @@
       "simple_block_rules": 211014,
       "simple_exception_rules": 0,
       "excluded_lines_by_reason": {}
+    },
+    "awavenue_ads": {
+      "name": "AWAvenue Ads Rule (Only Ads)",
+      "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE",
+      "license_basis": "upstream project license; only the dedicated Ads-only AdGuard variant is used",
+      "bytes": 16004,
+      "sha256": "f4b660efb332b59960d7c8f2313db2c42af347f41d28c24c0834713bc7809928",
+      "simple_block_rules": 658,
+      "simple_exception_rules": 0,
+      "excluded_lines_by_reason": {
+        "wildcard_syntax": 4
+      }
     }
   },
-  "blocking_rules": 306237,
+  "blocking_rules": 306464,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
-    "hagezi_normal": 0
+    "hagezi_normal": 0,
+    "awavenue_ads": 0
   },
   "exception_review": {
     "registered_source_exceptions": 11,
@@ -79,19 +101,20 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 306248,
-  "common_rules": 95279,
+  "main_subscription_rules": 306475,
+  "common_rules": 71,
   "source_only_rules": {
-    "adguard_dns": 95223,
-    "hagezi_normal": 115735
+    "adguard_dns": 95230,
+    "hagezi_normal": 115366,
+    "awavenue_ads": 197
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "f74394eaa5c85de070bb903f6f08d3976a8a7fb1a70f1e16cb088588691f6bc9",
+  "main_subscription_sha256": "1c529528ed9f7b7cc354e22ef92cd5371e88f26082e0d59d20ae736f4a4e695a",
   "syntax_audit": {
-    "total": 306237,
+    "total": 306464,
     "forms": {
-      "domain_and_subdomains": 306168,
+      "domain_and_subdomains": 306395,
       "domain_anchor_without_end_boundary": 69
     },
     "semantics": {
