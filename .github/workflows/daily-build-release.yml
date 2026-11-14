@@ -117,6 +117,13 @@ jobs:
               "${EXTRA_ARGS[@]}"
           fi
 
+      - name: Audit active exception overlap against compiled rules
+        run: |
+          set -euo pipefail
+          python tools/audit_exception_overlaps.py \
+            --rules build-output/latest/dns-filter.txt \
+            --output build-output/latest/exception-overlap-audit.csv
+
       - name: Record build environment provenance
         shell: bash
         run: |
@@ -149,6 +156,7 @@ jobs:
           test -s "$OUT/manifest.json"
           test -s "$OUT/build-environment.txt"
           test -s "$OUT/validation-report.txt"
+          test -s "$OUT/exception-overlap-audit.csv"
           test -s "$OUT/allowlist-active.txt"
           test -s "$OUT/parser-exclusions.csv"
           test -s "$OUT/LICENSE"
@@ -400,6 +408,7 @@ jobs:
           cp build-output/latest/NobleDNS.txt NobleDNS.txt
           cp build-output/latest/manifest.json dist/manifest.json
           cp build-output/latest/validation-report.txt dist/validation-report.txt
+          cp build-output/latest/exception-overlap-audit.csv dist/exception-overlap-audit.csv
           cp build-output/latest/allowlist-active.txt dist/allowlist-active.txt
           rm -f dist/whitelist-review.txt
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
@@ -451,6 +460,7 @@ jobs:
           cmp -s dist/dns-filter.txt NobleDNS.txt
           test -s dist/manifest.json
           test -s dist/validation-report.txt
+          test -s dist/exception-overlap-audit.csv
           test -s dist/allowlist-active.txt
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
