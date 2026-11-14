@@ -7,7 +7,7 @@
 
 The 69 bare-anchor rules are inherited from the AdGuard DNS Filter. The automated 69-by-72 essential-service sentinel check currently reports no hits, but it cannot cover every app-specific hostname or distinguish telemetry from required application dependencies.
 
-A public-evidence pass has identified nine hostnames requiring targeted investigation. Four are high priority because of potential payment, sign-up, device-component or static-resource impact; five are medium-priority workflow checks. These are investigation priorities, not findings that the rules are incorrect.
+A public-evidence pass has identified 12 hostnames requiring targeted investigation. Four are P0 because of potential payment, sign-up, device-component or static-resource impact; eight are medium-priority workflow checks. These are investigation priorities, not findings that the rules are incorrect.
 
 | Rule | Source line | Priority | Evidence signal | Required workflow |
 |---|---:|---|---|---|
@@ -79,6 +79,33 @@ The exact hostname appears in multiple public mobile-ad lists. These lists may s
 
 Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
 
+### AdsWizz delivery endpoint
+
+- Official SDK documentation: https://docs.sdk.adswizz.com/web/index.html
+- Official SDK reference: https://docs.sdk.adswizz.com/web/adswizzSDK.html
+
+AdsWizz's own SDK documentation uses a `deliveryengine.adswizz.com` instance as an ad-server endpoint and describes companion-banner delivery. This is strong evidence that the hostname serves advertising, but not proof that blocking it cannot affect audio ad-break state, player callbacks or companion UI.
+
+Required test: audio app cold launch, normal playback, ad-break transitions, playback resume and player stability with the exact rule toggled.
+
+### NewsBreak identity/sync endpoint
+
+- Privacy scan: https://whogetsmydata.com/scan/139909
+- Hostname intelligence: https://www.netify.ai/resources/hostnames/id-msp.newsbreak.com
+
+A recent scan observes `id-msp.newsbreak.com` in an `sync-nbu` iframe request, while hostname intelligence associates it with NewsBreak. This supports an identity/sync or tracking role, but it does not show whether sign-in, account linking, feed personalization or consent controls depend on it.
+
+Required test: NewsBreak sign-in, account linking, feed loading, preferences and consent flows.
+
+### CloudFront script endpoint
+
+- EasyPrivacy exact-host entry: https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt
+- Storefront observation: https://seositecheckup.com/seo-audit/www.directfix.com
+
+The exact host appears in EasyPrivacy, and a storefront scan shows a JavaScript asset loaded from it. That is consistent with third-party measurement or marketing code, but a site may also depend on widgets or conversion features delivered by the script.
+
+Required test: storefront product browsing, cart, checkout page, support widgets and order status, without placing a live order.
+
 ### Gmarket, Clover Games and Grubhub tracking endpoints
 
 - AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
@@ -96,4 +123,4 @@ This source supports a first-party tracking/analytics classification for the exa
 - If the hostname has mixed use, prefer a narrower rule or no block over knowingly breaking a core user task.
 - Keep every entry unresolved until the required tests and independent review are available.
 
-The nine entries are a prioritized slice of the 69-rule inventory, not a claim that the other 60 domains have been cleared. Production blocking rules remain unchanged.
+The 12 entries are a prioritized slice of the 69-rule inventory, not a claim that the other 57 domains have been cleared. Production blocking rules remain unchanged.
