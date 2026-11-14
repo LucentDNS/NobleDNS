@@ -1,18 +1,18 @@
 # Comparator differential baseline — 2026-11-14
 
 > Run: GitHub Actions #568, PR validation run. This is a frozen exact-rule differential, **not** an efficacy benchmark.
-> NobleDNS: v1.0.7; subscription SHA-256: \`e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8\`.
+> NobleDNS: v1.0.7; subscription SHA-256: `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`.
 > Workflow: [run #568](https://github.com/LucentDNS/NobleDNS/actions/runs/43578645582) · [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76).
 
 ## Snapshot identities
 
 | List | Bytes | SHA-256 | Raw non-comment lines |
 |---|---:|---|---:|
-| NobleDNS v1.0.7 | 10,582,138 | \`e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8\` | 457,457 |
-| AdGuard DNS Filter | 4,679,830 | \`c92cac0d119051ff734783996c9ca20cf54114503d3c8b989ee1cef5e72ac25d\` | 191,470 |
-| HaGeZi Multi PRO | 5,181,990 | \`7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc\` | 226,839 |
-| OISD Big | 5,150,193 | \`70c051b9ac12b33fe6a42204fea301ed594143cead1e7085dbc22f20a860bd8a\` | 228,042 |
-| anti-AD AdGuard | 2,253,041 | \`a419ebcda1c7df5582f06ace56391b5b9a6c1f2530747a1ace0062d0f1acdfe0\` | 102,096 |
+| NobleDNS v1.0.7 | 10,582,138 | `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8` | 457,457 |
+| AdGuard DNS Filter | 4,679,830 | `c92cac0d119051ff734783996c9ca20cf54114503d3c8b989ee1cef5e72ac25d` | 191,470 |
+| HaGeZi Multi PRO | 5,181,990 | `7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc` | 226,839 |
+| OISD Big | 5,150,193 | `70c051b9ac12b33fe6a42204fea301ed594143cead1e7085dbc22f20a860bd8a` | 228,042 |
+| anti-AD AdGuard | 2,253,041 | `a419ebcda1c7df5582f06ace56391b5b9a6c1f2530747a1ace0062d0f1acdfe0` | 102,096 |
 
 ## Exact supported-syntax differential
 
@@ -48,4 +48,4 @@ The scheduled comparator tool downloads immutable snapshots for each run, record
 
 ## Reproduction
 
-The daily workflow runs \`tools/comparator_differential.py\` after the production build. The full report is \`comparator-differential.json\` in the [run #568 build-audit artifact](https://github.com/LucentDNS/NobleDNS/actions/runs/43578645582). The AdGuard Chinese audit is documented separately in [ADGUARD-CHINESE-DNS-AUDIT.md](ADGUARD-CHINESE-DNS-AUDIT.md).
+The daily workflow runs `tools/comparator_differential.py` after the production build. The full report is `comparator-differential.json` in the [run #568 build-audit artifact](https://github.com/LucentDNS/NobleDNS/actions/runs/43578645582). The AdGuard Chinese audit is documented separately in [ADGUARD-CHINESE-DNS-AUDIT.md](ADGUARD-CHINESE-DNS-AUDIT.md).
