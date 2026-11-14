@@ -73,7 +73,7 @@ NobleDNS/
 | 来源 | 用途 |
 |---|---|
 | AdGuard DNS Filter | DNS 广告与追踪过滤 |
-| HaGeZi Multi Normal | 常规 DNS 广告与追踪过滤 |
+| HaGeZi Multi PRO | 通用 DNS 广告、追踪及扩展防护 |
 | AWAvenue Ads Rule (Only Ads) | 中国大陆 App / 智能设备广告专项补充；仅使用纯广告版本 |
 
 配置文件：
@@ -426,4 +426,4 @@ NobleDNS 是公开维护的 DNS 过滤规则集。自动构建通过代表构建
 
 ## 14. 上游许可证与免责声明复核
 
-每次正式发布前，都要重新核对四个已配置上游规则源（AdGuard DNS Filter、HaGeZi Multi Normal、HaGeZi Multi PRO、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi Normal 与 Multi PRO 均来自同一上游项目；两个版本都应纳入版本与来源核对，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
+每次正式发布前，都要重新核对三个已配置上游规则源（AdGuard DNS Filter、HaGeZi Multi PRO、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi 只采用 Multi PRO 这一个主版本；同时阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)，并核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
