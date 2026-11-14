@@ -22,6 +22,21 @@ NobleDNS maintains **one balanced public edition**, designed with mainland China
 - A source is not accepted merely because it is popular or large. Review its purpose, license, syntax, update behavior, rule scope, overlap, provenance and likely compatibility impact.
 - HaGeZi Multi PRO Mini and AdGuard DNS Filter are general-purpose lists, while HaGeZi TIF Mini is a threat-intelligence feed and AWAvenue is an advertising-focused supplement. None is a mainland-China-specific dataset. Do not imply that their upstream maintainers have validated them for mainland services.
 
+## Parent/child compression and public-suffix safety
+
+The build removes a child rule only when all of the following are true:
+
+- The child and parent are both exact simple hostname rules in `||domain^` form.
+- The parent rule is present in the same merged input set.
+- The parent is not a public suffix according to the pinned Mozilla Public Suffix List snapshot.
+- The relationship is a true DNS-label suffix relationship, not a string-suffix coincidence.
+
+The PSL snapshot is pinned to commit `c3a53eed2cc49353c5fb5c30536186795d5c451b` and checked against SHA-256 `a078bef78fa2c8b5e09c41b44669f7403e0afceca21a3144c2a9f98872b26be6` on every build. Both ICANN and PRIVATE sections are included, and exact, wildcard and exception PSL rules are interpreted. If the snapshot is missing, altered or malformed, the build fails closed.
+
+Bare anchors (`||domain`), wildcard rules, `$important` rules, exceptions and other syntax are never compressed. Every removed rule is listed with its covering parent and source provenance in `domain-compression-audit.csv`. The audit is deterministic and the compression step is idempotent. The first rollout permits only an exact compression-only migration of at most 10,000 removals when all upstream source fingerprints are unchanged; ordinary source and rule drift limits remain in force afterward.
+
+This transformation reduces redundant entries; it does not add new blocking scope beyond an existing parent rule. It is not a dead-domain detector. Dead-domain scanning is intentionally not part of the scheduled build because the upstream full-list scan is too expensive for the available GitHub Actions budget and can delay the entire pipeline.
+
 ## Mainland-use compatibility review
 
 Review reports and test cases across these service categories:
