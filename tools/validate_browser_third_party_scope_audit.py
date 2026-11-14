@@ -45,6 +45,16 @@ def validate(queue_path: Path, audit_path: Path, source_path: Path) -> list[str]
             errors.append(f"row {number}: invalid or out-of-range source line for {host}")
         if REQUIRED_WARNING not in row.get("dns_implication", ""):
             errors.append(f"row {number}: DNS scope-loss warning missing for {host}")
+    expected = {
+        host for host in queue_hosts
+        if f"||{host}$third-party" in {line.strip() for line in source_lines}
+    }
+    missing = expected - seen
+    unexpected = seen - expected
+    if missing:
+        errors.append("audit is missing source-scoped hostnames: " + ", ".join(sorted(missing)))
+    if unexpected:
+        errors.append("audit contains hosts without an exact third-party source rule: " + ", ".join(sorted(unexpected)))
     if len(audit) != len(seen):
         errors.append("audit row count differs from unique hostname count")
     return errors
