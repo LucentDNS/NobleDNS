@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+No unreleased changes.
+
 ## 2026-11-14 — Align threat-feed refresh and subscription expiry
 
 - Run the scheduled build three times daily at 8-hour intervals to match HaGeZi TIF Mini's upstream expiry.
@@ -16,7 +20,7 @@
 
 - Remove HaGeZi Multi Normal from production inputs; Multi PRO is the sole HaGeZi Multi tier, following HaGeZi's cumulative-tier guidance.
 - Retain AdGuard DNS Filter as an independently audited supplemental source, not as an AdGuard-client compatibility requirement.
-- Keep AWAvenue Ads-only as the focused advertising supplement. Update source validation, licensing notices, workflow migration checks, and documentation to the three-source policy.
+- Keep AWAvenue Ads-only as the focused advertising supplement. Update source validation, licensing notices, workflow migration checks, and documentation to the three-source interim policy; HaGeZi TIF Mini was added later as a separate threat-intelligence supplement.
 
 All notable changes to NobleDNS are documented here.
 
@@ -25,10 +29,10 @@ All notable changes to NobleDNS are documented here.
 ### Fixed
 - Preserve supported upstream wildcard hostname rules and `$important` priority semantics without rewriting their patterns; continue excluding dynamic-suffix and ambiguous patterns.
 
-## Unreleased
+## Historical development notes (pre-v1.0.7; superseded where noted)
 
 ### Added
-- Add HaGeZi Multi PRO as a fourth production input while retaining HaGeZi Multi Normal; the one-time source migration is narrowly exempted from the ordinary drift gate, which automatically resumes after the new baseline is published.
+- Historical intermediate state: add HaGeZi Multi PRO as a fourth production input while retaining HaGeZi Multi Normal. This composition was superseded by the later tier-consolidation decision above; Multi Normal is not a current production input. The one-time source migration was narrowly exempted from the ordinary drift gate, which automatically resumed after the new baseline was published.
 - Document the DNS-layer complementarity boundary with AdGuard's official filter categories: NobleDNS does not claim to replace page-element, URL-modification or annoyance filters.
 - Add source-count, URL, license and subscription-header regression checks for the four-source composition.
 
@@ -66,7 +70,7 @@ All notable changes to NobleDNS are documented here.
 ### Fixed
 - Keep the root-level `NobleDNS.txt` subscription byte-identical to `dist/dns-filter.txt`.
 - Include `Version` and `Expires: 1 day` metadata in the filter header and verify it against the manifest.
-- Keep the SemVer release immutable and versioned independently from content-addressed audit releases.
+- Keep SemVer product-version snapshots separate from routine subscription refreshes; the publisher workflow does not rewrite existing version tags or assets.
 
 ## [1.0.1] - 2026-11-12
 
@@ -90,7 +94,7 @@ All notable changes to NobleDNS are documented here.
 - NobleDNS is maintained and published as a public DNS filtering rule set.
 - Main-branch pushes run the complete build, validation and publication process.
 - Documented the difference between parser/build validation and real-world filtering efficacy.
-- Added an immutable SemVer release alongside content-addressed audit Releases.
+- Added a SemVer product release alongside content-addressed audit Releases.
 
 ### Fixed
 - Corrected GitHub Actions output handling so the release identity hash is passed to the publication job.
