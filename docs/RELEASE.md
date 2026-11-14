@@ -30,6 +30,6 @@ If a newly published daily build causes a confirmed regression, identify the las
 
 Keep workflow permissions limited to the operations required for building and publishing repository contents. Do not add unrelated automation, credentials or broader permissions.
 
-The workflow retains a 30-day build-audit artifact containing source snapshots and compiler reports. For unusually large upstream changes, inspect the evidence before manually dispatching the workflow with `allow_large_change` enabled.
+The workflow retains each build-audit artifact for 5 days. A recent compressed artifact was about 16.9 MB; with three scheduled runs per day, five days of routine snapshots use roughly 254 MB before pull-request runs. This shorter retention keeps storage bounded on GitHub Free accounts (500 MB included artifact storage) while preserving a short investigation window. Source hashes, manifests and published subscription artifacts remain in the repository; do not rely on the temporary Actions artifact as permanent archival storage. For unusually large upstream changes, inspect the evidence before manually dispatching the workflow with `allow_large_change` enabled.
 
 Pull requests run build and regression checks. Publication is performed only by a successful run on the default branch.
