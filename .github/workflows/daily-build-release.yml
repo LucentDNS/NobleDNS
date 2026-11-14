@@ -253,7 +253,7 @@ jobs:
 
           assert len(manifest.get("sources", {})) == 4, \
               "Expected exactly four upstream sources"
-          assert set(manifest.get("sources", {})) == {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}, \
+          assert set(manifest.get("sources", {})) == {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}, \
               "Unexpected production source set"
 
           subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
