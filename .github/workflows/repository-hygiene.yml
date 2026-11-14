@@ -1,0 +1,140 @@
+name: NobleDNS repository hygiene
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/repository-hygiene.yml'
+
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: "Execute cleanup (otherwise perform a dry run)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: nobledns-repository-hygiene
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Prune merged branches and legacy build releases
+    if: github.event_name == 'push' || inputs.execute
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Safely remove obsolete repository refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EXECUTE: ${{ github.event_name == 'push' || inputs.execute }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Repository: $REPOSITORY"
+          echo "Execution mode: $EXECUTE"
+
+          git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+          MAIN_SHA="$(git rev-parse refs/remotes/origin/main)"
+
+          gh api --paginate "repos/$REPOSITORY/branches?per_page=100" \
+            --jq '.[] | [.name, (.protected | tostring)] | @tsv' > branches.tsv
+
+          gh api --paginate "repos/$REPOSITORY/pulls?state=closed&per_page=100" \
+            --jq '.[] | select(.merged_at != null and .head.repo.full_name == env.REPOSITORY) | [.head.ref, .head.sha] | @tsv' > merged-pr-heads.tsv
+
+          branch_deleted=0
+          branch_kept=0
+
+          while IFS=$'\t' read -r branch protected; do
+            [[ -n "$branch" ]] || continue
+            if [[ "$branch" == "main" || "$protected" == "true" ]]; then
+              echo "KEEP protected/default branch: $branch"
+              continue
+            fi
+
+            remote_ref="refs/remotes/origin/$branch"
+            git show-ref --verify --quiet "$remote_ref" || {
+              echo "KEEP unavailable ref (cannot verify): $branch"
+              branch_kept=$((branch_kept + 1))
+              continue
+            }
+
+            branch_sha="$(git rev-parse "$remote_ref")"
+            safe_to_delete=false
+
+            if git merge-base --is-ancestor "$remote_ref" "$MAIN_SHA"; then
+              safe_to_delete=true
+              reason="branch tip is already contained in main history"
+            else
+              while IFS=$'\t' read -r merged_ref merged_sha; do
+                if [[ "$merged_ref" == "$branch" && "$merged_sha" == "$branch_sha" ]]; then
+                  safe_to_delete=true
+                  reason="exact branch head was merged through a pull request"
+                  break
+                fi
+              done < merged-pr-heads.tsv
+            fi
+
+            if [[ "$safe_to_delete" != "true" ]]; then
+              echo "KEEP unmerged or changed branch: $branch"
+              branch_kept=$((branch_kept + 1))
+              continue
+            fi
+
+            echo "DELETE merged branch: $branch ($reason)"
+            if [[ "$EXECUTE" == "true" ]]; then
+              gh api --method DELETE "repos/$REPOSITORY/git/refs/heads/$branch"
+            fi
+            branch_deleted=$((branch_deleted + 1))
+          done < branches.tsv
+
+          gh api --paginate "repos/$REPOSITORY/releases?per_page=100" \
+            --jq '.[] | [.id, .tag_name] | @tsv' > releases.tsv
+
+          release_deleted=0
+          release_kept=0
+
+          while IFS=$'\t' read -r release_id tag; do
+            [[ -n "$tag" ]] || continue
+            if [[ "$tag" =~ ^nobledns-[0-9a-f]{64}$ ]]; then
+              echo "DELETE legacy content-addressed release: $tag"
+              if [[ "$EXECUTE" == "true" ]]; then
+                gh api --method DELETE "repos/$REPOSITORY/releases/$release_id"
+                if gh api --method DELETE "repos/$REPOSITORY/git/refs/tags/$tag" >/dev/null 2>&1; then
+                  echo "Deleted legacy tag: $tag"
+                else
+                  echo "WARNING: release deleted but tag deletion failed: $tag" >&2
+                fi
+              fi
+              release_deleted=$((release_deleted + 1))
+            else
+              echo "KEEP formal/non-matching release: $tag"
+              release_kept=$((release_kept + 1))
+            fi
+          done < releases.tsv
+
+          echo "Summary:"
+          echo "  Merged branches eligible/deleted: $branch_deleted"
+          echo "  Unmerged, changed, or unverifiable branches retained: $branch_kept"
+          echo "  Legacy hash releases eligible/deleted: $release_deleted"
+          echo "  Formal or non-matching releases retained: $release_kept"
+
+          if [[ "$EXECUTE" != "true" ]]; then
+            echo "Dry run only; no refs or releases were changed."
+          fi
