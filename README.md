@@ -31,7 +31,7 @@ DNS filtering operates at the hostname-resolution layer. It cannot block every a
 
 The current build combines four sources:
 
-1. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — the sole HaGeZi Multi tier and the general-purpose filtering core. HaGeZi's Multi tiers are cumulative, so Normal is not subscribed alongside PRO.
+1. [HaGeZi Pro Mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt) — the size-optimized general-purpose filtering core, built from HaGeZi Pro for DNS and mobile use. HaGeZi's Multi tiers are cumulative, so Normal is not subscribed alongside PRO.
 2. [HaGeZi TIF Mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt) — a compact threat-intelligence supplement for malware, phishing and related malicious infrastructure. It is an add-on to the main tier, not another Multi tier. TIF Mini is the size-optimized version of TIF Medium; it is not the full TIF feed.
 3. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — a separately audited DNS-layer supplement. It is retained for its incremental source contribution, not because AdGuard clients require their own DNS list.
 4. [AWAvenue Ads Rule — Ads-only variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — focused advertising coverage.
