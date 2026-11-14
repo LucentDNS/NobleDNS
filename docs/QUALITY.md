@@ -39,7 +39,7 @@ These categories define review priorities; they do not imply that every named se
 
 ## Current compilation model
 
-The current public build compiles supported blocking rules from the two configured general-purpose upstream snapshots. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
+The current public build compiles supported blocking rules from three configured sources: AdGuard DNS Filter, HaGeZi Multi Normal, and AWAvenue Ads Rule (Only Ads). The first two provide broad general-purpose coverage; AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
 
 ## Rule acceptance and correction
 
@@ -77,7 +77,7 @@ These checks verify build integrity and the rules covered by the regression corp
 
 ## Current parser scope
 
-The public DNS subscription accepts the documented AdGuard hostname-pattern forms `||domain^` and `||domain`, provided the hostname is a valid multi-label domain. AdGuard documents `||` as matching the beginning of a hostname, including subdomains, and `^` as the hostname-end separator. A missing `^` is not, by itself, a reason to discard a rule; the 69 retained bare-anchor rules remain listed for targeted client matching verification.
+The public DNS subscription accepts the documented AdGuard hostname-pattern forms `||domain^` and `||domain`, provided the hostname is a valid multi-label domain. AdGuard documents `||` as matching the beginning of a hostname, including subdomains, and `^` as the hostname-end separator. A missing `^` is not, by itself, a reason to discard a rule; the 71 retained bare-anchor rules in the v1.0.4 build remain listed for targeted client matching verification.
 
 For the general filter-rule grammar, see [How to create your own ad filters](https://adguard.com/kb/general/ad-filtering/create-own-filters/); for DNS hostname matching, use the more specific [AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/). Leading-dot forms (`.domain^` and `.domain`) are not among the hostname-pattern forms documented in that DNS-specific specification. NobleDNS therefore excludes them from the public subscription and records each original line in `parser-exclusions.csv` with the reason `unsupported_leading_dot_dns_syntax`. They are never rewritten as `||domain^`, because that would change their scope. The real upstream regression fixture contains 28 leading-dot records; all 28 must remain excluded unless the project formally expands its supported syntax based on authoritative documentation and client tests.
 
