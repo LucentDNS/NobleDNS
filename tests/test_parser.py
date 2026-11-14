@@ -98,6 +98,14 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(blocks, {"||ok.example.com^"})
         self.assertEqual(rejected["wildcard_syntax"], 2)
 
+    def test_important_modifier_on_exception_is_not_converted_to_block(self):
+        blocks, exceptions, rejected, _ = self.parse(
+            "||ads.example.com^\\n@@||safe.example.com^$important\\n"
+        )
+        self.assertEqual(blocks, {"||ads.example.com^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["modifier_important"], 1)
+
     def test_important_modifier_is_preserved(self):
         blocks, _, rejected, _ = self.parse(
             "||ads.example.com^$important\n||ok.example.com^\n"
