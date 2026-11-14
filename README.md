@@ -57,6 +57,8 @@ These generated files document the current build:
 - [Build manifest](dist/manifest.json) — source fingerprints, rule counts and build metadata.
 - [Validation report](dist/validation-report.txt) — automated checks.
 - [Syntax audit](dist/syntax-audit.json) — supported syntax inventory.
+- [Domain compression audit](dist/domain-compression-audit.csv) — each removed child rule, its covering parent and source provenance.
+- [Public Suffix metadata](dist/public-suffix-metadata.json) — pinned PSL revision and integrity metadata.
 - [Parser exclusions](dist/parser-exclusions.csv) — excluded source lines and reasons.
 - [Active exceptions](dist/allowlist-active.txt) — exceptions present in the subscription.
 - [AdGuard Chinese DNS-scope audit](dist/adguard-chinese-dns-audit.json) and [candidate review CSV](dist/adguard-chinese-dns-candidates.csv) — audit-only evidence; no Chinese regional source is automatically imported.
