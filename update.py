@@ -20,7 +20,7 @@ FILTER_HEADER = (
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
     f"! Version: {VERSION_BASE}\n"
     "! Expires: 1 day\n"
-    "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal\n"
+    "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal, AWAvenue Ads Rule (Only Ads)\n"
     "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).\n"
     "! Content: Listed domains are included as blocking targets only.\n"
 )
@@ -67,6 +67,11 @@ UPSTREAM_LICENSES = {
         "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
         "basis": "upstream project license; third-party input terms may apply",
     },
+    "awavenue_ads": {
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE",
+        "basis": "upstream project license; only the dedicated Ads-only AdGuard variant is used",
+    },
 }
 
 
@@ -90,6 +95,7 @@ def validate_licensing_files() -> None:
     required_notice_terms = (
         "AdGuard DNS Filter",
         "HaGeZi Multi Normal",
+        "AWAvenue Ads Rule (Only Ads)",
         "GPL-3.0",
         "third-party",
     )
@@ -107,14 +113,16 @@ def load_config(path: Path = CONFIG_PATH) -> dict:
     if cfg.get("project") != PROJECT:
         raise ValueError("config project must be NobleDNS")
     sources = cfg.get("sources")
-    if not isinstance(sources, list) or len(sources) != 2:
-        raise ValueError("Exactly two configured upstream sources are required")
+    if not isinstance(sources, list) or len(sources) != 3:
+        raise ValueError("Exactly three approved upstream sources are required")
     keys = [x.get("key") for x in sources]
-    if set(keys) != {"adguard_dns", "hagezi_normal"} or len(set(keys)) != 2:
-        raise ValueError("Only the approved AdGuard DNS Filter and HaGeZi Multi Normal sources are allowed")
+    approved = {"adguard_dns", "hagezi_normal", "awavenue_ads"}
+    if set(keys) != approved or len(set(keys)) != len(approved):
+        raise ValueError("Only the approved AdGuard DNS Filter, HaGeZi Multi Normal and AWAvenue Ads-only sources are allowed")
     expected = {
         "adguard_dns": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
         "hagezi_normal": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt",
+        "awavenue_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
     }
     for source in sources:
         if source.get("url") != expected[source["key"]] or not source.get("filename"):
@@ -236,7 +244,7 @@ def validate_proxy_url(proxy: str | None) -> str | None:
     return proxy
 
 
-def fetch(url: str, proxy: str | None) -> bytes:
+def fetch(url: str, proxy: str | None, min_bytes: int = MIN_SOURCE_BYTES) -> bytes:
     proxy = validate_proxy_url(proxy)
     # Use only an explicitly supplied proxy; do not silently inherit ambient proxy settings.
     handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy} if proxy else {})]
@@ -253,7 +261,7 @@ def fetch(url: str, proxy: str | None) -> bytes:
                 data = resp.read(MAX_SOURCE_BYTES + 1)
             if len(data) > MAX_SOURCE_BYTES: raise ValueError("source exceeds 50 MiB safety limit")
             if expected and len(data) != int(expected): raise ValueError(f"incomplete response: {len(data)} of {expected} bytes")
-            if len(data) < MIN_SOURCE_BYTES: raise ValueError(f"source too small: {len(data)} bytes")
+            if len(data) < min_bytes: raise ValueError(f"source too small: {len(data)} bytes; minimum is {min_bytes}")
             if data[:500].lstrip().lower().startswith((b"<html", b"<!doctype html")): raise ValueError("HTML response instead of filter list")
             data.decode("utf-8-sig", errors="strict")
             return data
@@ -494,24 +502,25 @@ def build(args) -> Path:
             if not p.is_file(): raise FileNotFoundError(f"Missing input snapshot: {p}")
             data = p.read_bytes()
         else:
-            data = fetch(source["url"], args.proxy)
-        if len(data) < MIN_SOURCE_BYTES: raise ValueError(f"{key}: source smaller than {MIN_SOURCE_BYTES} bytes")
+            data = fetch(source["url"], args.proxy, int(source.get("min_bytes", MIN_SOURCE_BYTES)))
+        min_bytes = int(source.get("min_bytes", MIN_SOURCE_BYTES))
+        if len(data) < min_bytes: raise ValueError(f"{key}: source smaller than {min_bytes} bytes")
         raw_snapshots[filename] = data
-        blocks, exc, rejected, rows = parse_source(data, key)
+        blocks, exc, rejected, rows = parse_source(data, key, min_blocks=int(source.get("min_rules", MIN_SOURCE_BLOCKS)))
         parsed[key], exceptions[key] = blocks, exc
         rejected_rows.extend(rows)
         license_info = UPSTREAM_LICENSES[key]
         source_stats[key] = {"name": source["name"], "url": source["url"], "license": license_info["spdx"], "license_url": license_info["license_url"], "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data), "simple_block_rules": len(blocks), "simple_exception_rules": len(exc), "excluded_lines_by_reason": dict(rejected)}
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
-    merged = parsed[keys[0]] | parsed[keys[1]]
+    merged = set().union(*(parsed[key] for key in keys))
     active_exceptions = validate_exception_register(exceptions, Path(args.exception_review))
-    all_exceptions = active_exceptions[keys[0]] | active_exceptions[keys[1]]
+    all_exceptions = set().union(*(active_exceptions[key] for key in keys))
     published_rules = merged | all_exceptions
     previous_manifest = Path(args.previous_manifest) if args.previous_manifest else None
     check_drift(source_stats, published_rules, previous_manifest, args.max_source_change_percent, args.allow_large_change)
     last_modified = resolve_subscription_last_modified(published_rules, previous_manifest, now)
-    common = parsed[keys[0]] & parsed[keys[1]]
+    common = set.intersection(*(parsed[key] for key in keys))
     syntax_summary, syntax_review_rows = syntax_audit(merged, parsed)
     if len(published_rules) > MAX_RULES: raise RuntimeError(f"Rule cap exceeded: {len(published_rules):,} > {MAX_RULES:,}")
     if not merged: raise RuntimeError("Refusing empty output")
@@ -525,7 +534,7 @@ def build(args) -> Path:
         if not m: raise RuntimeError(f"Unexpected output syntax: {line}")
         ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(active_exceptions[key]) for key in keys}, "exception_review": {"registered_source_exceptions": sum(len(exceptions[key]) for key in keys), "active_exceptions": len(all_exceptions), "pending_legacy_baseline": sum(1 for rule in LEGACY_PENDING_EXCEPTION_BASELINE if any(rule in active_exceptions[key] for key in keys)), "new_unreviewed_exceptions_allowed": False}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {keys[0]: len(parsed[keys[0]] - parsed[keys[1]]), keys[1]: len(parsed[keys[1]] - parsed[keys[0]])}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(active_exceptions[key]) for key in keys}, "exception_review": {"registered_source_exceptions": sum(len(exceptions[key]) for key in keys), "active_exceptions": len(all_exceptions), "pending_legacy_baseline": sum(1 for rule in LEGACY_PENDING_EXCEPTION_BASELINE if any(rule in active_exceptions[key] for key in keys)), "new_unreviewed_exceptions_allowed": False}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {key: len(parsed[key] - set().union(*(parsed[other] for other in keys if other != key))) for key in keys}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals", "complex_syntax": "excluded unless semantic equivalence is proven", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
     report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, exception-register parity and approval gate, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     temp_parent = Path(tempfile.mkdtemp(prefix=".nobledns-stage-", dir=out))
