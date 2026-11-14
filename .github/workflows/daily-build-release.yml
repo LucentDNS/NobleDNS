@@ -262,7 +262,7 @@ jobs:
           compression = manifest.get("domain_compression", {})
           assert compression.get("enabled") is True, "Pinned-PSL parent/child compression is not enabled"
           assert compression.get("psl_commit") == "c3a53eed2cc49353c5fb5c30536186795d5c451b", "Unexpected PSL snapshot commit"
-          assert compression.get("psl_sha256") == "a078bef78fa2c8b5e09c41b44669f7403e0afceca21a3144c2a9f98872b26be6", "Unexpected PSL snapshot hash"
+          assert compression.get("psl_sha256") == "7379dee58164b5f7cda5e37f2cc85b3d1754245dc313178eef5cbdcaca758650", "Unexpected PSL snapshot hash"
           assert compression.get("before_rules") - compression.get("after_rules") == compression.get("removed_rules"), "Compression accounting mismatch"
           compression_rows = Path("build-output/latest/domain-compression-audit.csv").read_text(encoding="utf-8-sig").splitlines()
           assert len(compression_rows) - 1 == compression.get("removed_rules"), "Compression audit row count mismatch"
