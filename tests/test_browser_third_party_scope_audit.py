@@ -20,7 +20,7 @@ class BrowserThirdPartyScopeAuditTests(unittest.TestCase):
                 "hostname,browser_rule,source_line,source_commit,scope,dns_implication\n"
                 f"example.test,{rule},{source_line},{COMMIT},third-party,\"{warning}\"\n",
                 encoding="utf-8")
-            source.write_text("||example.test$third-party\n", encoding="utf-8")
+            source.write_text("||example.test$third-party\n||other.test$third-party\n", encoding="utf-8")
             return validate(queue, audit, source)
     def test_valid_row_and_source_line(self):
         self.assertEqual(self._run(), [])
