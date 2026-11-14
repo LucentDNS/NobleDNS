@@ -27,17 +27,24 @@ class DocumentationConsistencyTests(unittest.TestCase):
         self.assertNotIn("already configured production inputs", lowered)
         self.assertNotIn("added alongside Multi Normal", plan)
 
-    def test_comparator_baseline_hash_matches_current_manifest(self):
-        manifest = json.loads((ROOT / "dist" / "manifest.json").read_text(encoding="utf-8"))
+    def test_frozen_comparator_baseline_matches_frozen_chinese_audit(self):
         baseline = (ROOT / "docs" / "COMPARATOR-BASELINE-2026-11-14.md").read_text(encoding="utf-8")
-        match = re.search(
+        chinese_audit = (ROOT / "docs" / "ADGUARD-CHINESE-DNS-AUDIT.md").read_text(encoding="utf-8")
+        baseline_match = re.search(
             r"^> NobleDNS: v[^;]+; subscription SHA-256: `([0-9a-f]{64})`.$",
             baseline,
             flags=re.MULTILINE,
         )
+        audit_match = re.search(
+            r"Matching NobleDNS build: v[^,]+, subscription SHA-256 `([0-9a-f]{64})`",
+            chinese_audit,
+        )
 
-        self.assertIsNotNone(match, "Comparator baseline must declare its subscription hash")
-        self.assertEqual(match.group(1), manifest["main_subscription_sha256"])
+        self.assertIsNotNone(baseline_match, "Comparator baseline must declare its frozen subscription hash")
+        self.assertIsNotNone(audit_match, "Chinese audit must declare the matching frozen subscription hash")
+        self.assertEqual(baseline_match.group(1), audit_match.group(1))
+        self.assertIn("actions/runs/43579323077", baseline)
+        self.assertIn("actions/runs/43579323077", chinese_audit)
 
 
 if __name__ == "__main__":
