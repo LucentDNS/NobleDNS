@@ -47,7 +47,7 @@ class PublicSuffixList:
                 raise ValueError(f"Invalid rule in pinned PSL at line {number}: {raw_line}") from exc
         if len(self.exact) < 5000 or "com" not in self.exact or "co.uk" not in self.exact:
             raise ValueError("Pinned PSL is incomplete or missing required ICANN sentinels")
-        if "blogspot.com" not in self.exact or "ck" not in self.exact or "www.ck" not in self.exception:
+        if "blogspot.com" not in self.exact or "ck" not in self.wildcard or "www.ck" not in self.exception:
             raise ValueError("Pinned PSL is missing PRIVATE/wildcard/exception sentinels")
         self.sha256 = digest
 
