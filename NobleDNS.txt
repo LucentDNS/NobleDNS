@@ -7,7 +7,7 @@
 ! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).
 ! Content: Listed domains are included as blocking targets only.
 ! Last modified: 2026-11-14 (UTC)
-! Blocked domains: 350,259
+! Blocked domains: 350,287
 
 @@||ad.10010.com^
 @@||ad.abchina.com^
@@ -10796,6 +10796,7 @@
 ||8j7tu8vtxx.com^
 ||8jfbt5va3r.com^
 ||8jftebcmv5hoyrtontkmiwt4qm4b.cyou^
+||8jftmxewqw72jnu.rest^
 ||8jjbet.org^
 ||8jk35km0r3.com^
 ||8jkx.com^
@@ -40579,6 +40580,7 @@
 ||anz.sc.omtrdc.net^
 ||anz7.allianz-voyage.fr^
 ||anzaxffpetu.com^
+||anzbzifzusi.in^
 ||anzeigen-vor-ort.de^
 ||anzeigen.matthias.productions^
 ||anzlrevuspku.com^
@@ -51676,6 +51678,7 @@
 ||bedsidemanak.cyou^
 ||bedsidemeasuring.com^
 ||bedsitcovert.qpon^
+||bedsockfebrile.cyou^
 ||beduckidaeanaudiles.cyou^
 ||beduinsctge.com^
 ||bedwlzqwkxpzfc.com^
@@ -54380,6 +54383,7 @@
 ||biqizo.vixpaulahermanny.com^
 ||biqtlcqiutnjk.online^
 ||biqubao.com^
+||biqyxmqdyvkfz.website^
 ||biranco.com^
 ||birbmcmp.icu^
 ||birchflarechurch.com^
@@ -57474,6 +57478,7 @@
 ||bqwtvcpkrrnlq.site^
 ||bqxnpvzbrurde.online^
 ||bqyfasjrctlfb.site^
+||bqyprflukjrci.space^
 ||bqyrrwhnugwrp.website^
 ||bqyxcqnjdnvrs.site^
 ||br-ad-lgsmartad-com.aws-prd.net^
@@ -90905,6 +90910,7 @@
 ||designs-preview.com^
 ||designsgrid.com^
 ||designsprovidingstifle.com^
+||designsrecedesheroics.cyou^
 ||designstools.com^
 ||designstraw.info^
 ||designtocombatcovid19.com^
@@ -113538,6 +113544,7 @@
 ||fmeokhgaca.in^
 ||fmeounjodrepw.site^
 ||fmepuzstjrkqv.website^
+||fmfonavgkdvfo.site^
 ||fmfrht.icu^
 ||fmgbe.vktrygear.com^
 ||fmgxsqz.beer^
@@ -119377,6 +119384,7 @@
 ||gcxuiuhsrydtukhcr-sryuju7i6rertjy.teemill.com^
 ||gcyofbrc2390489439.goatcounter.com^
 ||gcyxhcyykhjrc.site^
+||gczavfjzqmhdz.space^
 ||gczhqusagsfps.space^
 ||gczpyfnuquhix.online^
 ||gczudi.iddental.co.kr^
@@ -121483,6 +121491,7 @@
 ||gimora.de^
 ||gimp.es^
 ||gimpedbrl.com^
+||gimperminicab.cfd^
 ||gimpsgenips.com^
 ||gimuci.psychobunny.jp^
 ||gimzaro.shop^
@@ -123922,6 +123931,7 @@
 ||gomtdata.com^
 ||gomvilo.shop^
 ||gonakiecullies.com^
+||gonamalayunstrap.cyou^
 ||gonamic.de^
 ||gondolagnome.com^
 ||goneleft.com^
@@ -153902,6 +153912,7 @@
 ||kabylepayed.rest^
 ||kachi-berlin.de^
 ||kachinasindon.com^
+||kackqswjnkeab.space^
 ||kacq.cn^
 ||kacvaqart.com^
 ||kad.gotokeep.com^
@@ -154873,6 +154884,7 @@
 ||kdglsj93fdslkg.com^
 ||kdhgwxwkpbxbf.site^
 ||kdhhpgbbnfgwl.online^
+||kdhjrqanauqzu.online^
 ||kdhjzc.pmdbeauty.com^
 ||kdhmzv.oculosmeninaflor.com.br^
 ||kdhndfhje.snusdiscount.dk^
@@ -162189,6 +162201,7 @@
 ||lhinsights.com^
 ||lhioz.shop^
 ||lhippac.cn^
+||lhivvxyqzddyr.website^
 ||lhjnegfxaoemq.website^
 ||lhjtobzhpypph.online^
 ||lhjvhnwlttylp.online^
@@ -162243,6 +162256,7 @@
 ||lhyioq.domodesign.kr^
 ||lhzstiyymquwg.space^
 ||lhzulh.tribeamrapali.com^
+||lhzulviipmufi.online^
 ||li-ad-lgsmartad-com.aws-prd.net^
 ||li-hamburg-de.weebly.com^
 ||li-info-lgsmartad-com.aws-prd.net^
@@ -163231,6 +163245,7 @@
 ||linleynuba.com^
 ||linnaeansociety.org^
 ||linneschinkel.com^
+||linnetsairns.cfd^
 ||linoee.com^
 ||linorea.shop^
 ||linostee.com^
@@ -174839,6 +174854,7 @@
 ||lrafahzbolzqk.space^
 ||lrahczlcvkioo.online^
 ||lraline.com^
+||lraujinoltnfj.site^
 ||lravwm.spa.cz^
 ||lrbelgium.wolterskluwer.com^
 ||lrbmaxqhmejnk.site^
@@ -194953,6 +194969,7 @@
 ||mof-analytics.apps.fslabs.net^
 ||mof.analyticsmania.com^
 ||mofanue.com^
+||mofebueaztzad.website^
 ||mofohoo.com^
 ||mofox.com^
 ||mogati.shop^
@@ -203387,6 +203404,7 @@
 ||nlpnh.superiorseating.com^
 ||nlps.nextlevelpublicspeaking.com^
 ||nlptn.sassybash.com^
+||nlrusyldghpqh.site^
 ||nlsgostuanbpy.website^
 ||nlsmhyylwozop.site^
 ||nltcs.idfnet.net^
@@ -213936,6 +213954,7 @@
 ||pandemictoolkit.com.102.122.2o7.net^
 ||pandido-en-ligne.fr^
 ||pandido1.fr^
+||pandieslekach.cyou^
 ||pandora-at.at^
 ||pandora-deutschland.de^
 ||pandora-outlet.de^
@@ -228063,6 +228082,7 @@
 ||qcglsbvudqtao.site^
 ||qcgt.qciano.com.br^
 ||qcgtoz.cwjobs.co.uk^
+||qcgvpfizclttu.space^
 ||qchannel01.cn^
 ||qchannel03.cn^
 ||qchogngn.moychay.nl^
@@ -259615,6 +259635,7 @@
 ||shlutianlp.com^
 ||shm.to^
 ||shminfo.com^
+||shmkrdxvdyhqm.website^
 ||shmomanor.com^
 ||shn.badaea-albaraka.com^
 ||shn.brandfull.com^
@@ -314965,6 +314986,7 @@
 ||trf.tjustagolf.se^
 ||trfcbooost.com^
 ||trfcwiyo.icu^
+||trfdwlckvsmkg.site^
 ||trff.powerppshtraf.digital^
 ||trffcdmn.com^
 ||trfpossiesmola.cfd^
@@ -321123,6 +321145,7 @@
 ||undom.net^
 ||undoneferocious.com^
 ||undoneknit.com^
+||undopedesture.rest^
 ||undorewa.blog^
 ||undorweexpert.shop^
 ||undosupporterpyjamas.com^
@@ -324166,6 +324189,7 @@
 ||uzdpzjmscmlgz.website^
 ||uzdzxjgxitzwa.space^
 ||uze2cuw4s0.data.adobedc.net^
+||uzebvjfvnmdke.space^
 ||uzeio.com^
 ||uzerly.net^
 ||uzerxgwtqanku.space^
@@ -331248,6 +331272,7 @@
 ||w88thethao26.com^
 ||w890.denvergazette.com^
 ||w8a27b25y5.data.adobedc.net^
+||w8j3w3vz7ymbtxmgfr13lqubz6yz8nr31k.cfd^
 ||w8ki9d-conversions.appsflyersdk.com^
 ||w8ki9d-dlsdk.appsflyersdk.com^
 ||w8ki9d-gcdsdk.appsflyersdk.com^
@@ -336913,6 +336938,7 @@
 ||woolworthsfoodgroup.sc.omtrdc.net^
 ||woolworthsfoodgroup.tt.omtrdc.net^
 ||woom-eu.shop^
+||woomdurham.com^
 ||woomio.com^
 ||woomy.me^
 ||woonkruthf.com^
@@ -340044,6 +340070,7 @@
 ||xcvk.connectiamay-naat.com^
 ||xcvrle.premiereclasse.com^
 ||xcvunchflllgp.online^
+||xcwnfgoenzuno.space^
 ||xcwns.thehockeyshop.com^
 ||xcx.dcad01.com^
 ||xcxmpiysijwjr.website^
@@ -342462,6 +342489,7 @@
 ||xplwiu-launches.appsflyersdk.com^
 ||xpmarkets.com^
 ||xpmgokvhhjoty.site^
+||xpobvymhwyuux.online^
 ||xpoken.com^
 ||xpollo.com^
 ||xponsor.com^

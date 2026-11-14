@@ -3,7 +3,7 @@
   "version": "1.0.5",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T06:06:19.292542+00:00",
+  "built_at_utc": "2026-11-14T07:32:24.895679+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -50,9 +50,9 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4678883,
-      "sha256": "0ab3e6393db16f26343dc0cd66060366418b3c6713fd4639e06ff11a38b49174",
-      "supported_block_rules": 190894,
+      "bytes": 4679546,
+      "sha256": "a36d352b3c102d87fc34e7a5c9b5b70e61d1ec16aa3f76915b6be1271173907b",
+      "supported_block_rules": 190922,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -107,7 +107,7 @@
       }
     }
   },
-  "blocking_rules": 350259,
+  "blocking_rules": 350287,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
@@ -121,23 +121,23 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 350270,
+  "main_subscription_rules": 350298,
   "common_rules": 71,
   "source_only_rules": {
-    "adguard_dns": 94743,
+    "adguard_dns": 94771,
     "hagezi_normal": 10765,
     "hagezi_multi_pro": 43435,
     "awavenue_ads": 190
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "2c17371bcbe1267cf96926d34b33fc0c31be4e74aeb670b9cd2e0fc4a669d410",
+  "main_subscription_sha256": "f67723c61379c2001a802e991a2fbcd6af9dd3c29f109b308da445a5b92c2661",
   "syntax_audit": {
-    "total": 350259,
+    "total": 350287,
     "forms": {
       "domain_and_subdomains_wildcard": 355,
       "domain_and_subdomains_important": 3,
-      "domain_and_subdomains": 349830,
+      "domain_and_subdomains": 349858,
       "domain_anchor_without_end_boundary": 71
     },
     "semantics": {
