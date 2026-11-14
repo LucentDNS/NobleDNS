@@ -4,12 +4,12 @@
   "max_rules": 500000,
   "sources": [
     {
-      "key": "hagezi_multi_pro",
-      "name": "HaGeZi Multi PRO",
-      "filename": "hagezi_multi_pro.txt",
-      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+      "key": "hagezi_pro_mini",
+      "name": "HaGeZi Pro Mini",
+      "filename": "hagezi_pro_mini.txt",
+      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt",
       "min_bytes": 1000000,
-      "min_rules": 100000
+      "min_rules": 50000
     },
     {
       "key": "hagezi_tif_mini",
