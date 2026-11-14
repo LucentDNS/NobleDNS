@@ -554,6 +554,8 @@ jobs:
           test -s dist/manifest.json
           test -s dist/validation-report.txt
           test -s dist/exception-overlap-audit.csv
+          test -s dist/adguard-chinese-dns-audit.json
+          test -s dist/adguard-chinese-dns-candidates.csv
           test -s dist/allowlist-active.txt
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
