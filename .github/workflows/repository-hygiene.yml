@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/repository-hygiene.yml'
 
+  schedule:
+    - cron: "17 4 * * 0"
+
   workflow_dispatch:
     inputs:
       execute:
@@ -40,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
-          EXECUTE: ${{ github.event_name == 'push' || inputs.execute }}
+          EXECUTE: ${{ github.event_name == 'push' || github.event_name == 'schedule' || inputs.execute }}
         shell: bash
         run: |
           set -euo pipefail
