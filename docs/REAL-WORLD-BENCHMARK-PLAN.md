@@ -20,10 +20,11 @@ A result in one category must never be presented as proof in another. A successf
 Run the same test corpus against, at minimum:
 - NobleDNS Balanced (exact published commit and SHA-256).
 - AdGuard DNS Filter (exact downloaded snapshot and SHA-256).
-- HaGeZi Multi NORMAL (exact downloaded snapshot and SHA-256).
-- OISD Big (exact downloaded snapshot and SHA-256), once snapshot and license/provenance metadata are recorded.
+- HaGeZi Multi PRO (`https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt`; exact downloaded snapshot and SHA-256). This is the primary HaGeZi target; Multi NORMAL is not a substitute for Pro.
+- OISD Big (`https://big.oisd.nl/`; exact downloaded snapshot and SHA-256).
+- anti-AD AdGuard edition (`https://anti-ad.net/adguard.txt`; exact downloaded snapshot and SHA-256). Do not substitute anti-AD's AdGuard Home `easylist.txt`, which uses a different and broader rule grammar.
 
-Additional lists may be added only when their current format, scope, provenance and test permissions are clear. Do not merge comparator data into NobleDNS.
+These are independent comparators, not production inputs. Do not merge comparator data into NobleDNS or treat overlapping entries as independent evidence. Record each snapshot's license, upstream notices, format and parser exclusions before scoring. If a comparator cannot be normalized without changing semantics, mark the affected entries unsupported and disclose the exclusions rather than silently simplifying them.
 
 For every run, preserve:
 - Test date/time UTC, operator and test location/network.
@@ -59,7 +60,7 @@ Requirements:
 - Keep a blind holdout subset unavailable to the person tuning rules until an evaluation round is frozen.
 - Never commit private traffic logs, identifiers, credentials or user-specific browsing histories.
 
-The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects explicitly expired or non-high-confidence records, refuses to score unsupported rule syntax, and writes SHA-256 plus byte-size identities for the exact rules file, corpus file and scorer source into every result artifact. Its `independent=true` field is an attestation, not cryptographic proof; each row also records a primary reviewer and a distinct independent reviewer. Threat records require an expiry date, and expired evidence is rejected. The scorer models only the syntax currently accepted by the published v1.0.3 parser: `||domain^` (domain and subdomains, with hostname-end boundary), `||domain` (hostname-start anchor without an end separator), and `@@||domain^` (exception). Leading-dot records are excluded by the current production parser; an open proposal to preserve them must not be treated as supported until authoritative semantics and client behavior are established. Other syntax is rejected rather than silently scored. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed. The 69 current bare-anchor rules are also checked by [the bare-anchor safety audit](BARE-ANCHOR-SAFETY-AUDIT.md) against the critical-service sentinel fixture on every build; zero matches in that small fixture is a regression result, not a complete compatibility finding.
+The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects explicitly expired or non-high-confidence records, refuses to score unsupported rule syntax, and writes SHA-256 plus byte-size identities for the exact rules file, corpus file and scorer source into every result artifact. Its `independent=true` field is an attestation, not cryptographic proof; each row also records a primary reviewer and a distinct independent reviewer. Threat records require an expiry date, and expired evidence is rejected. The current scorer is not yet production-complete for NobleDNS v1.0.4: it models `||domain^`, `||domain` and `@@||domain^`, but the published NobleDNS subscription also contains 355 supported hostname-wildcard rules and 3 `$important` rules. Because the scorer refuses unsupported syntax rather than partially scoring a file, it must be extended and regression-tested for every v1.0.4 production form before the first head-to-head score. Leading-dot records remain excluded by the production parser. The scorer must model hostname wildcard matching and `$important` precedence faithfully, and must refuse any unimplemented modifier or exception form. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed. The current v1.0.4 build contains 71 bare-anchor rules; each build produces a fresh audit against the critical-service sentinel fixture. A zero-hit result in that small fixture is a regression result, not a complete compatibility finding.
 
 ## 4. Metrics
 
@@ -166,7 +167,7 @@ At the time this plan is added:
 - No comparative efficacy or performance score has been established.
 - The rule-liveness observation fixture is empty; no live multi-vantage liveness conclusions exist.
 
-Therefore, current evidence does not support claims that NobleDNS is fully field-tested, has a measured low false-positive rate, or is objectively superior to established lists. This does not by itself mean the published v1.0.3 release is a half-finished product; it means those stronger empirical claims remain unproven and must not be advertised as facts.
+Therefore, current evidence does not support claims that NobleDNS is fully field-tested, has a measured low false-positive rate, or is objectively superior to established lists. This does not by itself mean the published v1.0.4 release is a half-finished product; it means those stronger empirical claims remain unproven and must not be advertised as facts.
 
 ## 9. Reporting template
 
@@ -185,7 +186,7 @@ The immediate execution sequence is therefore:
 2. Collect independent evidence for each candidate, including observed function and exact hostname scope.
 3. Have a second reviewer adjudicate the proposed labels; leave disputed or insufficiently supported rows unscored.
 4. Populate the reviewed corpus only after the evidence and review fields are complete.
-5. Freeze NobleDNS, AdGuard DNS Filter and HaGeZi snapshots and run the scorer; then validate the most consequential findings in actual DNS clients and real application tasks.
+5. Freeze NobleDNS, AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard snapshots and run the scorer; then validate the most consequential findings in actual DNS clients and real application tasks.
 
 The discovery seed is attributed under CC BY 4.0. See [its provenance and limitations](../benchmark/discovery/README.md) before reuse.
 

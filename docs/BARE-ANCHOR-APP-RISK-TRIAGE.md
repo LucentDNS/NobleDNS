@@ -1,11 +1,11 @@
 # Bare-anchor app compatibility: priority investigations
 
 > Status: unresolved investigation queue. No entry below is a confirmed NobleDNS false positive.
-> Production subscription and all 69 bare-anchor rules remain unchanged.
+> Production subscription and the historical 69-rule set remain unchanged.
 
 ## Why this queue exists
 
-The 69 bare-anchor rules are inherited from the AdGuard DNS Filter. The automated 69-by-72 essential-service sentinel check currently reports no hits, but it cannot cover every app-specific hostname or distinguish telemetry from required application dependencies.
+The historical 69 bare-anchor rules in the v1.0.3 review set were inherited from the AdGuard DNS Filter. The v1.0.4 manifest now records 71 bare-anchor rules; the current build audit is authoritative for the live set. The automated 69-by-72 essential-service sentinel check currently reports no hits, but it cannot cover every app-specific hostname or distinguish telemetry from required application dependencies.
 
 A public-evidence pass now has at least one exact-host lead for all 69 bare-anchor rules in the current build. Four remain P0 from the existing payment, sign-up, device-component and static-resource risk set; `mtm.qdqmedia.com` is an additional high-priority conflict because a public badfilter override exists; the other 64 are medium-priority workflow investigations. These are evidence leads, not compatibility clearance.
 
