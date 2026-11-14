@@ -98,6 +98,7 @@ def audit(source: Path, current: Path, csv_path: Path, json_path: Path) -> dict:
             continue
         hostname = match.group(1).lower()
         if not valid_hostname(hostname):
+            counts[kind] -= 1
             counts["invalid_or_non_hostname_domain_syntax"] += 1
             continue
         canonical = f"||{hostname}" + ("^" if match.group(2) else "")
