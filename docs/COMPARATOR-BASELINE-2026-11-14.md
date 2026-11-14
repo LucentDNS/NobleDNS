@@ -1,6 +1,6 @@
 # Comparator differential baseline — 2026-11-14
 
-> Run: GitHub Actions #568, PR validation run. This is a frozen exact-rule differential, **not** an efficacy benchmark.
+> Run: GitHub Actions #575, PR validation run. This is a frozen exact-rule differential, **not** an efficacy benchmark.
 > NobleDNS: v1.0.7; subscription SHA-256: `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`.
 > Workflow: [run #575](https://github.com/LucentDNS/NobleDNS/actions/runs/43579150459) · [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76).
 
@@ -30,7 +30,7 @@ NobleDNS has 11 active exceptions, all matching the AdGuard DNS Filter snapshot 
 ## Findings and decisions
 
 1. **HaGeZi Multi PRO is fully covered by exact rule identity.** All 226,838 supported PRO block rules appear in NobleDNS v1.0.7; the comparator-only count is zero. Adding HaGeZi Multi Normal or another Multi tier would be redundant. TIF Mini is a distinct threat-intelligence add-on and is not part of this general-list comparison.
-2. **AdGuard DNS Filter is almost fully covered within the supported syntax subset.** Its 74 comparator-only strings are IP-literal rules, not hostnames. NobleDNS deliberately rejects IP literals as DNS hostname rules. The 450 other unsupported lines include regex, leading-dot, wildcard and modifier forms that must not be flattened into guessed hostname blocks. The 74 IP-literal strings are not missing hostname coverage; they are rejected by NobleDNS's stricter domain-only parser.
+2. **AdGuard DNS Filter's hostname-rule subset is fully covered.** After aligning the benchmark scorer with the production compiler, its comparator-only count is zero. The 524 excluded lines comprise 74 IP-literal rules (not DNS hostnames) and 450 other unsupported forms, including regex, leading-dot, wildcard and modifier syntax. These must not be flattened into guessed hostname blocks.
 3. **OISD Big has 37,705 exact supported rules absent from NobleDNS.** This is a discovery queue, not a bulk-import recommendation. Adding all of them would consume about 88.6% of the remaining 42,543-rule headroom before any future source growth, and exact presence in OISD does not independently prove safety for NobleDNS's user base.
 4. **anti-AD AdGuard has 19,073 exact supported rules absent from NobleDNS.** These are also discovery candidates only. anti-AD has 36 unsupported lines, including broad/dynamic wildcard patterns, and its 49 exceptions are not portable approvals.
 5. **The current production ceiling remains 500,000 rules.** NobleDNS contains 457,446 blocking rules plus 11 active exceptions (457,457 total), leaving 42,543 subscription slots. The remaining space is not a target to fill.
