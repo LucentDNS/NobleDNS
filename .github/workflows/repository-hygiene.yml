@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   cleanup:
-    name: Prune merged branches and legacy build releases
+    name: Prune closed-PR branches and legacy build releases
     if: github.event_name == 'push' || inputs.execute
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -56,7 +56,10 @@ jobs:
             --jq '.[] | [.name, (.protected | tostring)] | @tsv' > branches.tsv
 
           gh api --paginate "repos/$REPOSITORY/pulls?state=closed&per_page=100" \
-            --jq '.[] | select(.merged_at != null and .head.repo.full_name == env.REPOSITORY) | [.head.ref, .head.sha] | @tsv' > merged-pr-heads.tsv
+            --jq '.[] | select(.head.repo.full_name == env.REPOSITORY) | .head.ref' > closed-pr-branches.txt
+
+          gh api --paginate "repos/$REPOSITORY/pulls?state=open&per_page=100" \
+            --jq '.[] | select(.head.repo.full_name == env.REPOSITORY) | .head.ref' > open-pr-branches.txt
 
           branch_deleted=0
           branch_kept=0
@@ -75,20 +78,18 @@ jobs:
               continue
             }
 
-            branch_sha="$(git rev-parse "$remote_ref")"
             safe_to_delete=false
 
-            if git merge-base --is-ancestor "$remote_ref" "$MAIN_SHA"; then
+            if grep -Fqx -- "$branch" open-pr-branches.txt; then
+              echo "KEEP branch with an open pull request: $branch"
+              branch_kept=$((branch_kept + 1))
+              continue
+            elif grep -Fqx -- "$branch" closed-pr-branches.txt; then
+              safe_to_delete=true
+              reason="associated pull request is closed and no open PR uses this branch"
+            elif git merge-base --is-ancestor "$remote_ref" "$MAIN_SHA"; then
               safe_to_delete=true
               reason="branch tip is already contained in main history"
-            else
-              while IFS=$'\t' read -r merged_ref merged_sha; do
-                if [[ "$merged_ref" == "$branch" && "$merged_sha" == "$branch_sha" ]]; then
-                  safe_to_delete=true
-                  reason="exact branch head was merged through a pull request"
-                  break
-                fi
-              done < merged-pr-heads.tsv
             fi
 
             if [[ "$safe_to_delete" != "true" ]]; then
@@ -97,7 +98,7 @@ jobs:
               continue
             fi
 
-            echo "DELETE merged branch: $branch ($reason)"
+            echo "DELETE inactive branch: $branch ($reason)"
             if [[ "$EXECUTE" == "true" ]]; then
               gh api --method DELETE "repos/$REPOSITORY/git/refs/heads/$branch"
             fi
@@ -130,8 +131,8 @@ jobs:
           done < releases.tsv
 
           echo "Summary:"
-          echo "  Merged branches eligible/deleted: $branch_deleted"
-          echo "  Unmerged, changed, or unverifiable branches retained: $branch_kept"
+          echo "  Inactive branches eligible/deleted: $branch_deleted"
+          echo "  Open-PR, unassociated, or unverifiable branches retained: $branch_kept"
           echo "  Legacy hash releases eligible/deleted: $release_deleted"
           echo "  Formal or non-matching releases retained: $release_kept"
 
