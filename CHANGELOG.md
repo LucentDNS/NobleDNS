@@ -11,6 +11,7 @@ All notable changes to NobleDNS are documented here. Versioned sections describe
 
 ### Changed
 - Clarify that exact-rule overlap and automated build success are not measurements of real-world efficacy, precision, recall or client compatibility.
+- Retain large build-audit artifacts for 5 days rather than 30 to keep recurring Actions storage within a conservative budget.
 
 ## [1.0.7] - 2026-11-14
 
