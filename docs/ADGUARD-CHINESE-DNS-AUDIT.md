@@ -12,11 +12,13 @@ AdGuard Chinese is primarily a browser/content filter. NobleDNS is a hostname-le
 
 - Upstream file: [AdGuard Chinese filter](https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt)
 - Repository: [AdguardTeam/FiltersRegistry](https://github.com/AdguardTeam/FiltersRegistry)
-- Path: \`filters/filter_224_Chinese/filter.txt\`
-- Git blob SHA: \`07d1a3c11ac797e62acf26e76a4e0179045def04\`
-- Snapshot size: 758,180 bytes
-- Source lines: 22,068
+- Path: `filters/filter_224_Chinese/filter.txt`
+- CI snapshot SHA-256: `f6d123fbcf4f5952d0f109faad1a2b4accf8ea0a378bf6f85b13a14158d02a8b`
+- Snapshot size: 758,748 bytes
+- Source lines: 22,067
 - Non-comment rule lines: 20,358
+- Matching NobleDNS build: v1.0.7, subscription SHA-256 `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`
+- Audit run: [GitHub Actions #568](https://github.com/LucentDNS/NobleDNS/actions/runs/43578645582), [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76)
 
 The line counts below are a static syntax classification of this snapshot, not a measure of useful or safe DNS coverage. Categories are exclusive under the audit classifier; upstream conditional directives and rule semantics are not fully interpreted by this first pass.
 
@@ -33,7 +35,7 @@ The line counts below are a static syntax classification of this snapshot, not a
 | Other / conditional / unsupported syntax | 128 |
 | **Total** | **20,358** |
 
-The 703 modifier-bearing domain rules include contextual conditions such as \`$third-party\` and \`$domain=\`. Removing those modifiers changes the original rule's meaning. DNS filtering cannot preserve request-party or page-domain context. Exceptions are also not automatically portable: they require exact precedence and scope handling.
+The 703 modifier-bearing domain rules include contextual conditions such as `$third-party` and `$domain=`. Removing those modifiers changes the original rule's meaning. DNS filtering cannot preserve request-party or page-domain context. Exceptions are also not automatically portable: they require exact precedence and scope handling.
 
 
 ## Results from the first recurring CI audit
@@ -63,18 +65,18 @@ The following must not be flattened into DNS blocks:
 
 - Cosmetic selectors, scriptlets, HTML filtering and other page-element rules.
 - URL/path-specific and regular-expression rules.
-- Rules with \`$third-party\`, \`$domain=\`, platform conditions or other request-context modifiers.
+- Rules with `$third-party`, `$domain=`, platform conditions or other request-context modifiers.
 - Exceptions, unless their exact semantics are supported and independently reviewed.
 - Wildcard patterns unless the exact matching behavior is supported by the target DNS client and the candidate is independently justified.
 
-A syntactically simple \`||hostname^\` line is only a *candidate*. It may still be a first-party advertising endpoint, a shared API, a CDN object host, a login/payment dependency, or a service whose use is context-dependent. The source's own comments distinguish first-party ad-server cases; that is a warning against treating every hostname as a universally safe block.
+A syntactically simple `||hostname^` line is only a *candidate*. It may still be a first-party advertising endpoint, a shared API, a CDN object host, a login/payment dependency, or a service whose use is context-dependent. The source's own comments distinguish first-party ad-server cases; that is a warning against treating every hostname as a universally safe block.
 
 ## Reproducible audit
 
-The scheduled build runs \`tools/audit_adguard_chinese.py\` against the current upstream snapshot and the generated NobleDNS subscription. It produces:
+The scheduled build runs `tools/audit_adguard_chinese.py` against the current upstream snapshot and the generated NobleDNS subscription. It produces:
 
-- \`dist/adguard-chinese-dns-audit.json\`: source fingerprint, exclusive syntax counts, and aggregate overlap results.
-- \`dist/adguard-chinese-dns-candidates.csv\`: every simple hostname-pattern candidate, its source line, and whether an existing NobleDNS suffix/wildcard rule already covers it.
+- `dist/adguard-chinese-dns-audit.json`: source fingerprint, exclusive syntax counts, and aggregate overlap results.
+- `dist/adguard-chinese-dns-candidates.csv`: every simple hostname-pattern candidate, its source line, and whether an existing NobleDNS suffix/wildcard rule already covers it.
 
 The overlap check is intentionally conservative and is not a complete emulation of every AdGuard client matching edge case. “Not covered” means only that the audit did not find a matching exact/parent suffix or supported wildcard in the current compiled list. It does **not** mean the candidate should be added.
 
