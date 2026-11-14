@@ -1,9 +1,9 @@
 {
-  "total": 339535,
+  "total": 457446,
   "forms": {
     "domain_and_subdomains_wildcard": 355,
     "domain_and_subdomains_important": 3,
-    "domain_and_subdomains": 339106,
+    "domain_and_subdomains": 457017,
     "domain_anchor_without_end_boundary": 71
   },
   "semantics": {
@@ -38,10 +38,10 @@
       "||0-0-0-0-0-0-0-0-0-0-0-0-0-33-0-0-0-0-0-0-0-0-0-0-0-0-0.info^",
       "||0-0-0checkmate.com^",
       "||0-0-7.site^",
+      "||0-0.fr^",
       "||0-02.net^",
       "||0-0asia.com^",
-      "||0-100mph.com^",
-      "||0-2.net^"
+      "||0-100mph.com^"
     ],
     "domain_anchor_without_end_boundary": [
       "||afdads.com",

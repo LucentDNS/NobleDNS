@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T08:21:35.434693+00:00",
+  "built_at_utc": "2026-11-14T08:34:01.412419+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -17,6 +17,13 @@
         "spdx": "GPL-3.0",
         "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
         "qualification": "upstream project license; Multi PRO is a distinct list variant; third-party input terms may apply"
+      },
+      {
+        "key": "hagezi_tif_mini",
+        "name": "HaGeZi TIF Mini",
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+        "qualification": "upstream project license; TIF Mini is a distinct threat-intelligence add-on; third-party input terms may apply"
       },
       {
         "key": "adguard_dns",
@@ -46,6 +53,18 @@
       "bytes": 5181990,
       "sha256": "7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc",
       "supported_block_rules": 226838,
+      "simple_exception_rules": 0,
+      "excluded_lines_by_reason": {}
+    },
+    "hagezi_tif_mini": {
+      "name": "HaGeZi TIF Mini",
+      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt",
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+      "license_basis": "upstream project license; TIF Mini is a distinct threat-intelligence add-on; third-party input terms may apply",
+      "bytes": 3928109,
+      "sha256": "01de1f7b79e12a53120ee10e9fc2845d36b8d51f9a129b11d331264f3ea913a8",
+      "supported_block_rules": 186315,
       "simple_exception_rules": 0,
       "excluded_lines_by_reason": {}
     },
@@ -88,10 +107,11 @@
       }
     }
   },
-  "blocking_rules": 339535,
+  "blocking_rules": 457446,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "hagezi_multi_pro": 0,
+    "hagezi_tif_mini": 0,
     "adguard_dns": 11,
     "awavenue_ads": 0
   },
@@ -101,22 +121,23 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 339546,
-  "common_rules": 75,
+  "main_subscription_rules": 457457,
+  "common_rules": 1,
   "source_only_rules": {
-    "hagezi_multi_pro": 148036,
-    "adguard_dns": 112420,
-    "awavenue_ads": 258
+    "hagezi_multi_pro": 100330,
+    "hagezi_tif_mini": 117911,
+    "adguard_dns": 112341,
+    "awavenue_ads": 257
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "8f7f5f490c028157955323e94656a3c1731384a70e4e3206f17553febf75f342",
+  "main_subscription_sha256": "0000e509e38a9432d822df4e797b809a64b2f022f14876c74e302f3aef527988",
   "syntax_audit": {
-    "total": 339535,
+    "total": 457446,
     "forms": {
       "domain_and_subdomains_wildcard": 355,
       "domain_and_subdomains_important": 3,
-      "domain_and_subdomains": 339106,
+      "domain_and_subdomains": 457017,
       "domain_anchor_without_end_boundary": 71
     },
     "semantics": {
@@ -151,10 +172,10 @@
         "||0-0-0-0-0-0-0-0-0-0-0-0-0-33-0-0-0-0-0-0-0-0-0-0-0-0-0.info^",
         "||0-0-0checkmate.com^",
         "||0-0-7.site^",
+        "||0-0.fr^",
         "||0-02.net^",
         "||0-0asia.com^",
-        "||0-100mph.com^",
-        "||0-2.net^"
+        "||0-100mph.com^"
       ],
       "domain_anchor_without_end_boundary": [
         "||afdads.com",
