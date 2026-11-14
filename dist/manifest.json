@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T08:34:01.412419+00:00",
+  "built_at_utc": "2026-11-14T08:45:56.318946+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -131,7 +131,7 @@
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "0000e509e38a9432d822df4e797b809a64b2f022f14876c74e302f3aef527988",
+  "main_subscription_sha256": "e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8",
   "syntax_audit": {
     "total": 457446,
     "forms": {
