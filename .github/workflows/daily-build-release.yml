@@ -140,6 +140,13 @@ jobs:
             --audit build-output/latest/bare-anchor-audit.csv \
             --worksheet benchmark/review/bare-anchor-review-worksheet.csv
 
+      - name: Validate bare-anchor evidence queue integrity
+        run: |
+          set -euo pipefail
+          python tools/validate_bare_anchor_evidence_queue.py \
+            --audit build-output/latest/bare-anchor-audit.csv \
+            --queue benchmark/discovery/bare-anchor-app-risk-triage.csv
+
       - name: Record build environment provenance
         shell: bash
         run: |

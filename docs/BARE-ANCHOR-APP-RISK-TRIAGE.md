@@ -7,27 +7,37 @@
 
 The 69 bare-anchor rules are inherited from the AdGuard DNS Filter. The automated 69-by-72 essential-service sentinel check currently reports no hits, but it cannot cover every app-specific hostname or distinguish telemetry from required application dependencies.
 
-A public-evidence pass has identified 17 hostnames requiring targeted investigation. Four are P0 because of potential payment, sign-up, device-component or static-resource impact; 13 are medium-priority workflow checks. These are investigation priorities, not findings that the rules are incorrect.
+A public-evidence pass has identified 27 unique hostnames requiring targeted investigation. Four are P0 because of potential payment, sign-up, device-component or static-resource impact; 23 are medium-priority workflow checks. Duplicate records from the prior expansion were reconciled rather than counted twice. These are investigation priorities, not findings that the rules are incorrect.
 
 | Rule | Source line | Priority | Evidence signal | Required workflow |
 |---|---:|---|---|---|
-| `||mssdk.capcutapi.us` | 19072 | High | HaGeZi classifies it as analytics/telemetry; an AdGuard issue separately mentions it in a CapCut signup problem report | CapCut signup/login, editing, upload, export and playback |
-| `||logservice.dbankcloud.cn` | 19205 | High | Public reporting associates it with a Huawei China-region HiViewTunnel log-server route | Identify component and opt-in scope; device/system diagnostics and normal device services |
-| `||global-staticplat.cdn.bcebos.com` | 11476 | High | Public adblock classification conflicts with a TeraBox process observation in a static-widget/resource context | TeraBox login, file browse, preview, upload/download and static UI |
-| `||logs.juspay.in` | 21748 | High | Official Juspay documentation identifies it as a payment-status analytics endpoint | Merchant checkout, payment success/failure/cancel, order confirmation and status reconciliation |
-| `||analysis.polarisoffice.com` | 19279 | Medium | Appears in public hosts lists grouped under Polaris Office | Polaris Office sign-in, cloud sync, open/save and collaboration |
-| `||api-ad-callback.mobiuspace.net` | 11625 | Medium | Exact hostname appears in multiple public mobile-ad lists | Identify affected apps; launch, sign-in, core actions and rewarded-ad-dependent features |
-| `||ats.gmarket.co.kr` | 15186 | Medium | Listed in AdGuard's first-party tracking section | Gmarket account, search, cart, checkout, order and payment |
-| `||datadog-log.clovergames.io` | 15234 | Medium | Listed in AdGuard's first-party tracking section | Clover Games login, gameplay, purchases and account recovery |
-| `||taplytics-umami.grubhub.com` | 16203 | Medium | Listed in AdGuard's first-party tracking section | Grubhub browsing, cart, checkout, order status and account |
-| `||api-ad-callback.mobiuspace.net` | 11625 | Medium | Exact hostname is in AdGuard MobileFilter adservers section | Identify querying apps; core actions and rewarded-ad-dependent features |
-| `||api.cloudmobi.net` | 11856 | Medium | Exact hostname is in AdGuard MobileFilter adservers section | Identify querying apps; core workflows and ad-dependent features |
-| `||analysis.polarisoffice.com` | 19279 | Medium | Exact hostname is in AdGuard mobile spyware section and a separate mobile spyware list | Polaris Office sign-in, cloud sync, open/save and collaboration |
-| `||track.datescan.info` | 18038 | Medium | Exact hostname is in AdGuard first-party tracking section | Identify embedding site/app; test core user journey |
-| `||events-proxy.mintlify.com` | 184755 | Medium | Public request trace records it on a documentation page; request semantics remain unknown | Documentation load, search, navigation and feedback |
-| `||deliveryengine.adswizz.com` | 11789 | Medium | Official AdsWizz SDK docs describe its ad-server and companion-banner role | Audio playback, ad breaks, resume and player stability |
-| `||id-msp.newsbreak.com` | 7988 | Medium | Public privacy scan observes an identity/sync iframe request | NewsBreak sign-in, account linking, feed, preferences and consent |
-| `||d241ujsiy3yht0.cloudfront.net` | 185395 | Medium | Exact host appears in EasyPrivacy and a storefront script observation | Product browsing, cart, checkout page, support widgets and order status |
+| `||mssdk.capcutapi.us` | 19072 | High | HaGeZi classifies telemetry; an AdGuard issue mentions it in a CapCut signup report | CapCut signup/login, editing, upload, export and playback |
+| `||logservice.dbankcloud.cn` | 19205 | High | Public reporting associates it with a Huawei China-region HiViewTunnel log-server route | Identify component and opt-in scope; device diagnostics and normal services |
+| `||global-staticplat.cdn.bcebos.com` | 11476 | High | Public adblock classification conflicts with a TeraBox static-widget/resource observation | TeraBox login, browse, preview, upload/download and static UI |
+| `||logs.juspay.in` | 21748 | High | Official Juspay docs identify a payment-status analytics endpoint | Merchant checkout, payment outcomes, order confirmation and reconciliation |
+| `||analysis.polarisoffice.com` | 19279 | Medium | Exact hostname appears in AdGuard mobile tracking/spyware classification | Polaris Office sign-in, cloud sync, open/save and collaboration |
+| `||api-ad-callback.mobiuspace.net` | 11625 | Medium | Exact hostname appears in AdGuard MobileFilter adservers section | Identify querying apps; core actions and rewarded-ad flows |
+| `||ats.gmarket.co.kr` | 15186 | Medium | Exact hostname appears in AdGuard first-party tracking section | Gmarket account, search, cart, checkout, order and payment |
+| `||datadog-log.clovergames.io` | 15234 | Medium | Exact hostname appears in AdGuard first-party tracking section | Clover Games login, gameplay, purchases and account recovery |
+| `||taplytics-umami.grubhub.com` | 16203 | Medium | Exact hostname appears in AdGuard first-party tracking section | Grubhub browsing, cart, checkout, order status and account |
+| `||api.cloudmobi.net` | 11856 | Medium | Exact hostname appears in AdGuard MobileFilter adservers section | Identify querying apps; core workflows and ad-dependent features |
+| `||track.datescan.info` | 18038 | Medium | Exact hostname appears in AdGuard first-party tracking section | Identify embedding site/app; test its core user journey |
+| `||events-proxy.mintlify.com` | 184755 | Medium | Exact hostname appears in EasyPrivacy third-party tracking list; request semantics remain unknown | Documentation load, search, navigation and feedback |
+| `||deliveryengine.adswizz.com` | 11789 | Medium | Official AdsWizz SDK docs describe ad-server and companion-banner role | Audio playback, ad breaks, resume and player stability |
+| `||id-msp.newsbreak.com` | 7988 | Medium | Public privacy scan observes identity/sync iframe request | NewsBreak sign-in, account linking, feed, preferences and consent |
+| `||d241ujsiy3yht0.cloudfront.net` | 185395 | Medium | Exact host appears in EasyPrivacy third-party list and storefront script observation | Product browsing, cart, checkout page, support widgets and order status |
+| `||c.bigmir.net` | 17021 | Medium | Exact hostname appears in AdGuard mobile and first-party tracking sections | Bigmir content, sign-in, search and media navigation |
+| `||config.appjolt.com` | 11876 | Medium | Exact hostname appears in AdGuard MobileFilter adservers section; configuration dependency remains possible | Identify apps; startup, configuration refresh and core features |
+| `||d2fj3s7h83rb61.cloudfront.net` | 185400 | Medium | Exact hostname appears in EasyPrivacy third-party list | Identify requester; site assets, page interactions and core journey |
+| `||et-code.ru` | 9828 | Medium | Exact hostname appears in AdGuard MobileFilter adservers section | Identify querying apps; launch, sign-in and core app functions |
+| `||hitcounter.ru` | 22747 | Medium | Exact hostname appears in AdGuard third-party tracking list | Identify embedding sites; navigation and core actions |
+| `||img.opentracker.net` | 17384 | Medium | Exact hostname appears in AdGuard first-party tracking section | Identify requester; image/media loading and core page interactions |
+| `||pavoshare.com` | 11475 | Medium | Exact hostname appears in AdGuard MobileFilter adservers section | Identify querying apps; launch and core app workflows |
+| `||script.opentracker.net` | 23345 | Medium | Exact hostname appears in AdGuard third-party tracking list | Identify embedding sites; script-dependent page features |
+| `||stats.debatdirect.tweedekamer.nl` | 16567 | Medium | Exact hostname appears in AdGuard first-party tracking section | Public parliamentary content, search and navigation |
+| `||tms-st.cdn.ngenix.net` | 21916 | Medium | Exact hostname appears in AdGuard third-party tracking list; CDN-style host may be shared | Identify requester; media/static assets and primary workflow |
+| `||uts.auction.co.kr` | 16676 | Medium | Exact hostname appears in AdGuard first-party tracking section | Auction account, search, cart, checkout and order status |
+| `||zorosrv.com` | 21934 | Medium | Exact hostname appears in AdGuard third-party tracking list | Identify embedding site/app; core user journey |
 
 Machine-readable evidence, source URLs, limitations and statuses are recorded in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv).
 
@@ -71,41 +81,23 @@ Required test: on a test merchant or controlled checkout, compare payment succes
 
 ### Polaris Office hostname
 
-- AdAway hosts snapshot: https://git.eeqj.de/sneak/sneak.berlin-dns-blocklist/src/branch/main/hostlists/adaway-default-hosts.txt
-- Public hosts-list mirror: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
+- AdGuard mobile tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
+- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileSpyware.txt
+- Older AdAway snapshot: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
 
-Multiple list appearances are weak corroboration only. They do not establish the endpoint's current purpose, and they do not prove that blocking is harmless to Polaris Office features.
+The exact hostname appears in AdGuard's mobile tracking section and a separate mobile spyware list. This strengthens the tracking/analytics hypothesis, but does not prove that Polaris Office login, cloud sync, document open/save or collaboration is independent of it.
 
 Required test: sign-in, cloud sync, open/save, collaboration and recovery.
 
 ### Mobiuspace ad callback
 
-- Public AdAway list mirror: https://git.eeqj.de/sneak/sneak.berlin-dns-blocklist/src/branch/main/hostlists/adaway-default-hosts.txt
-- Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
-
-The exact hostname appears in multiple public mobile-ad lists. These lists may share upstream ancestry and are not independent ground truth. Treat the advertising callback hypothesis as plausible, not proven.
-
-Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
-
-
-### Mobiuspace ad callback and CloudMobi ad endpoint
-
 - AdGuard MobileFilter adservers section: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
 - Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
 
-AdGuard's current mobile adservers section contains both exact hostnames, `api-ad-callback.mobiuspace.net` and `api.cloudmobi.net`. This is stronger purpose evidence than an unverified domain-name guess. It still does not identify all apps using them or prove that app state, rewarded-ad flows or other functions are unaffected.
+The exact hostname appears in AdGuard's current mobile adservers section. This supports an advertising role more directly than domain-name inference, but it does not identify all querying apps or prove that callback failure is harmless to app state or rewarded-ad flows.
 
-Required test: identify apps that actually query each host, then test app cold start, sign-in, core actions, rewarded-ad-dependent features and recovery with the exact rule toggled.
+Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
 
-### Polaris Office analysis endpoint
-
-- AdGuard mobile spyware section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
-- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileSpyware.txt
-- Older AdAway snapshot: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
-
-The exact hostname is present in AdGuard's mobile spyware section and a separate mobile spyware list. This strengthens the tracking/analytics hypothesis, but does not prove that Polaris Office login, cloud sync, document open/save or collaboration is independent of it.
-
-Required test: Polaris Office sign-in, cloud sync, open/save, collaboration and account recovery with the exact rule toggled.
 
 ### Datescan tracking endpoint
 
@@ -157,6 +149,48 @@ Required test: storefront product browsing, cart, checkout page, support widgets
 
 This source supports a first-party tracking/analytics classification for the exact hostnames. It does not answer whether any endpoint also participates in application health, fraud prevention, checkout or other operational workflows. Test the listed user journeys before declaring the rules harmless.
 
+
+### Additional exact-host matches from upstream classifications
+
+The following entries were found by matching the exact hostname—not just a parent domain or keyword—against current upstream list files. These classifications are evidence of how the upstream list maintainers categorize the host; they are not independent proof of purpose, and they do not establish that blocking is harmless.
+
+**AdGuard MobileFilter adservers**
+- `api.cloudmobi.net`
+- `config.appjolt.com`
+- `et-code.ru`
+- `pavoshare.com`
+
+Source: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
+
+Required test: identify the applications that actually query each hostname, then test cold launch, sign-in, configuration refresh, core actions and ad/reward-dependent features. In particular, do not assume a hostname beginning with `config.` is optional merely because it is classified in an ad-server list.
+
+**AdGuard tracking classifications**
+- `c.bigmir.net` — mobile and first-party tracking sections
+- `hitcounter.ru` — third-party tracking section
+- `img.opentracker.net` — first-party tracking section
+- `script.opentracker.net` — third-party tracking section
+- `stats.debatdirect.tweedekamer.nl` — first-party tracking section
+- `tms-st.cdn.ngenix.net` — third-party tracking section
+- `uts.auction.co.kr` — first-party tracking section
+- `zorosrv.com` — third-party tracking section
+
+Sources:
+- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers.txt
+
+Required test: determine which site or app issues each request from DNS logs, then test the relevant content, media, search, account, commerce or public-service workflow. CDN-style and image/script endpoints require particular caution because an endpoint can carry both measurement and user-visible resources.
+
+**EasyPrivacy third-party classifications**
+- `d2fj3s7h83rb61.cloudfront.net`
+
+Source: https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt
+
+Required test: identify the embedding site/app and test script-dependent page behavior, media/assets and the complete core user journey. CloudFront is shared hosting infrastructure; the list match alone does not establish the asset's full role.
+
+The complete hostname-by-hostname evidence URLs, source-line attribution, limitations and required workflow are maintained in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv). The CSV is the machine-readable source of detail; the summary above avoids treating list membership as a safety verdict.
+
+
 ## Decision policy
 
 - Do not remove a rule based on one user report.
@@ -168,4 +202,4 @@ This source supports a first-party tracking/analytics classification for the exa
 - If the hostname has mixed use, prefer a narrower rule or no block over knowingly breaking a core user task.
 - Keep every entry unresolved until the required tests and independent review are available.
 
-The 17 entries are a prioritized slice of the 69-rule inventory, not a claim that the other 52 domains have been cleared. Production blocking rules remain unchanged.
+The 27 entries are a prioritized slice of the 69-rule inventory, not a claim that the other 42 domains have been cleared. Production blocking rules remain unchanged.
