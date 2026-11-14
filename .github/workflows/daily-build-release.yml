@@ -601,6 +601,12 @@ jobs:
             exit 1
           fi
 
+          NOTES_FILE="$RUNNER_TEMP/nobledns-release-notes.md"
+          python tools/extract_release_notes.py \
+            --changelog CHANGELOG.md \
+            --version "$VERSION" \
+            --output "$NOTES_FILE"
+
           gh release create "$VERSION_TAG" \
             dist/dns-filter.txt \
             NobleDNS.txt \
@@ -619,4 +625,4 @@ jobs:
             licenses/GPL-3.0.txt \
             --target "$(git rev-parse HEAD)" \
             --title "NobleDNS $VERSION" \
-            --notes-file CHANGELOG.md
+            --notes-file "$NOTES_FILE"
