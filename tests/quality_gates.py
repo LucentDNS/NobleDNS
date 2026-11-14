@@ -22,7 +22,7 @@ if not FILTER.is_absolute():
 ESSENTIAL = ROOT / "tests" / "fixtures" / "essential-domains.txt"
 KNOWN_ADS = ROOT / "tests" / "fixtures" / "known-ads.txt"
 
-RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?(?P<important>\$important)?$")
 
 
 def read_domains(path: Path) -> list[str]:
@@ -33,12 +33,13 @@ def read_domains(path: Path) -> list[str]:
     ]
 
 
-def load_rules() -> tuple[set[str], set[str], list[str]]:
+def load_rules() -> tuple[set[str], set[str], set[str], list[str]]:
     if not FILTER.is_file():
         raise AssertionError(f"Generated subscription is missing: {FILTER}")
 
     blocks: set[str] = set()
     exceptions: set[str] = set()
+    important_blocks: set[str] = set()
     invalid: list[str] = []
 
     for raw in FILTER.read_text(encoding="utf-8").splitlines():
@@ -53,10 +54,18 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
         domain = match.group("domain").lower()
         is_exception = bool(match.group("exception"))
         has_caret = bool(match.group("caret"))
-        if is_exception and not has_caret:
+        is_important = bool(match.group("important"))
+        if is_exception and (not has_caret or is_important):
             invalid.append(line)
             continue
-        valid, _reason = mod.valid_domain(domain)
+        if is_important and not has_caret:
+            invalid.append(line)
+            continue
+
+        if "*" in domain:
+            valid, _reason = mod.valid_wildcard_pattern(domain)
+        else:
+            valid, _reason = mod.valid_domain(domain)
         if not valid:
             invalid.append(line)
             continue
@@ -65,31 +74,46 @@ def load_rules() -> tuple[set[str], set[str], list[str]]:
             exceptions.add(domain)
         else:
             blocks.add(domain)
+            if is_important:
+                important_blocks.add(domain)
 
-    return blocks, exceptions, invalid
-
-
-def covers(rule_domain: str, hostname: str) -> bool:
-    """A parent hostname rule covers the hostname and its subdomains."""
-    return hostname == rule_domain or hostname.endswith("." + rule_domain)
+    return blocks, exceptions, important_blocks, invalid
 
 
 def matching_rules(hostname: str, rules: set[str]) -> set[str]:
-    labels = hostname.split(".")
+    """Return rules matching the hostname or one of its parent-domain suffixes."""
+    labels = hostname.lower().split(".")
     suffixes = {".".join(labels[index:]) for index in range(len(labels))}
-    return rules.intersection(suffixes)
+    matched: set[str] = set()
+    for rule in rules:
+        if "*" not in rule:
+            if rule in suffixes:
+                matched.add(rule)
+            continue
+        pattern = re.compile("^" + re.escape(rule).replace(r"\*", ".*") + "$")
+        if any(pattern.fullmatch(suffix) for suffix in suffixes):
+            matched.add(rule)
+    return matched
 
 
-def is_blocked(hostname: str, blocks: set[str], exceptions: set[str]) -> bool:
-    return bool(matching_rules(hostname, blocks)) and not bool(
-        matching_rules(hostname, exceptions)
-    )
+def is_blocked(
+    hostname: str,
+    blocks: set[str],
+    exceptions: set[str],
+    important_blocks: set[str] | None = None,
+) -> bool:
+    block_matches = matching_rules(hostname, blocks)
+    if not block_matches:
+        return False
+    exception_matches = matching_rules(hostname, exceptions)
+    important_matches = matching_rules(hostname, important_blocks or set())
+    return bool(important_matches) or not bool(exception_matches)
 
 
 class QualityGateTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.blocks, cls.exceptions, cls.invalid = load_rules()
+        cls.blocks, cls.exceptions, cls.important_blocks, cls.invalid = load_rules()
         cls.essential = read_domains(ESSENTIAL)
         cls.known_ads = read_domains(KNOWN_ADS)
 
@@ -100,6 +124,26 @@ class QualityGateTests(unittest.TestCase):
             is_blocked("abchina.com", {"abchina.com"}, {"abchina.com"})
         )
         self.assertFalse(is_blocked("doubleclick.net", set(), set()))
+
+    def test_wildcard_rules_match_hostname_suffixes(self) -> None:
+        rules = {"ad*.example.com", "*.wild.example.net"}
+        self.assertEqual(
+            matching_rules("ad-sdk.example.com", rules),
+            {"ad*.example.com"},
+        )
+        self.assertEqual(
+            matching_rules("child.ad-sdk.example.com", rules),
+            {"ad*.example.com"},
+        )
+        self.assertEqual(matching_rules("wild.example.net", rules), set())
+
+    def test_important_block_overrides_matching_exception(self) -> None:
+        blocks = {"ads.example.com"}
+        exceptions = {"example.com"}
+        self.assertFalse(is_blocked("ads.example.com", blocks, exceptions))
+        self.assertTrue(
+            is_blocked("ads.example.com", blocks, exceptions, {"ads.example.com"})
+        )
 
     def test_exception_count_stays_small(self) -> None:
         """Exceptions are allow-rules; a sudden surge means the list is leaking."""
@@ -125,10 +169,10 @@ class QualityGateTests(unittest.TestCase):
 
     def test_no_essential_hostname_is_effectively_blocked(self) -> None:
         affected = [
-            (hostname, sorted(rule for rule in self.blocks if covers(rule, hostname)),
-             sorted(rule for rule in self.exceptions if covers(rule, hostname)))
+            (hostname, sorted(matching_rules(hostname, self.blocks)),
+             sorted(matching_rules(hostname, self.exceptions)))
             for hostname in self.essential
-            if is_blocked(hostname, self.blocks, self.exceptions)
+            if is_blocked(hostname, self.blocks, self.exceptions, self.important_blocks)
         ]
         self.assertFalse(
             affected,

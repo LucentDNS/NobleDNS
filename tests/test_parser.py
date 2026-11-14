@@ -30,6 +30,8 @@ class ParserTests(unittest.TestCase):
         rules = {
             "||ads.example.com^",
             "||bare.example.com",
+            "||*.wildcard.example.com^",
+            "||priority.example.com^$important",
         }
         summary, review = mod.syntax_audit(
             rules,
@@ -38,10 +40,12 @@ class ParserTests(unittest.TestCase):
                 "hagezi_normal": {"||bare.example.com"},
             },
         )
-        self.assertEqual(summary["total"], 2)
+        self.assertEqual(summary["total"], 4)
         self.assertEqual(
             summary["forms"],
             {
+                "domain_and_subdomains_wildcard": 1,
+                "domain_and_subdomains_important": 1,
                 "domain_and_subdomains": 1,
                 "domain_anchor_without_end_boundary": 1,
             },
@@ -77,10 +81,39 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             mod.render_subscription({"||same.example.com^"}, {"||same.example.com^"})
 
-    def test_wildcard_excluded(self):
-        blocks, _, rejected, rows = self.parse("||*.example.com^\n||ok.example.com^\n")
+    def test_supported_wildcard_is_preserved(self):
+        blocks, _, rejected, _ = self.parse(
+            "||*.example.com^\n||ads*.example.net^\n||ok.example.com^\n"
+        )
+        self.assertEqual(
+            blocks,
+            {"||*.example.com^", "||ads*.example.net^", "||ok.example.com^"},
+        )
+        self.assertEqual(rejected["wildcard_syntax"], 0)
+
+    def test_dynamic_public_suffix_wildcard_is_excluded(self):
+        blocks, _, rejected, _ = self.parse(
+            "||example.*^\n||example.com*path\n||ok.example.com^\n"
+        )
         self.assertEqual(blocks, {"||ok.example.com^"})
-        self.assertEqual(rejected["wildcard_syntax"], 1)
+        self.assertEqual(rejected["wildcard_syntax"], 2)
+
+    def test_important_modifier_on_exception_is_not_converted_to_block(self):
+        blocks, exceptions, rejected, _ = self.parse(
+            "||ads.example.com^\n@@||safe.example.com^$important\n"
+        )
+        self.assertEqual(blocks, {"||ads.example.com^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["modifier_important"], 1)
+
+    def test_important_modifier_is_preserved(self):
+        blocks, _, rejected, _ = self.parse(
+            "||ads.example.com^$important\n||ok.example.com^\n"
+        )
+        self.assertEqual(
+            blocks, {"||ads.example.com^$important", "||ok.example.com^"}
+        )
+        self.assertEqual(sum(rejected.values()), 0)
 
     def test_trailing_dot_not_silently_normalized(self):
         blocks, _, rejected, _ = self.parse("||analytics.example.\n||ok.example.com^\n")

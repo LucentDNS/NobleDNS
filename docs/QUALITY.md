@@ -81,13 +81,13 @@ The public DNS subscription accepts the documented AdGuard hostname-pattern form
 
 For the general filter-rule grammar, see [How to create your own ad filters](https://adguard.com/kb/general/ad-filtering/create-own-filters/); for DNS hostname matching, use the more specific [AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/). Leading-dot forms (`.domain^` and `.domain`) are not among the hostname-pattern forms documented in that DNS-specific specification. NobleDNS therefore excludes them from the public subscription and records each original line in `parser-exclusions.csv` with the reason `unsupported_leading_dot_dns_syntax`. They are never rewritten as `||domain^`, because that would change their scope. The real upstream regression fixture contains 28 leading-dot records; all 28 must remain excluded unless the project formally expands its supported syntax based on authoritative documentation and client tests.
 
-Complex modifiers, regexes, wildcard rules and unsupported exception forms remain excluded unless their semantics are explicitly implemented and tested. Active simple upstream exceptions are limited to `@@||domain^`, validated against the same domain rules, included in the main subscription and enumerated in `dist/allowlist-active.txt`.
+The compiler preserves documented hostname wildcards only when the final label and at least one other label are static and the pattern passes strict hostname validation; dynamic-suffix and path-like wildcard patterns remain excluded. The documented `$important` modifier is preserved on supported hostname block rules. Regexes, `$badfilter` and unsupported exception forms remain excluded until their full semantics are implemented and tested. Active simple upstream exceptions remain limited to `@@||domain^`, validated against the same domain rules, included in the main subscription and enumerated in `dist/allowlist-active.txt`.
 
 Do not expand parser scope or alter source semantics merely to increase coverage or silence unverified reports.
 
 ## Automated publication checks
 
-- Exactly the two approved sources load successfully and decode as strict UTF-8.
+- Exactly the three approved sources load successfully and decode as strict UTF-8.
 - Each source exceeds configured minimum size and parsed-block count.
 - Per-source parsed rule count does not drift more than 15% from the last published manifest without review/override.
 - Main output has valid supported syntax, no duplicates, nonzero rules and no more than 500,000 rules.
