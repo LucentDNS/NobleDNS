@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-14 — Add HaGeZi TIF Mini threat-intelligence coverage
+
+- Add HaGeZi TIF Mini as a dedicated security add-on alongside the sole Multi main tier, HaGeZi Multi PRO.
+- Exact comparison against the v1.0.5 published subscription found 68,404 duplicate rules and 117,911 incremental rules; projected subscription size is 457,457 including the existing 11 exception rules, leaving 42,543 rules below the 500,000 ceiling.
+- Keep AdGuard DNS Filter and AWAvenue Ads-only; update source allowlists, licensing notices, tests, one-time migration gate and documentation. Publication remains contingent on all CI quality gates.
+
 ## 2026-11-14 — HaGeZi tier consolidation
 
 - Remove HaGeZi Multi Normal from production inputs; Multi PRO is the sole HaGeZi Multi tier, following HaGeZi's cumulative-tier guidance.

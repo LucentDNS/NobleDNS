@@ -107,7 +107,7 @@ jobs:
             echo "Large change explicitly approved by workflow_dispatch input."
           elif [ -f dist/manifest.json ]; then
             # One-time, narrowly scoped migration allowance: only the exact
-            # former four-source set -> reviewed three-source set transition.
+            # former three-source set -> reviewed four-source set transition.
             # After the new manifest is published, the old key set no longer
             # matches and the ordinary drift gate automatically resumes.
             python - <<'PY'
@@ -117,8 +117,8 @@ jobs:
           new = json.loads(Path("config/sources.json").read_text(encoding="utf-8"))
           old_keys = set(old.get("sources", {}))
           new_keys = {item.get("key") for item in new.get("sources", [])}
-          former = {"adguard_dns", "hagezi_normal", "hagezi_multi_pro", "awavenue_ads"}
-          approved = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
+          former = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
+          approved = {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}
           if old_keys == former and new_keys == approved:
               print("Exact one-time source migration detected; allowing its reviewed rule delta.")
               Path("/tmp/nobledns-source-migration-approved").write_text("yes")
@@ -251,9 +251,9 @@ jobs:
           assert manifest.get("blocking_rules", 0) <= 500_000, \
               "Blocking rule count exceeds the project ceiling"
 
-          assert len(manifest.get("sources", {})) == 3, \
-              "Expected exactly three upstream sources"
-          assert set(manifest.get("sources", {})) == {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}, \
+          assert len(manifest.get("sources", {})) == 4, \
+              "Expected exactly four upstream sources"
+          assert set(manifest.get("sources", {})) == {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}, \
               "Unexpected production source set"
 
           subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
@@ -279,8 +279,8 @@ jobs:
           assert original_code.get("spdx") == "GPL-3.0-only", \
               "Unexpected original project code license metadata"
 
-          assert isinstance(upstream_data, list) and len(upstream_data) == 3, \
-              "Expected licensing metadata for exactly three upstream sources"
+          assert isinstance(upstream_data, list) and len(upstream_data) == 4, \
+              "Expected licensing metadata for exactly four upstream sources"
 
           print("Manifest source count, rule ceiling, and licensing metadata verified.")
           PY
@@ -344,9 +344,9 @@ jobs:
               for key, value in new["sources"].items()
           }
 
-          expected_source_keys = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
+          expected_source_keys = {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}
           if set(new_sources) != expected_source_keys:
-              raise ValueError("Build requires exactly the three approved source hashes")
+              raise ValueError("Build requires exactly the four approved source hashes")
 
           if len(new_hash) != 64 or any(len(value) != 64 for value in new_sources.values()):
               raise ValueError("Invalid SHA256 length in build manifest")

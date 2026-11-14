@@ -22,7 +22,7 @@ Official references:
 | Filter unblocking search ads and self-promotions | Allow selected contextual search ads and site self-promotion | DNS cannot make URL/context-specific allow decisions; do not broaden allow rules to entire search or platform domains |
 | Experimental filter | Test potentially conflicting page-level rules | Not a production DNS source; do not import experimental page rules as domain blocks |
 | AdGuard DNS Filter | DNS-compatible domain blocking | Optional DNS-layer supplement, not a requirement for AdGuard client compatibility; currently retained for incremental coverage and subject to overlap/compatibility review |
-| Security filters | Malicious/phishing domain protection | Complementary only with reliable, current evidence and clear separation from ad/tracker classification |
+| Security filters | Malicious/phishing domain protection | Complementary; NobleDNS uses HaGeZi TIF Mini as a compact threat-intelligence add-on, with the same caution about false positives and service dependencies |
 
 ## Mandatory compatibility principles
 
@@ -40,6 +40,7 @@ Official references:
 - Unsupported URL, cosmetic, scriptlet, HTML, modifier and ambiguous syntax is excluded rather than guessed.
 - The critical-service regression suite and exception-overlap audits run on every build.
 - Newly added sources must have explicit provenance, license attribution, parser-compatibility checks and a documented role.
+- TIF Mini is a DNS security feed, not an advertising list; do not treat its presence as proof that every listed domain is currently malicious or as a reason to relax essential-service regression gates.
 - The benchmark plan must distinguish DNS-layer outcomes from browser/page-level outcomes.
 
 ## Scope limitation
