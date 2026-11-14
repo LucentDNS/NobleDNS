@@ -74,6 +74,12 @@ def validate(audit_path: Path, queue_path: Path) -> tuple[Counter[str], list[str
             errors.append(f"{queue_path}:{line_no}: GitHub evidence file URLs must use immutable commit refs for {rule}")
         if not row["decision_status"].strip().startswith("unresolved_"):
             errors.append(f"{queue_path}:{line_no}: queue entries must remain unresolved: {rule}")
+    missing = set(audit_by_rule) - seen
+    extra = seen - set(audit_by_rule)
+    if missing:
+        errors.append(f"evidence queue is missing {len(missing)} current audit rules")
+    if extra:
+        errors.append(f"evidence queue contains {len(extra)} rules absent from current audit")
     return counts, errors
 
 
