@@ -8,6 +8,7 @@ All notable changes to NobleDNS are documented here. Versioned sections describe
 - Add a reproducible, audit-only review of AdGuard's Chinese browser filter and its DNS-scope candidates; do not import browser-context rules into the production DNS subscription.
 - Document AdGuard's dedicated Chinese DNS source sections, shared exclusions and the rationale for keeping the current production source set unchanged.
 - Record an updated mature-list differential baseline and align hostname benchmark scoring with production validation by excluding IP literals from hostname counts.
+- Add source-only and pairwise exact-overlap statistics to the build manifest and validation report.
 
 ### Changed
 - Switch the HaGeZi Multi base source from the full PRO list to the size-optimized PRO Mini list; retain the same four-source composition pending post-switch differential validation.
