@@ -169,8 +169,8 @@ def valid_domain(raw: str) -> tuple[bool, str]:
 def valid_wildcard_pattern(raw: str) -> tuple[bool, str]:
     """Validate a conservative subset of AdGuard's documented hostname wildcards.
 
-    Preserve the source pattern verbatim (lower-cased) only when it has a static
-    public suffix and at least one additional static label. Dynamic TLDs and
+    Preserve the source pattern verbatim (lower-cased) only when its final label
+    and at least one additional label are static. Dynamic TLDs and
     path-like patterns remain excluded rather than being guessed.
     """
     if not raw or raw.endswith(".") or len(raw) > 253:
