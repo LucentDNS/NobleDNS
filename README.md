@@ -58,6 +58,7 @@ These generated files document the current build:
 - [Syntax audit](dist/syntax-audit.json) — supported syntax inventory.
 - [Parser exclusions](dist/parser-exclusions.csv) — excluded source lines and reasons.
 - [Active exceptions](dist/allowlist-active.txt) — exceptions present in the subscription.
+- [AdGuard Chinese DNS-scope audit](dist/adguard-chinese-dns-audit.json) and [candidate review CSV](dist/adguard-chinese-dns-candidates.csv) — audit-only evidence; no Chinese regional source is automatically imported.
 
 The project enforces a 500,000-rule ceiling and runs source-change checks and automated regression tests. These controls reduce maintenance risk; they do not replace real-device testing or an independent effectiveness benchmark.
 
