@@ -20,7 +20,7 @@ class ParserTests(unittest.TestCase):
                 "! Homepage: https://github.com/LucentDNS/NobleDNS",
                 f"! Version: {mod.VERSION_BASE}",
                 "! Expires: 1 day",
-                "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal",
+                "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal, AWAvenue Ads Rule (Only Ads)",
                 "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).",
                 "! Content: Listed domains are included as blocking targets only.",
             ],
