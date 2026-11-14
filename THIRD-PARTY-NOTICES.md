@@ -43,7 +43,7 @@ NobleDNS uses Multi PRO as its only HaGeZi Multi tier. HaGeZi documents the Mult
 
 NobleDNS uses the dedicated Ads-only variant, not the upstream Full Protection, No Privacy or No Unwelcome variants. The builder preserves supported AdGuard DNS hostname rules, including documented wildcard patterns with a static suffix and the `$important` modifier. Unsupported or ambiguous lines are recorded as parser exclusions rather than rewritten.
 
-## 5. NobleDNS modifications
+## 4. NobleDNS modifications
 
 NobleDNS retrieves, validates, filters, deduplicates and compiles
 the approved upstream sources.
@@ -54,7 +54,7 @@ syntax rather than silently converting it into guessed equivalents.
 The resulting files contain upstream-derived material and must not
 be represented as wholly original NobleDNS content.
 
-## 6. Licensing and redistribution
+## 5. Licensing and redistribution
 
 The original NobleDNS project code is licensed under
 GNU GPL version 3, GPL-3.0-only.
@@ -70,14 +70,14 @@ This notice is an attribution and licensing guide. It does not
 replace the upstream license texts or grant rights beyond those
 licenses.
 
-## 7. Content designation and disclaimer
+## 6. Content designation and disclaimer
 
 Any domain appearing in a compiled NobleDNS subscription is included as a DNS blocking target only. Its presence does not mean NobleDNS hosts, publishes, operates, endorses or distributes the associated website or its content.
 
 AdGuard, HaGeZi and AWAvenue are independent upstream projects.
 NobleDNS is not affiliated with or endorsed by any upstream project.
 
-## 8. HaGeZi upstream disclaimer
+## 7. HaGeZi upstream disclaimer
 
 HaGeZi publishes its DNS blocklists under GPL-3.0 and states that the GPL license copy must accompany redistribution. The GPL-3.0 text is included in this repository and in the generated build artifact.
 
