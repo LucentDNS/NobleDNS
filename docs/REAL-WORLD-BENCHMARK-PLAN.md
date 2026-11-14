@@ -172,4 +172,21 @@ Therefore, current evidence does not support claims that NobleDNS is fully field
 
 Every scored report should contain: executive summary and limitations; immutable list/corpus identities (version, commit, SHA-256); environment and exact client/resolver versions; corpus composition, evidence quality and sampling method; per-category TP, FP, FN, precision and recall; critical service task outcomes and severity; DNS latency, timeout, throughput, CPU and memory distributions; differences versus every comparator with confidence intervals where applicable; raw sanitized artifacts and reproduction steps; reviewer sign-off, unresolved questions and next test date.
 
-The scorer's supported-rule parser and confusion-matrix calculations are covered by unit tests; it rejects leading-dot and malformed trailing-dot rule patterns to match the published parser's current behavior. Corpus hostnames may include one terminal DNS root dot, which is normalized before scoring; multiple terminal dots and non-ASCII hostnames are rejected. Every scored row must include two distinct reviewers, and threat evidence must have an expiry date. Its output must always be labeled as offline simulation. The corpus template contains no pre-approved hostnames.\n\nThis plan is a test protocol only. It does not change the public rule set, add candidate sources or authorize publication of benchmark claims.
+The scorer's supported-rule parser and confusion-matrix calculations are covered by unit tests; it rejects leading-dot and malformed trailing-dot rule patterns to match the published parser's current behavior. Corpus hostnames may include one terminal DNS root dot, which is normalized before scoring; multiple terminal dots and non-ASCII hostnames are rejected. Every scored row must include two distinct reviewers, and threat evidence must have an expiry date. Its output must always be labeled as offline simulation. The corpus template contains no pre-approved hostnames.\n\n## 10. Discovery seed added for the first execution round
+
+A discovery-only seed has been added at [benchmark/discovery/](../benchmark/discovery/README.md): 100 third-party request domains from the 2026-06 HTTP Archive aggregate published by webtracking.org. The source snapshot is pinned to commit `282d07ce9d4656478815ad7e83869f4bc2262cb5` and distributed under CC BY 4.0 with attribution recorded in the directory README.
+
+This is a **candidate-discovery input only**, not a scored corpus and not an endorsement of blocking any listed hostname. Its prevalence and cookie-setting columns describe observed web requests; neither metric alone proves that a domain is an ad/tracker or that blocking it is safe. Shared infrastructure, CDN, platform, identity, payment and analytics domains require function-level review.
+
+The seed is intentionally kept separate from `tests/fixtures/reviewed-benchmark-corpus.csv`. No row may enter the scored corpus until it has independent evidence, a high-confidence classification, a primary reviewer and a distinct independent reviewer. The current seed does not establish any NobleDNS true-positive, false-positive, recall or precision result. It also does not represent mainland mobile apps or all geographic regions.
+
+The immediate execution sequence is therefore:
+1. Review the 100 discovery candidates and identify a balanced subset of likely advertising/tracking endpoints and legitimate/shared-service controls.
+2. Collect independent evidence for each candidate, including observed function and exact hostname scope.
+3. Have a second reviewer adjudicate the proposed labels; leave disputed or insufficiently supported rows unscored.
+4. Populate the reviewed corpus only after the evidence and review fields are complete.
+5. Freeze NobleDNS, AdGuard DNS Filter and HaGeZi snapshots and run the scorer; then validate the most consequential findings in actual DNS clients and real application tasks.
+
+The discovery seed is attributed under CC BY 4.0. See [its provenance and limitations](../benchmark/discovery/README.md) before reuse.
+
+This plan is a test protocol only. It does not change the public rule set, score discovery candidates as ground truth, or authorize publication of benchmark claims.
