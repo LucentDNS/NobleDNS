@@ -31,7 +31,7 @@ class BareAnchorSafetyTests(unittest.TestCase):
         ]
         with tempfile.TemporaryDirectory() as tmp:
             source_path = Path(tmp) / "adguard_dns.txt"
-            source_path.write_text("\\n".join(rules) + "\\n", encoding="utf-8")
+            source_path.write_text("\n".join(rules) + "\n", encoding="utf-8")
             rows = audit_module.audit(
                 rules_path,
                 source_path,
