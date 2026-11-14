@@ -99,3 +99,17 @@ HaGeZi also publishes a separate disclaimer in its [official repository README](
 
 This notice summarizes that material and does not replace or reproduce the upstream disclaimer. The upstream disclaimer may change; maintainers must re-check the official text before each release and assess whether any change affects NobleDNS redistribution or use. This project does not provide legal advice.
 
+
+## 9. AdGuard Chinese filter (audit-only)
+
+- Project: AdGuard Content Blocking Filters
+- Maintainer: AdGuard
+- Filter registry file:
+  https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt
+- Project repository:
+  https://github.com/AdguardTeam/AdguardFilters
+- License: GPL-3.0
+- License file:
+  https://github.com/AdguardTeam/AdguardFilters/blob/master/LICENSE
+
+NobleDNS does not include the AdGuard Chinese filter as a production subscription source. The scheduled audit emits a review-only CSV of simple hostname-pattern candidates derived from the upstream filter, together with source-line provenance and a conservative overlap report. These audit artifacts remain upstream-derived material and are distributed under the applicable GPL-3.0 terms; the included GPL-3.0 license text and upstream attribution apply. The audit does not imply AdGuard endorsement, nor does it approve any candidate for DNS blocking.
