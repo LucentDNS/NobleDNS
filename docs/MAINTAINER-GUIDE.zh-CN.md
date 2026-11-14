@@ -72,7 +72,7 @@ NobleDNS/
 
 | 来源 | 用途 |
 |---|---|
-| HaGeZi Multi PRO | 通用广告、跟踪与隐私过滤；唯一集成的 HaGeZi Multi 主版本 |
+| HaGeZi Pro Mini | 通用广告、跟踪与隐私过滤；唯一集成的 HaGeZi Multi 主版本 |
 | HaGeZi TIF Mini | 恶意软件、钓鱼及相关恶意基础设施威胁情报补充 |
 | AdGuard DNS Filter | DNS 层广告与跟踪过滤补充 |
 | AWAvenue Ads Rule (Only Ads) | 广告场景专项补充；仅使用纯广告版本 |
@@ -438,4 +438,4 @@ NobleDNS 是公开维护的 DNS 过滤规则集。自动构建通过代表构建
 
 ## 14. 上游许可证与免责声明复核
 
-每次正式发布前，都要重新核对四个实际集成的上游规则源（HaGeZi Multi PRO、HaGeZi TIF Mini、AdGuard DNS Filter、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi PRO 与 TIF Mini 虽来自同一上游项目，但属于不同规则产品，必须分别核对其用途、版本和适用说明，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
+每次正式发布前，都要重新核对四个实际集成的上游规则源（HaGeZi Pro Mini、HaGeZi TIF Mini、AdGuard DNS Filter、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Pro Mini 与 TIF Mini 虽来自同一上游项目，但属于不同规则产品，必须分别核对其用途、版本和适用说明，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
