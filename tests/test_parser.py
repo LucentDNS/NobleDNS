@@ -100,7 +100,7 @@ class ParserTests(unittest.TestCase):
 
     def test_important_modifier_on_exception_is_not_converted_to_block(self):
         blocks, exceptions, rejected, _ = self.parse(
-            "||ads.example.com^\\n@@||safe.example.com^$important\\n"
+            "||ads.example.com^\n@@||safe.example.com^$important\n"
         )
         self.assertEqual(blocks, {"||ads.example.com^"})
         self.assertEqual(exceptions, set())
