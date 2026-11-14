@@ -39,7 +39,7 @@ These categories define review priorities; they do not imply that every named se
 
 ## Current compilation model
 
-The current public build compiles supported blocking rules from three configured sources: AdGuard DNS Filter, HaGeZi Multi Normal, and AWAvenue Ads Rule (Only Ads). The first two provide broad general-purpose coverage; AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
+The current public build compiles supported blocking rules from three configured sources: AdGuard DNS Filter, HaGeZi Multi Pro, and AWAvenue Ads Rule (Only Ads). HaGeZi Multi Pro is the broader balanced baseline; AdGuard DNS Filter provides an independent general DNS source, and AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
 
 ## Rule acceptance and correction
 
