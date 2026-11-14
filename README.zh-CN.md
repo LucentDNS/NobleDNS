@@ -85,4 +85,4 @@ NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪�
 
 ---
 
-构建器与回归测试使用 Python 标准库。维护要求 Python 3.12，详见[维护者指南](docs/MAINTAINER-GUIDE.zh-CN.md)。
+维护环境要求 Python 3.12，并需安装 `requirements.txt` 中固定的 `idna==3.20` 依赖。详见[中文维护者手册](docs/MAINTAINER-GUIDE.zh-CN.md)。
