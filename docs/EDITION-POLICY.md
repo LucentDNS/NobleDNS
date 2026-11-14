@@ -32,7 +32,7 @@ These are review categories, not a claim that every service has been tested. A r
 
 ## Source policy
 
-HaGeZi Multi PRO and AdGuard DNS Filter are general-purpose upstream lists, not mainland-China-specific datasets. AWAvenue is used only through its dedicated Ads-only variant. Their inclusion does not mean their maintainers have tested or endorsed NobleDNS's mainland compatibility goals.
+HaGeZi Multi PRO and AdGuard DNS Filter are general-purpose upstream lists; HaGeZi TIF Mini is a threat-intelligence feed; AWAvenue is used only through its dedicated Ads-only variant. None is a mainland-China-specific dataset. Their inclusion does not mean their maintainers have tested or endorsed NobleDNS's mainland compatibility goals.
 
 Before adding or replacing a source, review purpose and category coverage; license and third-party input terms; syntax and compiler support; overlap and incremental value; parent-domain and shared-infrastructure risk; update cadence and change behavior; and reproducible evidence from representative test cases.
 
