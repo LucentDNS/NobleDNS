@@ -39,7 +39,7 @@ The current build combines four sources:
 
 AdGuard DNS Filter is not required for format compatibility with AdGuard software: HaGeZi PRO already provides the Adblock format. Its continued inclusion is a source-selection decision, subject to ongoing overlap and compatibility review. HaGeZi recommends pairing one main Multi tier with a TIF variant; NobleDNS uses TIF Mini as a compact threat-intelligence supplement.
 
-The compiler includes only explicitly supported syntax. Unsupported or ambiguous input is recorded and excluded rather than guessed or rewritten. The 11 inherited upstream exceptions currently in the subscription remain pending review; their presence does not mean NobleDNS has independently approved them. See the [exception review register](data/exception-review.csv).
+The compiler includes only explicitly supported syntax. Unsupported or ambiguous input is recorded and excluded rather than guessed or rewritten. Parent/child compression is limited to plain `||domain^` rules; wildcard, bare-anchor, modifier and exception rules are left unchanged. The pinned PSL snapshot includes ICANN and PRIVATE suffixes and is SHA-256 verified on every build. The 11 inherited upstream exceptions currently in the subscription remain pending review; their presence does not mean NobleDNS has independently approved them. See the [exception review register](data/exception-review.csv).
 
 Rule counts, upstream reputation and successful compilation do not by themselves prove that a rule is effective, necessary or safe. NobleDNS is independently maintained and is not affiliated with or endorsed by its upstream projects.
 
