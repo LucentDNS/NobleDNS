@@ -122,6 +122,6 @@ NobleDNS does not include the AdGuard Chinese filter as a production subscriptio
 - Pinned source commit: `c3a53eed2cc49353c5fb5c30536186795d5c451b`
 - Snapshot: `data/public_suffix_list.dat`
 - License: Mozilla Public License 2.0 (MPL-2.0)
-- License text: https://www.mozilla.org/en-US/MPL/2.0/
+- License text: included at `licenses/MPL-2.0.txt`; official text: https://www.mozilla.org/en-US/MPL/2.0/
 
 NobleDNS vendors this immutable snapshot solely to prevent unsafe parent/child rule compression against public suffixes. The complete upstream notice remains at the top of the data file. Both ICANN and PRIVATE PSL sections are used; no network download is performed during builds. The snapshot is integrity-checked against its pinned SHA-256 before parsing.
