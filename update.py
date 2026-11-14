@@ -20,7 +20,7 @@ FILTER_HEADER = (
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
     f"! Version: {VERSION_BASE}\n"
     "! Expires: 8 hours\n"
-    "! Sources: HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, AWAvenue Ads Rule (Only Ads)\n"
+    "! Sources: HaGeZi Multi PRO Mini, HaGeZi TIF Mini, AdGuard DNS Filter, AWAvenue Ads Rule (Only Ads)\n"
     "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).\n"
     "! Content: Listed domains are included as blocking targets only.\n"
 )
@@ -101,7 +101,7 @@ def validate_licensing_files() -> None:
     notices = THIRD_PARTY_NOTICES_PATH.read_text(encoding="utf-8-sig")
     required_notice_terms = (
         "AdGuard DNS Filter",
-        "HaGeZi Multi PRO",
+        "HaGeZi Multi PRO Mini",
         "HaGeZi TIF Mini",
         "AWAvenue Ads Rule (Only Ads)",
         "GPL-3.0",
@@ -126,10 +126,10 @@ def load_config(path: Path = CONFIG_PATH) -> dict:
     keys = [x.get("key") for x in sources]
     approved = {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}
     if set(keys) != approved or len(set(keys)) != len(approved):
-        raise ValueError("Only the approved HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter and AWAvenue Ads-only sources are allowed")
+        raise ValueError("Only the approved HaGeZi Multi PRO Mini, HaGeZi TIF Mini, AdGuard DNS Filter and AWAvenue Ads-only sources are allowed")
     expected = {
         "adguard_dns": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-        "hagezi_multi_pro": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+        "hagezi_multi_pro": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt",
         "hagezi_tif_mini": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt",
         "awavenue_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
     }
