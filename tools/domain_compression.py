@@ -96,7 +96,7 @@ def compress_simple_domain_rules(
         # nearest existing ancestor wins; never compress against a public suffix
         for index in range(1, len(labels) - 1):
             parent = ".".join(labels[index:])
-            if parent not in simple:
+            if parent not in simple or parent in removed:
                 continue
             if psl.is_public_suffix(parent):
                 continue
