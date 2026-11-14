@@ -1,101 +1,85 @@
 # NobleDNS
 
-**单一均衡版 · 兼容性优先 · 独立维护**
+**一个均衡版本 · 保守拦截 · 兼容性优先**
 
-NobleDNS 是一个面向日常使用、独立维护的 DNS 过滤规则项目，并将中国大陆网络环境作为重要设计考量。项目致力于减少广告、跟踪及其他不需要的 DNS 请求，同时尽可能保障正常网站、应用和常用服务的访问。
+NobleDNS 是独立维护的 DNS 过滤规则集，面向日常网络使用，并将中国大陆网络环境作为重要设计考量。项目希望减少广告、跟踪及其他不需要的 DNS 请求，同时尽量避免影响正常网站、应用与网络服务。
 
-我们只维护一个公开的**均衡版**：一条主订阅、一套统一的维护标准。相比追求封禁数量，NobleDNS 更重视规则范围、来源透明和可复现构建。
+我们只维护一个公开版本：**一条正式订阅、统一的规则标准、持续自动更新。**
 
-**English: [README.md](README.md)**
+## 立即使用
 
-## 立即订阅
-
-**NobleDNS 均衡版 · 唯一正式订阅**
+**NobleDNS 均衡版（唯一正式订阅）**
 
 `https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt`
 
-将此地址添加到支持 AdGuard 风格 DNS 过滤规则的客户端中即可。请保持订阅地址不变；通过验证的更新会发布到此地址。客户端实际更新时间取决于客户端自身的刷新设置。
+将地址添加到支持 AdGuard DNS 规则格式的客户端。请使用固定订阅地址，无需追随版本号；通过自动构建与验证的更新会发布到这里。客户端何时获取更新，由客户端自身的刷新设置决定。
 
-**兼容旧订阅地址：** `https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/NobleDNS.txt`
+旧地址继续兼容：`https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/NobleDNS.txt`
 
-该文件由构建流程生成，供仍在使用旧订阅地址的用户兼容使用。
+## 我们坚持什么
 
-## 项目特点
+- **适度拦截：** 不以规则数量为目标，优先考虑规则范围与潜在影响。
+- **兼容优先：** 重点关注登录、支付、银行、通信、推送、地图、视频及软件更新等关键功能。
+- **来源透明：** 公开上游来源、构建清单、语法审计和解析排除记录。
+- **自动维护：** 定期获取来源、构建规则并执行回归检查；异常变更会受到检查门槛约束。
 
-NobleDNS 在 DNS 层面过滤上游来源所覆盖的广告、跟踪、遥测及其他不需要的域名。
+DNS 过滤只处理域名解析，不能拦截所有广告，也不能替代网页元素过滤、URL 参数清理或 Cookie 提示处理。
 
-- **重视兼容性：** 登录、支付、银行、通信、消息推送、电商、地图、视频、软件更新和公共服务，是重点关注的兼容性场景。
-- **保守拦截：** 优先采用范围适当、有依据的规则，不以封禁数量最大化为目标。
-- **统一维护：** 只有一个公开版本，所有用户共同受益于问题修正和维护改进。
-- **过程可审查：** 公开来源指纹、构建清单、验证报告和规则解析排除记录。
+“面向中国大陆”和“兼容性优先”是项目设计方向，不代表所有国内网站与应用均已完成实测。当前没有足以支持真实世界拦截率或误杀率结论的独立评测数据，因此我们不会作此类保证。
 
-DNS 过滤只是网络防护的一环，无法拦截所有广告，尤其是第一方广告、与正常业务共用域名的广告，以及直接嵌入应用或媒体内容的广告。
+## 规则来源
 
-“面向中国大陆”和“重视兼容性”代表项目的设计方向，不代表所有国内网站和应用都已经实测。在缺少具有代表性、经过独立审核的评测样本前，项目不会宣称已经测得真实世界误杀率或拦截率。
+当前正式构建组合以下四个来源：
 
-## 上游来源与规则处理
+1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — 通用 DNS 广告与跟踪防护。
+2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt) — 均衡型通用规则。
+3. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — 更广覆盖的补充；与 Normal 并行保留，避免丢失 Normal 独有规则。
+4. [AWAvenue 秋风规则（纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — 广告场景专项补充。
 
-当前构建组合四个互补来源：
+构建器只收录明确支持的规则语法；不支持或语义不明确的内容会记录并排除，不擅自猜测或改写。当前订阅继承的 11 条上游例外仍处于待审核状态，尚不代表 NobleDNS 已独立批准。详见[例外规则审核登记册](data/exception-review.csv)。
 
-1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt)：广泛的 DNS 广告与跟踪防护。
-2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt)：均衡型通用 DNS 防护。
-3. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt)：更全面的通用 DNS 防护补充。保留 Multi Normal，不以 PRO 替换 Normal，以免丢失 Normal 独有规则。
-4. [AWAvenue 秋风规则（AdGuard 纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt)：针对 App 与智能设备广告场景的专项补充。
+规则数量、来源声誉或成功编译，都不能单独证明规则有效、必要或安全。NobleDNS 独立维护，与上述上游项目不存在隶属或背书关系。
 
-NobleDNS 同时保留 HaGeZi Multi Normal 与 Multi PRO 两种不同覆盖范围的列表，并只采用 AWAvenue 的纯广告版本，不引入其更广泛的隐私或“不受欢迎”类别，避免把遥测、推送、更新等独立类别一并混入。构建器保留受支持的 AdGuard DNS 主机名规则，包括末尾标签及至少另一个标签固定的通配符规则和 `$important` 修饰符；对不支持或语义不明确的语法则记录原因并排除，不擅自改写。NobleDNS 独立维护自身构建流程，与任何上游项目均无隶属或背书关系。
+## 与 AdGuard 的关系
 
-正式订阅由配置来源中成功解析且受支持的规则构成。对于不支持或复杂的语法，构建器会予以排除，而不是猜测含义或擅自改写。主订阅还包含解析器接受的简单上游例外规则；这些规则可能在兼容客户端中覆盖匹配的封禁规则。规则出现在上游列表中只能证明其来源，不能证明例外确有必要或范围恰当。当前正式构建继承的 11 条例外仍标记为 pending，尚未经过 NobleDNS 独立批准；具体状态见[例外规则审核登记册](data/exception-review.csv)。当前生效的例外规则也会单独列出，供用户检查。
+NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪防护、URL Tracking、Annoyances 或网页元素规则。DNS 规则不能隐藏页面元素、移除 URL 跟踪参数、处理 Cookie 提示或改写网页内容。
 
-规则数量不等于规则质量；规则进入编译结果，也不代表 NobleDNS 已对每个域名逐条人工审核。
+我们避免把网页级规则粗略转换为整域名封禁，并对登录、支付、身份验证、推送、CDN 和更新等共享基础设施保持谨慎。具体策略见 [AdGuard 互补与兼容说明](docs/ADGUARD-COMPATIBILITY.md)。
 
-## 与 AdGuard 官方过滤器的互补关系
+## 构建与审计
 
-NobleDNS 定位为 DNS 层补充，不替代 AdGuard Base、语言过滤器、Tracking Protection、URL Tracking、Social Media、Annoyances、Mail Tracking Protection 或网页元素规则。DNS 层只处理域名解析请求，无法隐藏网页元素、移除 URL 跟踪参数、处理 Cookie 提示或改写页面内容。应由 AdGuard 对应过滤器完成这些工作。NobleDNS 的兼容性策略是避免把网页级规则粗暴转换成整域名封禁；对登录、支付、身份验证、推送、CDN、更新及其他共享基础设施域名保持保守，并通过例外审查和回归测试控制风险。
+以下文件随构建自动更新，可用于检查当前订阅：
 
-这是一项设计与测试要求，不代表已经逐一验证了 AdGuard 所有过滤器与所有网站、应用的组合效果。实际兼容性仍需按客户端版本和具体使用场景测试。详见 [AdGuard 过滤器互补与兼容策略](docs/ADGUARD-COMPATIBILITY.md)。
+- [正式 DNS 订阅](dist/dns-filter.txt)
+- [构建清单](dist/manifest.json)：来源指纹、规则数量及构建信息。
+- [验证报告](dist/validation-report.txt)：自动化检查结果。
+- [语法审计](dist/syntax-audit.json)：受支持规则语法统计。
+- [解析排除记录](dist/parser-exclusions.csv)：未收录的原始规则及排除原因。
+- [当前生效例外](dist/allowlist-active.txt)：订阅中包含的例外规则。
 
-## 构建透明度
+项目设置 500,000 条规则上限，并执行来源变化检查与自动化回归测试。这些措施用于降低维护风险，不能替代真实设备测试和独立效果评测。
 
-以下自动生成文件是当前构建状态的依据，其内容会随获准上游来源的更新而变化。
+## 反馈问题
 
-- [构建清单](dist/manifest.json)：来源指纹、规则数量、构建信息和策略。
-- [验证报告](dist/validation-report.txt)：自动化输出检查结果。
-- [语法审计](dist/syntax-audit.json)：受支持的规则形式与语法统计。
-- [解析排除记录](dist/parser-exclusions.csv)：解析器排除的上游原始行及原因。
-- [当前生效的上游例外规则](dist/allowlist-active.txt)：主订阅中包含的简单例外规则。
+如果网站或应用出现异常，请通过 [GitHub Issues](https://github.com/LucentDNS/NobleDNS/issues) 反馈，并尽量附上：
 
-项目设置了 50 万条规则上限、上游变化检测和自动化回归测试。这些措施用于降低构建和维护风险，但不能替代真实客户端兼容性测试，也不能替代具有代表性的真实效果评测。
-
-## 质量政策与文档
-
-- [安全问题报告政策](SECURITY.md)
-- [贡献指南](CONTRIBUTING.md)
-- [例外规则审核登记册](docs/EXCEPTION-REVIEW.md)
-- [质量与维护策略](docs/QUALITY.md)
-- [DNS 客户端兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md)
-- [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md)
-- [单一均衡版政策](docs/EDITION-POLICY.md)
-- [问题反馈与规则修正指南](docs/FEEDBACK.md)
-- [发布身份验证与最小权限配置](docs/RELEASE-AUTHENTICATION.md)
-- [第三方来源与许可证说明](THIRD-PARTY-NOTICES.md)
-
-## 问题反馈
-
-如果网站或应用无法正常使用，请通过 [GitHub Issues](https://github.com/LucentDNS/NobleDNS/issues) 反馈，并尽可能提供：
-
-- 准确的域名；
-- 受影响的具体功能，例如登录、支付、推送、播放或更新；
+- 具体域名与受影响功能；
 - DNS 客户端名称及版本；
-- 可复现的操作步骤。
+- 可复现步骤；
+- 在其他设置不变时，启用与停用 NobleDNS 的对比结果。
 
-如果能在解析器及其他设置保持不变的情况下，对比启用和停用 NobleDNS 的结果，将更有助于定位问题。分享日志前，请删除个人信息、账号资料、认证令牌及其他隐私数据。详见[反馈指南](docs/FEEDBACK.md)。
+分享日志前请删除账号、令牌及其他个人隐私信息。详见[反馈指南](docs/FEEDBACK.md)。
+
+## 项目文档
+
+[安全政策](SECURITY.md) · [贡献指南](CONTRIBUTING.md) · [质量政策](docs/QUALITY.md) · [兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md) · [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [单一版本政策](docs/EDITION-POLICY.md) · [第三方声明与许可证](THIRD-PARTY-NOTICES.md)
 
 ## 许可证
 
-NobleDNS 项目代码采用 [GPL-3.0-only](LICENSE) 许可证。编译规则包含上游衍生内容，仍受适用的上游许可证及第三方条款约束。再分发时应遵守相关要求并保留适用声明和许可证文本，详见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+项目代码采用 [GPL-3.0-only](LICENSE) 许可证。编译规则包含上游衍生内容，再分发时还须遵守适用的上游许可证及第三方条款，详见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 
-订阅中出现的域名仅表示 DNS 过滤目标，不构成对相关网站或运营者的指控、认可，也不表示 NobleDNS 运营或分发相关网站及其内容。
+订阅中的域名仅表示 DNS 过滤目标，不构成对相关网站或运营者的指控或认可。
 
 ---
 
-构建器和回归测试使用 Python 标准库。维护工作要求 Python 3.12；本地构建与发布流程请参阅[维护者指南](docs/MAINTAINER-GUIDE.zh-CN.md)。
+构建器与回归测试使用 Python 标准库。维护要求 Python 3.12，详见[维护者指南](docs/MAINTAINER-GUIDE.zh-CN.md)。
