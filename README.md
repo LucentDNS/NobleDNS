@@ -38,7 +38,7 @@ DNS filtering is one layer of protection. It cannot block every ad, particularly
 The current build combines three complementary upstreams:
 
 1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — broad DNS advertising and tracking coverage.
-2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt) — broad balanced DNS protection.
+2. [HaGeZi Multi Pro](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — broad balanced DNS protection.
 3. [AWAvenue Ads Rule — Ads-only AdGuard variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — a focused advertising source with additional attention to app and smart-device advertising scenarios.
 
 NobleDNS deliberately uses AWAvenue’s Ads-only variant, not its broader privacy or unwelcome categories. This adds a focused advertising layer without importing its separate telemetry, push, update or other unwanted-connection categories. The compiler preserves supported AdGuard DNS hostname rules, including documented wildcard patterns with fixed suffix labels and the `$important` modifier. Unsupported or ambiguous syntax is recorded and excluded rather than rewritten. NobleDNS independently controls its build process and is not affiliated with or endorsed by any upstream project.
