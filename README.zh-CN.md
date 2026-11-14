@@ -38,7 +38,7 @@ DNS 过滤只是网络防护的一环，无法拦截所有广告，尤其是第�
 当前构建组合三个互补来源：
 
 1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt)：广泛的 DNS 广告与跟踪防护。
-2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt)：均衡型通用 DNS 防护。
+2. [HaGeZi Multi Pro](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt)：均衡型通用 DNS 防护。
 3. [AWAvenue 秋风规则（AdGuard 纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt)：针对 App 与智能设备广告场景的专项补充。
 
 NobleDNS 只采用 AWAvenue 的纯广告版本，不引入其更广泛的隐私或“不受欢迎”类别，避免把遥测、推送、更新等独立类别一并混入。构建器保留受支持的 AdGuard DNS 主机名规则，包括末尾标签及至少另一个标签固定的通配符规则和 `$important` 修饰符；对不支持或语义不明确的语法则记录原因并排除，不擅自改写。NobleDNS 独立维护自身构建流程，与任何上游项目均无隶属或背书关系。
