@@ -221,7 +221,7 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
             continue
         modifier = ""
         candidate_line = line
-        if line.endswith("$important"):
+        if line.endswith("$important") and not line.startswith("@@"):
             candidate_line = line[:-len("$important")]
             modifier = "$important"
         kind, match, bare = "block", BLOCK_RE.fullmatch(candidate_line), False
