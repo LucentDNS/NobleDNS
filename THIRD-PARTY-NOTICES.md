@@ -15,22 +15,7 @@ NobleDNS does not claim original authorship of upstream rule content.
 - License file:
   https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE
 
-## 2. HaGeZi Multi Normal
-
-- Project: HaGeZi DNS Blocklists
-- Maintainer: HaGeZi
-- Official repository:
-  https://github.com/hagezi/dns-blocklists
-- Upstream rule:
-  https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt
-- License: GPL-3.0
-- License file:
-  https://github.com/hagezi/dns-blocklists/blob/main/LICENSE
-
-HaGeZi also identifies third-party input data that may be subject
-to separate terms. Those terms must be respected where applicable.
-
-## 3. HaGeZi Multi PRO
+## 2. HaGeZi Multi PRO
 
 - Project: HaGeZi DNS Blocklists
 - Maintainer: HaGeZi
@@ -42,9 +27,9 @@ to separate terms. Those terms must be respected where applicable.
 - License file:
   https://github.com/hagezi/dns-blocklists/blob/main/LICENSE
 
-Multi PRO is a distinct variant of the same upstream project as Multi Normal. NobleDNS retains both variants as separate inputs; one is not substituted for the other. HaGeZi also identifies third-party input data that may be subject to separate terms. Those terms must be respected where applicable.
+NobleDNS uses Multi PRO as its sole HaGeZi Multi tier, following the upstream rule that only one cumulative Multi tier should be selected. HaGeZi also identifies third-party input data that may be subject to separate terms. Those terms must be respected where applicable.
 
-## 4. AWAvenue Ads Rule (Only Ads)
+## 3. AWAvenue Ads Rule (Only Ads)
 
 - Project: AWAvenue 秋风广告规则
 - Maintainer: TG-Twilight
