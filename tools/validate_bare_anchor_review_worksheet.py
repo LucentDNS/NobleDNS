@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Keep the human bare-anchor review worksheet in exact sync with the build audit.
+"""Validate bare-anchor worksheet coverage against the current build audit.
 
-This validates inventory coverage and metadata integrity only. It does not
-classify any hostname as safe, malicious, or compatible.
+The exact rule and source are stable identity fields. source_line is retained
+as historical provenance only: upstream lists reorder lines, so it must not be
+a daily-build invariant. This validates inventory coverage and metadata only;
+it does not classify any hostname as safe, malicious, or compatible.
 """
 from __future__ import annotations
 
@@ -92,11 +94,11 @@ def validate(audit_path: Path, worksheet_path: Path) -> tuple[Counter[str], list
         if audit_row is None:
             errors.append(f"{worksheet_path}:{line_no}: rule absent from current build audit: {rule}")
             continue
-        source_lines = set(filter(None, audit_row["source_line_numbers"].split(";")))
         if row["source"].strip() != audit_row["source"]:
             errors.append(f"{worksheet_path}:{line_no}: source mismatch for {rule}")
-        if row["source_line"].strip() not in source_lines:
-            errors.append(f"{worksheet_path}:{line_no}: source line mismatch for {rule}")
+        # source_line points to the source snapshot used when this worksheet row
+        # was created. It is not compared with today's line number because
+        # upstream list insertions/reordering do not change the rule identity.
 
     missing = set(audit_by_rule) - set(worksheet_by_rule)
     extra = set(worksheet_by_rule) - set(audit_by_rule)
