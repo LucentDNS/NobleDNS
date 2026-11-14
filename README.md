@@ -22,6 +22,7 @@ Legacy compatibility URL: `https://raw.githubusercontent.com/LucentDNS/NobleDNS/
 - **Compatibility first:** sign-in, payments, banking, communications, push notifications, maps, video and software updates are important review areas.
 - **Transparent sources:** upstreams, build manifests, syntax audits and parser exclusions are published.
 - **Automated maintenance:** sources are refreshed and builds are checked regularly, with safeguards for unusual changes.
+- **Safe validation and compression:** source rules targeting public suffixes are rejected; exact duplicates are removed; only simple child-domain rules covered by an existing non-public-suffix parent rule are compressed using a pinned Public Suffix List snapshot.
 
 DNS filtering operates at the hostname-resolution layer. It cannot block every ad or replace cosmetic filtering, URL parameter removal or cookie-notice handling.
 
@@ -31,14 +32,14 @@ DNS filtering operates at the hostname-resolution layer. It cannot block every a
 
 The current build combines four sources:
 
-1. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — the sole HaGeZi Multi tier and the general-purpose filtering core. HaGeZi's Multi tiers are cumulative, so Normal is not subscribed alongside PRO.
+1. [HaGeZi Multi PRO Mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt) — the sole HaGeZi Multi tier and the general-purpose filtering core. HaGeZi's Multi tiers are cumulative, so Normal is not subscribed alongside PRO.
 2. [HaGeZi TIF Mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt) — a compact threat-intelligence supplement for malware, phishing and related malicious infrastructure. It is an add-on to the main tier, not another Multi tier. TIF Mini is the size-optimized version of TIF Medium; it is not the full TIF feed.
 3. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — a separately audited DNS-layer supplement. It is retained for its incremental source contribution, not because AdGuard clients require their own DNS list.
 4. [AWAvenue Ads Rule — Ads-only variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — focused advertising coverage.
 
 AdGuard DNS Filter is not required for format compatibility with AdGuard software: HaGeZi PRO already provides the Adblock format. Its continued inclusion is a source-selection decision, subject to ongoing overlap and compatibility review. HaGeZi recommends pairing one main Multi tier with a TIF variant; NobleDNS uses TIF Mini as a compact threat-intelligence supplement.
 
-The compiler includes only explicitly supported syntax. Unsupported or ambiguous input is recorded and excluded rather than guessed or rewritten. The 11 inherited upstream exceptions currently in the subscription remain pending review; their presence does not mean NobleDNS has independently approved them. See the [exception review register](data/exception-review.csv).
+The compiler includes only explicitly supported syntax. Unsupported or ambiguous input is recorded and excluded rather than guessed or rewritten. Parent/child compression is limited to plain `||domain^` rules; wildcard, bare-anchor, modifier and exception rules are left unchanged. The pinned PSL snapshot includes ICANN and PRIVATE suffixes and is SHA-256 verified on every build. The 11 inherited upstream exceptions currently in the subscription remain pending review; their presence does not mean NobleDNS has independently approved them. See the [exception review register](data/exception-review.csv).
 
 Rule counts, upstream reputation and successful compilation do not by themselves prove that a rule is effective, necessary or safe. NobleDNS is independently maintained and is not affiliated with or endorsed by its upstream projects.
 
@@ -56,6 +57,8 @@ These generated files document the current build:
 - [Build manifest](dist/manifest.json) — source fingerprints, rule counts and build metadata.
 - [Validation report](dist/validation-report.txt) — automated checks.
 - [Syntax audit](dist/syntax-audit.json) — supported syntax inventory.
+- [Domain compression audit](dist/domain-compression-audit.csv) — each removed child rule, its covering parent and source provenance.
+- [Public Suffix metadata](dist/public-suffix-metadata.json) — pinned PSL revision and integrity metadata.
 - [Parser exclusions](dist/parser-exclusions.csv) — excluded source lines and reasons.
 - [Active exceptions](dist/allowlist-active.txt) — exceptions present in the subscription.
 - [AdGuard Chinese DNS-scope audit](dist/adguard-chinese-dns-audit.json) and [candidate review CSV](dist/adguard-chinese-dns-candidates.csv) — audit-only evidence; no Chinese regional source is automatically imported.

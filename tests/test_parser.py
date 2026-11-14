@@ -20,7 +20,7 @@ class ParserTests(unittest.TestCase):
                 "! Homepage: https://github.com/LucentDNS/NobleDNS",
                 f"! Version: {mod.VERSION_BASE}",
                 "! Expires: 8 hours",
-                "! Sources: HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, AWAvenue Ads Rule (Only Ads)",
+                "! Sources: HaGeZi Multi PRO Mini, HaGeZi TIF Mini, AdGuard DNS Filter, AWAvenue Ads Rule (Only Ads)",
                 "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).",
                 "! Content: Listed domains are included as blocking targets only.",
             ],
@@ -31,6 +31,7 @@ class ParserTests(unittest.TestCase):
             "||ads.example.com^",
             "||bare.example.com",
             "||*.wildcard.example.com^",
+            "||wild*.bare.example.net",
             "||priority.example.com^$important",
         }
         summary, review = mod.syntax_audit(
@@ -40,13 +41,14 @@ class ParserTests(unittest.TestCase):
                 "hagezi_normal": {"||bare.example.com"},
             },
         )
-        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["total"], 5)
         self.assertEqual(
             summary["forms"],
             {
                 "domain_and_subdomains_wildcard": 1,
                 "domain_and_subdomains_important": 1,
                 "domain_and_subdomains": 1,
+                "wildcard_anchor_without_end_boundary": 1,
                 "domain_anchor_without_end_boundary": 1,
             },
         )
@@ -90,6 +92,19 @@ class ParserTests(unittest.TestCase):
             {"||*.example.com^", "||ads*.example.net^", "||ok.example.com^"},
         )
         self.assertEqual(rejected["wildcard_syntax"], 0)
+
+    def test_public_suffix_domains_and_wildcard_scopes_are_excluded(self):
+        psl = mod.PublicSuffixList()
+        blocks, exceptions, rejected, _ = mod.parse_source(
+            b"||co.uk^\n||shop.co.uk^\n||*.co.uk^\n@@||co.uk^\n",
+            "test",
+            min_blocks=0,
+            psl=psl,
+        )
+        self.assertEqual(blocks, {"||shop.co.uk^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["public_suffix_not_allowed"], 2)
+        self.assertEqual(rejected["wildcard_public_suffix_not_allowed"], 1)
 
     def test_dynamic_public_suffix_wildcard_is_excluded(self):
         blocks, _, rejected, _ = self.parse(

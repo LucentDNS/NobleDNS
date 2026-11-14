@@ -111,9 +111,9 @@ class ConfigTests(unittest.TestCase):
     def test_exactly_four_approved_sources(self):
         cfg = mod.load_config()
         self.assertEqual([x["key"] for x in cfg["sources"]], ["hagezi_multi_pro", "hagezi_tif_mini", "adguard_dns", "awavenue_ads"])
-        self.assertEqual(cfg["sources"][0]["url"], "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt")
+        self.assertEqual(cfg["sources"][0]["url"], "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt")
         self.assertEqual(cfg["sources"][0]["min_bytes"], 1000000)
-        self.assertEqual(cfg["sources"][0]["min_rules"], 100000)
+        self.assertEqual(cfg["sources"][0]["min_rules"], 90000)
         self.assertEqual(cfg["sources"][1]["url"], "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt")
         self.assertEqual(cfg["sources"][1]["min_bytes"], 1000000)
         self.assertEqual(cfg["sources"][1]["min_rules"], 100000)
@@ -122,6 +122,61 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(mod.UPSTREAM_LICENSES["hagezi_multi_pro"]["spdx"], "GPL-3.0")
         self.assertEqual(mod.UPSTREAM_LICENSES["hagezi_tif_mini"]["spdx"], "GPL-3.0")
         self.assertEqual(cfg["max_rules"], 500000)
+    def test_exact_pro_to_pro_mini_tier_transition_is_bounded_and_one_time(self):
+        import tempfile, json
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            old_urls = {
+                "hagezi_multi_pro": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+                "hagezi_tif_mini": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt",
+                "adguard_dns": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
+                "awavenue_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
+            }
+            current_urls = dict(old_urls)
+            current_urls["hagezi_multi_pro"] = "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt"
+            old_sources = {
+                key: {"url": url, "supported_block_rules": 200 if key == "hagezi_multi_pro" else 100}
+                for key, url in old_urls.items()
+            }
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({"sources": old_sources}), encoding="utf-8")
+            old_rules = {f"||old{i}.example.com^" for i in range(100)}
+            (root / "dns-filter.txt").write_text("\\n".join(sorted(old_rules)), encoding="utf-8")
+            current_rules = set(sorted(old_rules)[40:]) | {"||new-a.example.net^", "||new-b.example.net^"}
+            current = {
+                key: {"url": url, "supported_block_rules": 90 if key == "hagezi_multi_pro" else 100}
+                for key, url in current_urls.items()
+            }
+            self.assertEqual(mod.check_drift(current, current_rules, manifest, 15.0), [])
+
+    def test_pro_mini_transition_does_not_allow_other_source_url_changes(self):
+        import tempfile, json
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            old_urls = {
+                "hagezi_multi_pro": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+                "hagezi_tif_mini": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt",
+                "adguard_dns": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
+                "awavenue_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
+            }
+            old_sources = {
+                key: {"url": url, "supported_block_rules": 200 if key == "hagezi_multi_pro" else 100}
+                for key, url in old_urls.items()
+            }
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({"sources": old_sources}), encoding="utf-8")
+            old_rules = {f"||old{i}.example.com^" for i in range(100)}
+            (root / "dns-filter.txt").write_text("\\n".join(sorted(old_rules)), encoding="utf-8")
+            current_urls = dict(old_urls)
+            current_urls["hagezi_multi_pro"] = "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt"
+            current_urls["adguard_dns"] = "https://example.invalid/changed.txt"
+            current = {
+                key: {"url": url, "supported_block_rules": 90 if key == "hagezi_multi_pro" else 100}
+                for key, url in current_urls.items()
+            }
+            with self.assertRaisesRegex(RuntimeError, "drift gate failed"):
+                mod.check_drift(current, set(sorted(old_rules)[40:]), manifest, 15.0)
+
     def test_drift_gate_blocks_large_source_change(self):
         import tempfile, json
         with tempfile.TemporaryDirectory() as td:

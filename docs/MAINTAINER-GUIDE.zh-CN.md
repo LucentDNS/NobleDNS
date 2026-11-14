@@ -72,7 +72,7 @@ NobleDNS/
 
 | 来源 | 用途 |
 |---|---|
-| HaGeZi Multi PRO | 通用广告、跟踪与隐私过滤；唯一集成的 HaGeZi Multi 主版本 |
+| HaGeZi Multi PRO Mini | 通用广告、跟踪与隐私过滤；唯一集成的 HaGeZi Multi 主版本 |
 | HaGeZi TIF Mini | 恶意软件、钓鱼及相关恶意基础设施威胁情报补充 |
 | AdGuard DNS Filter | DNS 层广告与跟踪过滤补充 |
 | AWAvenue Ads Rule (Only Ads) | 广告场景专项补充；仅使用纯广告版本 |
@@ -147,7 +147,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 | 文件 | 检查内容 |
 |---|---|
 | `dns-filter.txt` | 主拦截规则 |
-| `manifest.json` | 来源、数量、哈希、构建信息 |
+| `manifest.json` | 来源、数量、哈希、构建信息、各来源独有规则数及两两精确重叠数 |
 | `validation-report.txt` | 构建验证报告 |
 | `parser-exclusions.csv` | 被排除规则及原因 |
 | `allowlist-active.txt` | 已纳入主订阅的简单上游例外规则 |
@@ -158,6 +158,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 - 规则总量处于构建配置允许的容量范围内。
 - 四个上游均正常获取。
 - 来源规则数量没有异常变化。
+- 对照 manifest 中的 `source_only_rules` 和 `pairwise_source_overlap`，判断各来源的精确独有规则与重复情况；这些是字符串级统计，不等于语义覆盖或实际拦截效果。
 - 新增、删除规则比例合理。
 - 排除原因没有出现异常增长。
 - 主订阅包含封禁规则和通过语法、域名校验的简单上游例外规则；复杂例外仍排除。
@@ -438,4 +439,4 @@ NobleDNS 是公开维护的 DNS 过滤规则集。自动构建通过代表构建
 
 ## 14. 上游许可证与免责声明复核
 
-每次正式发布前，都要重新核对四个实际集成的上游规则源（HaGeZi Multi PRO、HaGeZi TIF Mini、AdGuard DNS Filter、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi PRO 与 TIF Mini 虽来自同一上游项目，但属于不同规则产品，必须分别核对其用途、版本和适用说明，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
+每次正式发布前，都要重新核对四个实际集成的上游规则源（HaGeZi Multi PRO Mini、HaGeZi TIF Mini、AdGuard DNS Filter、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi PRO Mini 与 TIF Mini 虽来自同一上游项目，但属于不同规则产品，必须分别核对其用途、版本和适用说明，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。

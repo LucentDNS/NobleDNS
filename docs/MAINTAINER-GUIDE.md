@@ -74,7 +74,7 @@ The project currently uses four complementary upstream sources:
 | Source | Purpose |
 |---|---|
 | AdGuard DNS Filter | DNS advertising and tracking protection |
-| HaGeZi Multi PRO | General DNS advertising, tracking and privacy protection; sole HaGeZi Multi tier |
+| HaGeZi Multi PRO Mini | General DNS advertising, tracking and privacy protection; sole HaGeZi Multi tier |
 | HaGeZi TIF Mini | Compact malware, phishing and malicious-infrastructure threat-intelligence supplement |
 | AWAvenue Ads Rule (Only Ads) | Focused app / smart-device advertising coverage; Ads-only variant |
 
@@ -435,4 +435,4 @@ The build-time enforcement gate is active. The builder compares the parsed upstr
 
 ## Upstream license and disclaimer review
 
-Before each public release, verify the current license and applicable notices for all four configured upstream rule sources: HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, and AWAvenue Ads Rule (Only Ads). For both HaGeZi sources, review the [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.
+Before each public release, verify the current license and applicable notices for all four configured upstream rule sources: HaGeZi Multi PRO Mini, HaGeZi TIF Mini, AdGuard DNS Filter, and AWAvenue Ads Rule (Only Ads). For both HaGeZi sources, review the [official upstream disclaimer](https://github.com/hagezi/dns-blocklists#disclaimer) in addition to the GPL-3.0 license. Record the review date and any material changes in the maintenance log. The local third-party notice is a summary and link, not a substitute for the upstream terms. Do not assume that a GPL label alone resolves rights in third-party input data.

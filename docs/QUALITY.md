@@ -20,7 +20,22 @@ NobleDNS maintains **one balanced public edition**, designed with mainland China
 - Do not create separate aggressive, strict, lite, regional or app-specific public variants unless the project explicitly revises this policy after evidence and maintenance-capacity review.
 - The main subscription contains supported blocking rules plus only exceptions permitted by `data/exception-review.csv`. The 11 inherited exceptions from the audited 2026-11-12 snapshot are a frozen, temporary compatibility baseline: they remain active to avoid silently changing existing behavior, but are still marked `pending` and are **not** NobleDNS approvals. The build rejects unregistered upstream exception additions or removals. Any exception outside that exact legacy baseline must be independently reviewed and recorded as `approved` with reviewer, UTC date, rationale, evidence URL and scope assessment before activation. Complex or unsupported exception syntax remains excluded.
 - A source is not accepted merely because it is popular or large. Review its purpose, license, syntax, update behavior, rule scope, overlap, provenance and likely compatibility impact.
-- HaGeZi Multi PRO and AdGuard DNS Filter are general-purpose lists, while HaGeZi TIF Mini is a threat-intelligence feed and AWAvenue is an advertising-focused supplement. None is a mainland-China-specific dataset. Do not imply that their upstream maintainers have validated them for mainland services.
+- HaGeZi Multi PRO Mini and AdGuard DNS Filter are general-purpose lists, while HaGeZi TIF Mini is a threat-intelligence feed and AWAvenue is an advertising-focused supplement. None is a mainland-China-specific dataset. Do not imply that their upstream maintainers have validated them for mainland services.
+
+## Parent/child compression and public-suffix safety
+
+The build removes a child rule only when all of the following are true:
+
+- The child and parent are both exact simple hostname rules in `||domain^` form.
+- The parent rule is present in the same merged input set.
+- The parent is not a public suffix according to the pinned Mozilla Public Suffix List snapshot.
+- The relationship is a true DNS-label suffix relationship, not a string-suffix coincidence.
+
+The PSL snapshot is pinned to commit `c3a53eed2cc49353c5fb5c30536186795d5c451b` and checked against SHA-256 `7379dee58164b5f7cda5e37f2cc85b3d1754245dc313178eef5cbdcaca758650` on every build. Both ICANN and PRIVATE sections are included, and exact, wildcard and exception PSL rules are interpreted. The same snapshot is used during source parsing to reject block/exception hostnames that are themselves public suffixes and wildcard patterns whose fixed suffix is a public suffix. If the snapshot is missing, altered or malformed, the build fails closed.
+
+Bare anchors (`||domain`), wildcard rules, `$important` rules, exceptions and other syntax are never compressed. Every removed rule is listed with its covering parent and source provenance in `domain-compression-audit.csv`. The audit is deterministic and the compression step is idempotent. The first rollout permits only an exact compression-only migration of at most 10,000 removals when all upstream source fingerprints are unchanged; ordinary source and rule drift limits remain in force afterward.
+
+This transformation reduces redundant entries; it does not add new blocking scope beyond an existing parent rule. It is not a dead-domain detector. Dead-domain scanning is intentionally not part of the scheduled build because the upstream full-list scan is too expensive for the available GitHub Actions budget and can delay the entire pipeline.
 
 ## Mainland-use compatibility review
 
@@ -39,7 +54,7 @@ These categories define review priorities; they do not imply that every named se
 
 ## Current compilation model
 
-The current public build compiles supported blocking rules from four configured sources: HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, and AWAvenue Ads Rule (Only Ads). Multi PRO is the sole HaGeZi Multi tier because the upstream tiers are cumulative; Multi Normal is not duplicated alongside it. TIF Mini is a separate threat-intelligence add-on for malware and phishing, not another Multi tier. AdGuard DNS Filter remains a separately audited DNS-layer supplement, not a requirement for AdGuard client compatibility. AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
+The current public build compiles supported blocking rules from four configured sources: HaGeZi Multi PRO Mini, HaGeZi TIF Mini, AdGuard DNS Filter, and AWAvenue Ads Rule (Only Ads). Multi PRO is the sole HaGeZi Multi tier because the upstream tiers are cumulative; Multi Normal is not duplicated alongside it. TIF Mini is a separate threat-intelligence add-on for malware and phishing, not another Multi tier. AdGuard DNS Filter remains a separately audited DNS-layer supplement, not a requirement for AdGuard client compatibility. AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The build manifest records exact source-only rule counts and pairwise exact overlap so maintainers can identify redundant or complementary inputs. These are string-level statistics, not semantic-overlap or efficacy measurements. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
 
 ## Chinese and regional filter handling
 
@@ -87,7 +102,7 @@ These checks verify build integrity and the rules covered by the regression corp
 
 ## Current parser scope
 
-The public DNS subscription accepts documented AdGuard hostname-pattern forms `||domain^` and `||domain`, supported hostname wildcards with a static suffix, and `$important` on supported hostname block rules. Hostnames must pass strict multi-label validation. AdGuard documents `||` as matching the beginning of a hostname, including subdomains, and `^` as the hostname-end separator. A missing `^` is not, by itself, a reason to discard a rule; the retained bare-anchor rules in the current audited snapshot remain listed for targeted client matching verification.
+The public DNS subscription accepts documented AdGuard hostname-pattern forms `||domain^` and `||domain`, supported hostname wildcards with a static suffix (including two upstream wildcard anchors without an explicit end separator), and `$important` on supported hostname block rules. Static bare anchors and wildcard anchors are audited as separate syntax classes; neither is silently rewritten. Hostnames must pass strict multi-label validation. AdGuard documents `||` as matching the beginning of a hostname, including subdomains, and `^` as the hostname-end separator. A missing `^` is not, by itself, a reason to discard a rule; the retained bare-anchor rules in the current audited snapshot remain listed for targeted client matching verification.
 
 For the general filter-rule grammar, see [How to create your own ad filters](https://adguard.com/kb/general/ad-filtering/create-own-filters/); for DNS hostname matching, use the more specific [AdGuard DNS filtering syntax](https://adguard-dns.io/kb/general/dns-filtering-syntax/). Leading-dot forms (`.domain^` and `.domain`) are not among the hostname-pattern forms documented in that DNS-specific specification. NobleDNS therefore excludes them from the public subscription and records each original line in `parser-exclusions.csv` with the reason `unsupported_leading_dot_dns_syntax`. They are never rewritten as `||domain^`, because that would change their scope. The real upstream regression fixture contains 28 leading-dot records; all 28 must remain excluded unless the project formally expands its supported syntax based on authoritative documentation and client tests.
 

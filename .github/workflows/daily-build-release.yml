@@ -82,6 +82,7 @@ jobs:
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
+          test -s licenses/MPL-2.0.txt
 
           cmp -s LICENSE licenses/GPL-3.0.txt
 
@@ -105,27 +106,6 @@ jobs:
           if [ "$ALLOW_LARGE_CHANGE" = "true" ]; then
             EXTRA_ARGS+=(--allow-large-change)
             echo "Large change explicitly approved by workflow_dispatch input."
-          elif [ -f dist/manifest.json ]; then
-            # One-time, narrowly scoped migration allowance: only the exact
-            # former three-source set -> reviewed four-source set transition.
-            # After the new manifest is published, the old key set no longer
-            # matches and the ordinary drift gate automatically resumes.
-            python - <<'PY'
-          import json
-          from pathlib import Path
-          old = json.loads(Path("dist/manifest.json").read_text(encoding="utf-8"))
-          new = json.loads(Path("config/sources.json").read_text(encoding="utf-8"))
-          old_keys = set(old.get("sources", {}))
-          new_keys = {item.get("key") for item in new.get("sources", [])}
-          former = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
-          approved = {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}
-          if old_keys == former and new_keys == approved:
-              print("Exact one-time source migration detected; allowing its reviewed rule delta.")
-              Path("/tmp/nobledns-source-migration-approved").write_text("yes")
-          PY
-            if [ -f /tmp/nobledns-source-migration-approved ]; then
-              EXTRA_ARGS+=(--allow-large-change)
-            fi
           fi
 
           if [ -f dist/manifest.json ]; then
@@ -247,14 +227,18 @@ jobs:
           test -s "$OUT/adguard-chinese-dns-candidates.csv"
           test -s "$OUT/allowlist-active.txt"
           test -s "$OUT/parser-exclusions.csv"
+          test -s "$OUT/domain-compression-audit.csv"
+          test -s "$OUT/public-suffix-metadata.json"
           test -s "$OUT/LICENSE"
           test -s "$OUT/THIRD-PARTY-NOTICES.md"
           test -s "$OUT/licenses/GPL-3.0.txt"
+          test -s "$OUT/licenses/MPL-2.0.txt"
           test -s "$OUT/sources/sources-manifest.json"
 
           cmp -s LICENSE "$OUT/LICENSE"
           cmp -s THIRD-PARTY-NOTICES.md "$OUT/THIRD-PARTY-NOTICES.md"
           cmp -s licenses/GPL-3.0.txt "$OUT/licenses/GPL-3.0.txt"
+          cmp -s licenses/MPL-2.0.txt "$OUT/licenses/MPL-2.0.txt"
 
           python - <<'PY'
           import json
@@ -278,8 +262,15 @@ jobs:
           assert "! Expires: 8 hours" in subscription.splitlines(), "Filter expiry metadata missing"
           published_rules = [line for line in subscription.splitlines() if line and not line.startswith(("!", "#"))]
           assert not any(line.startswith(".") for line in published_rules), "Undocumented leading-dot rule found in public output"
+          compression = manifest.get("domain_compression", {})
+          assert compression.get("enabled") is True, "Pinned-PSL parent/child compression is not enabled"
+          assert compression.get("psl_commit") == "c3a53eed2cc49353c5fb5c30536186795d5c451b", "Unexpected PSL snapshot commit"
+          assert compression.get("psl_sha256") == "7379dee58164b5f7cda5e37f2cc85b3d1754245dc313178eef5cbdcaca758650", "Unexpected PSL snapshot hash"
+          assert compression.get("before_rules") - compression.get("after_rules") == compression.get("removed_rules"), "Compression accounting mismatch"
+          compression_rows = Path("build-output/latest/domain-compression-audit.csv").read_text(encoding="utf-8-sig").splitlines()
+          assert len(compression_rows) - 1 == compression.get("removed_rules"), "Compression audit row count mismatch"
           syntax_forms = manifest.get("syntax_audit", {}).get("forms", {})
-          assert set(syntax_forms) == {"domain_and_subdomains", "domain_anchor_without_end_boundary", "domain_and_subdomains_wildcard", "domain_and_subdomains_important"}, "Unexpected public DNS syntax form"
+          assert set(syntax_forms) == {"domain_and_subdomains", "domain_anchor_without_end_boundary", "wildcard_anchor_without_end_boundary", "domain_and_subdomains_wildcard", "domain_and_subdomains_important"}, "Unexpected public DNS syntax form"
           assert manifest.get("syntax_audit", {}).get("total") == manifest.get("blocking_rules"), "Syntax audit total differs from blocking rule count"
           assert manifest.get("active_exception_rules", 0) == len([line for line in subscription.splitlines() if line.startswith("@@")]), "Active exception count differs from manifest"
           assert manifest.get("main_subscription_rules") == manifest.get("blocking_rules", 0) + manifest.get("active_exception_rules", 0), "Main subscription rule counts are inconsistent"
@@ -340,7 +331,7 @@ jobs:
               else ""
           )
 
-          audit_paths = ("syntax-audit.json", "syntax-review.csv", "exception-overlap-audit.csv", "bare-anchor-audit.csv", "adguard-chinese-dns-audit.json", "adguard-chinese-dns-candidates.csv")
+          audit_paths = ("syntax-audit.json", "syntax-review.csv", "exception-overlap-audit.csv", "bare-anchor-audit.csv", "adguard-chinese-dns-audit.json", "adguard-chinese-dns-candidates.csv", "domain-compression-audit.csv", "public-suffix-metadata.json")
 
           def normalized_audit_bytes(path):
               # Git normalizes text files to LF; compare semantic text, not checkout
@@ -507,6 +498,8 @@ jobs:
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
           cp build-output/latest/syntax-audit.json dist/syntax-audit.json
           cp build-output/latest/syntax-review.csv dist/syntax-review.csv
+          cp build-output/latest/domain-compression-audit.csv dist/domain-compression-audit.csv
+          cp build-output/latest/public-suffix-metadata.json dist/public-suffix-metadata.json
 
       - name: Commit updated public artifacts
         shell: bash
@@ -560,9 +553,12 @@ jobs:
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
           test -s dist/syntax-review.csv
+          test -s dist/domain-compression-audit.csv
+          test -s dist/public-suffix-metadata.json
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
+          test -s licenses/MPL-2.0.txt
 
       # GitHub Releases are reserved for stable SemVer product-version snapshots.
       # Daily validated subscription updates are published to the main branch only.
@@ -620,9 +616,12 @@ jobs:
             dist/bare-anchor-audit.csv \
             dist/adguard-chinese-dns-audit.json \
             dist/adguard-chinese-dns-candidates.csv \
+            dist/domain-compression-audit.csv \
+            dist/public-suffix-metadata.json \
             LICENSE \
             THIRD-PARTY-NOTICES.md \
             licenses/GPL-3.0.txt \
+            licenses/MPL-2.0.txt \
             --target "$(git rev-parse HEAD)" \
             --title "NobleDNS $VERSION" \
             --notes-file "$NOTES_FILE"
