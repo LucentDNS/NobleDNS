@@ -22,6 +22,7 @@ NobleDNS 是独立维护的 DNS 过滤规则集，面向日常网络使用，并
 - **兼容优先：** 重点关注登录、支付、银行、通信、推送、地图、视频及软件更新等关键功能。
 - **来源透明：** 公开上游来源、构建清单、语法审计和解析排除记录。
 - **自动维护：** 定期获取来源、构建规则并执行回归检查；异常变更会受到检查门槛约束。
+- **安全压缩：** 仅在已有非公共后缀父域规则覆盖时，压缩简单子域规则；使用固定版本的公共后缀列表并保留逐条审计。
 
 DNS 过滤只处理域名解析，不能拦截所有广告，也不能替代网页元素过滤、URL 参数清理或 Cookie 提示处理。
 
@@ -38,7 +39,7 @@ DNS 过滤只处理域名解析，不能拦截所有广告，也不能替代网�
 
 AdGuard DNS Filter 并非 AdGuard 软件的格式兼容要求：HaGeZi PRO 本身就提供 Adblock 格式。是否继续集成官方 DNS 规则，属于上游来源取舍，仍须持续审计其增量价值与兼容性。HaGeZi 建议主 Multi 版本搭配一种 TIF 版本；NobleDNS 选择 TIF Mini，作为轻量的威胁情报补充。
 
-构建器只收录明确支持的规则语法；不支持或语义不明确的内容会记录并排除，不擅自猜测或改写。当前订阅继承的 11 条上游例外仍处于待审核状态，尚不代表 NobleDNS 已独立批准。详见[例外规则审核登记册](data/exception-review.csv)。
+构建器只收录明确支持的规则语法；不支持或语义不明确的内容会记录并排除，不擅自猜测或改写。父子域压缩仅处理普通 `||domain^` 规则；裸锚点、通配符、带修饰符规则和例外规则均保持原样。公共后缀数据固定版本并在每次构建时进行 SHA-256 完整性校验。当前订阅继承的 11 条上游例外仍处于待审核状态，尚不代表 NobleDNS 已独立批准。详见[例外规则审核登记册](data/exception-review.csv)。
 
 规则数量、来源声誉或成功编译，都不能单独证明规则有效、必要或安全。NobleDNS 独立维护，与上述上游项目不存在隶属或背书关系。
 
@@ -56,6 +57,8 @@ NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪�
 - [构建清单](dist/manifest.json)：来源指纹、规则数量及构建信息。
 - [验证报告](dist/validation-report.txt)：自动化检查结果。
 - [语法审计](dist/syntax-audit.json)：受支持规则语法统计。
+- [父子域压缩审计](dist/domain-compression-audit.csv)：逐条记录被压缩的子域、覆盖它的父域及来源。
+- [公共后缀元数据](dist/public-suffix-metadata.json)：固定 PSL 版本及完整性信息。
 - [解析排除记录](dist/parser-exclusions.csv)：未收录的原始规则及排除原因。
 - [当前生效例外](dist/allowlist-active.txt)：订阅中包含的例外规则。
 - [AdGuard 中文过滤器 DNS 范围审计](dist/adguard-chinese-dns-audit.json)及[候选规则清单](dist/adguard-chinese-dns-candidates.csv)：仅供审计，不会自动并入正式订阅。
