@@ -322,12 +322,38 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
     if allow_large or not previous_manifest or not previous_manifest.exists():
         return []
     old = json.loads(previous_manifest.read_text(encoding="utf-8"))
+    old_sources = old.get("sources", {})
     changes = []
+
+    # Permit exactly one deliberate product-tier migration: HaGeZi Multi PRO
+    # -> PRO Mini. All other source keys and URLs must remain identical.
+    # The exception is self-expiring: after the new manifest is published,
+    # the old URL is no longer present and ordinary drift checks resume.
+    approved_tier_transition = {
+        "hagezi_multi_pro": (
+            "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+            "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt",
+        )
+    }
+    old_keys, current_keys = set(old_sources), set(current)
+    transition_keys = {
+        key for key, (old_url, new_url) in approved_tier_transition.items()
+        if old_keys == current_keys
+        and old_sources.get(key, {}).get("url") == old_url
+        and current.get(key, {}).get("url") == new_url
+        and all(
+            old_sources.get(other, {}).get("url") == current.get(other, {}).get("url")
+            for other in current_keys if other != key
+        )
+    }
     for key, now in current.items():
-        old_source = old.get("sources", {}).get(key, {})
+        old_source = old_sources.get(key, {})
         before = old_source.get("supported_block_rules", old_source.get("simple_block_rules"))
         after = now.get("supported_block_rules")
-        if before is None or not before: continue
+        if before is None or not before:
+            continue
+        if key in transition_keys:
+            continue
         pct = abs(after - before) * 100.0 / before
         if pct > max_percent:
             changes.append(f"{key}: parsed blocks changed {before:,} -> {after:,} ({pct:.2f}%), limit {max_percent:.2f}%")
@@ -340,7 +366,15 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
             removed = len(old_rules - current_rules)
             add_pct = added * 100.0 / len(old_rules)
             remove_pct = removed * 100.0 / len(old_rules)
-            if added > MAX_ABSOLUTE_RULE_DELTA or removed > MAX_ABSOLUTE_RULE_DELTA:
+            if transition_keys:
+                # Hard absolute bounds remain in force even for the approved tier switch.
+                if added > MAX_ABSOLUTE_RULE_DELTA or removed > 50_000:
+                    changes.append(
+                        f"approved PRO Mini tier transition exceeded absolute bounds: "
+                        f"+{added:,} ({add_pct:.2f}%), -{removed:,} ({remove_pct:.2f}%); "
+                        f"limits +{MAX_ABSOLUTE_RULE_DELTA:,}/-50,000"
+                    )
+            elif added > MAX_ABSOLUTE_RULE_DELTA or removed > MAX_ABSOLUTE_RULE_DELTA:
                 changes.append(
                     f"main rules changed: +{added:,} ({add_pct:.2f}%), "
                     f"-{removed:,} ({remove_pct:.2f}%); absolute limit "
@@ -351,7 +385,6 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
     if changes:
         raise RuntimeError("Source/rule drift gate failed; inspect upstream changes before publishing:\n" + "\n".join(changes))
     return changes
-
 
 def write_csv(path: Path, header, rows):
     with path.open("w", newline="", encoding="utf-8-sig") as f:
