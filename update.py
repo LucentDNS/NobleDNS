@@ -5,6 +5,10 @@ import argparse, csv, hashlib, ipaddress, json, os, re, shutil, socket, sys, tem
 import http.client, urllib.error, urllib.request
 from urllib.parse import urlsplit
 import idna
+from tools.domain_compression import (
+    PSL_COMMIT, PSL_SHA256, PublicSuffixList,
+    compress_simple_domain_rules, write_compression_audit,
+)
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.7"
+VERSION_BASE = "1.0.8"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
@@ -318,7 +322,7 @@ def fetch(url: str, proxy: str | None, min_bytes: int = MIN_SOURCE_BYTES) -> byt
 MAX_ABSOLUTE_RULE_DELTA = 3000
 
 
-def check_drift(current: dict, current_rules: set[str], previous_manifest: Path | None, max_percent: float, allow_large: bool = False):
+def check_drift(current: dict, current_rules: set[str], previous_manifest: Path | None, max_percent: float, allow_large: bool = False, compression_removed_rules: set[str] | None = None):
     if allow_large or not previous_manifest or not previous_manifest.exists():
         return []
     old = json.loads(previous_manifest.read_text(encoding="utf-8"))
@@ -357,6 +361,7 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
         pct = abs(after - before) * 100.0 / before
         if pct > max_percent:
             changes.append(f"{key}: parsed blocks changed {before:,} -> {after:,} ({pct:.2f}%), limit {max_percent:.2f}%")
+    compression_removed_rules = compression_removed_rules or set()
     previous_list = previous_manifest.parent / "dns-filter.txt"
     if previous_list.exists():
         old_rules = {line.strip() for line in previous_list.read_text(encoding="utf-8").splitlines()
@@ -366,7 +371,17 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
             removed = len(old_rules - current_rules)
             add_pct = added * 100.0 / len(old_rules)
             remove_pct = removed * 100.0 / len(old_rules)
-            if transition_keys:
+            compression_only_migration = (
+                bool(compression_removed_rules)
+                and old_keys == current_keys
+                and all(old_sources.get(key, {}).get("sha256") == current.get(key, {}).get("sha256") for key in current_keys)
+                and not (current_rules - old_rules)
+                and (old_rules - current_rules) == (compression_removed_rules & old_rules)
+                and len(old_rules - current_rules) <= 10_000
+            )
+            if compression_only_migration:
+                print(f"Approved deterministic PSL compression migration: removed {removed:,} rules; upstream source fingerprints unchanged.")
+            elif transition_keys:
                 # Hard absolute bounds remain in force even for the approved tier switch.
                 if added > MAX_ABSOLUTE_RULE_DELTA or removed > 50_000:
                     changes.append(
@@ -597,12 +612,29 @@ def build(args) -> Path:
         source_stats[key] = {"name": source["name"], "url": source["url"], "license": license_info["spdx"], "license_url": license_info["license_url"], "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data), "supported_block_rules": len(blocks), "simple_exception_rules": len(exc), "excluded_lines_by_reason": dict(rejected)}
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
-    merged = set().union(*(parsed[key] for key in keys))
+    source_union = set().union(*(parsed[key] for key in keys))
+    psl = PublicSuffixList()
+    merged, compression_rows = compress_simple_domain_rules(source_union, parsed, psl)
+    compression_removed_rules = {row["removed_rule"] for row in compression_rows}
+    compression_summary = {
+        "enabled": True,
+        "algorithm": "Remove only simple ||child.domain^ rules covered by an existing simple ||domain^ rule; never compress against a PSL public suffix.",
+        "before_rules": len(source_union),
+        "after_rules": len(merged),
+        "removed_rules": len(compression_rows),
+        "psl_source": "https://github.com/publicsuffix/list",
+        "psl_commit": PSL_COMMIT,
+        "psl_sha256": PSL_SHA256,
+        "psl_exact_rules": len(psl.exact),
+        "psl_wildcard_rules": len(psl.wildcard),
+        "psl_exception_rules": len(psl.exception),
+        "psl_private_section_included": True,
+    }
     active_exceptions = validate_exception_register(exceptions, Path(args.exception_review))
     all_exceptions = set().union(*(active_exceptions[key] for key in keys))
     published_rules = merged | all_exceptions
     previous_manifest = Path(args.previous_manifest) if args.previous_manifest else None
-    check_drift(source_stats, published_rules, previous_manifest, args.max_source_change_percent, args.allow_large_change)
+    check_drift(source_stats, published_rules, previous_manifest, args.max_source_change_percent, args.allow_large_change, compression_removed_rules)
     last_modified = resolve_subscription_last_modified(published_rules, previous_manifest, now)
     common = set.intersection(*(parsed[key] for key in keys))
     syntax_summary, syntax_review_rows = syntax_audit(merged, parsed)
@@ -621,7 +653,7 @@ def build(args) -> Path:
         else:
             ok, reason = valid_domain(m.group(1))
         if not ok: raise RuntimeError(f"Invalid output domain/pattern ({reason}): {line}")
-    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(active_exceptions[key]) for key in keys}, "exception_review": {"registered_source_exceptions": sum(len(exceptions[key]) for key in keys), "active_exceptions": len(all_exceptions), "pending_legacy_baseline": sum(1 for rule in LEGACY_PENDING_EXCEPTION_BASELINE if any(rule in active_exceptions[key] for key in keys)), "new_unreviewed_exceptions_allowed": False}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {key: len(parsed[key] - set().union(*(parsed[other] for other in keys if other != key))) for key in keys}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals", "complex_syntax": "unsupported syntax excluded; documented hostname wildcards and $important are preserved without rewriting", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
+    manifest = {"project": PROJECT, "version": version, "status": "PUBLIC", "release_channel": cfg.get("release_channel", "public"), "built_at_utc": now.isoformat(), "subscription_last_modified": last_modified, "licensing": {"original_project_code": {"spdx": PROJECT_CODE_LICENSE, "license_file": "LICENSE"}, "upstream_rule_data": [{"key": source["key"], "name": source["name"], "spdx": UPSTREAM_LICENSES[source["key"]]["spdx"], "license_url": UPSTREAM_LICENSES[source["key"]]["license_url"], "qualification": UPSTREAM_LICENSES[source["key"]]["basis"]} for source in cfg["sources"]], "third_party_notices": "THIRD-PARTY-NOTICES.md", "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."}, "sources": source_stats, "blocking_rules": len(merged), "pre_compression_blocking_rules": len(source_union), "domain_compression": compression_summary, "active_exception_rules": len(all_exceptions), "active_exception_rules_by_source": {key: len(active_exceptions[key]) for key in keys}, "exception_review": {"registered_source_exceptions": sum(len(exceptions[key]) for key in keys), "active_exceptions": len(all_exceptions), "pending_legacy_baseline": sum(1 for rule in LEGACY_PENDING_EXCEPTION_BASELINE if any(rule in active_exceptions[key] for key in keys)), "new_unreviewed_exceptions_allowed": False}, "main_subscription_rules": len(published_rules), "common_rules": len(common), "source_only_rules": {key: len(parsed[key] - set().union(*(parsed[other] for other in keys if other != key))) for key in keys}, "exception_rules_separate": 0, "max_rules": MAX_RULES, "main_subscription_sha256": sha256(main_bytes), "syntax_audit": syntax_summary, "policy": {"main_list": "blocking-and-exception", "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals", "complex_syntax": "unsupported syntax excluded; documented hostname wildcards and $important are preserved without rewriting", "bare_domain_anchor": "preserved unchanged", "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax", "source_drift_gate_percent": args.max_source_change_percent}}
     pairwise_source_overlap = {
         f"{left}|{right}": len(parsed[left] & parsed[right])
         for index, left in enumerate(keys)
@@ -634,7 +666,7 @@ def build(args) -> Path:
     print("Pairwise exact source overlap:")
     for pair, count in pairwise_source_overlap.items():
         print(f"  {pair}: {count:,}")
-    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, exception-register parity and approval gate, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
+    report = [f"{PROJECT} build report", f"Version: {version}", "Status: PUBLIC", f"Parent/child compression: {len(source_union):,} -> {len(merged):,} ({len(compression_rows):,} removed)", f"Pinned PSL commit: {PSL_COMMIT}", f"Pinned PSL SHA256: {PSL_SHA256}", f"Original project code license: {PROJECT_CODE_LICENSE}", "Upstream rule data: GPL-3.0 as declared by the upstream projects; third-party rights may apply.", "Attribution: see THIRD-PARTY-NOTICES.md and LICENSE.", f"Merged block rules: {len(merged):,}", f"Common rules: {len(common):,}", f"Active exception rules: {len(all_exceptions):,}", f"Main subscription rules: {len(published_rules):,}", f"Subscription last modified (UTC): {last_modified}", f"Rule cap: {len(published_rules):,}/{MAX_RULES:,}", f"Main SHA256: {manifest['main_subscription_sha256']}", "", "Checks passed: source size, strict UTF-8, minimum parsed rules, source drift gate, syntax/domain validation, exception-register parity and approval gate, subscription/allowlist parity, uniqueness and rule cap.", "Ongoing maintenance: review user reports, investigate compatibility issues, and add confirmed cases to regression tests."]
     report.extend(["", "Source-only supported rules:"])
     report.extend([f"- {key}: {manifest['source_only_rules'][key]:,}" for key in keys])
     report.extend(["", "Pairwise exact source overlap:"])
@@ -659,6 +691,8 @@ def build(args) -> Path:
                 active_allowlist_lines.extend(sorted(active_exceptions[key]))
         (stage / "allowlist-active.txt").write_text("\n".join(active_allowlist_lines) + "\n", encoding="utf-8")
         write_csv(stage / "parser-exclusions.csv", ["source", "line_number", "exclusion_reason", "original_line"], sorted(rejected_rows))
+        write_compression_audit(stage / "domain-compression-audit.csv", compression_rows)
+        (stage / "public-suffix-metadata.json").write_text(json.dumps(compression_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         write_csv(stage / "syntax-review.csv", ["rule", "syntax_form", "documented_semantics", "source"], syntax_review_rows)
         (stage / "syntax-audit.json").write_text(json.dumps(syntax_summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         source_dir = stage / "sources"; source_dir.mkdir()
