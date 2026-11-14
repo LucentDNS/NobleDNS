@@ -29,12 +29,13 @@ DNS filtering operates at the hostname-resolution layer. It cannot block every a
 
 ## Sources
 
-The current build combines four sources:
+The current build combines three sources:
 
-1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — general DNS advertising and tracking protection.
-2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt) — balanced general-purpose rules.
-3. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — broader coverage, retained alongside Normal so Normal-only rules are not lost.
-4. [AWAvenue Ads Rule — Ads-only variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — focused advertising coverage.
+1. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — the sole HaGeZi Multi tier and the general-purpose filtering core. HaGeZi's tier policy says each higher Multi tier includes the lower tiers, so Normal is not subscribed alongside PRO.
+2. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — a separately audited DNS-layer supplement. It is retained for its incremental source contribution, not because AdGuard clients require their own DNS list.
+3. [AWAvenue Ads Rule — Ads-only variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — focused advertising coverage.
+
+AdGuard DNS Filter is not required for format compatibility with AdGuard software: HaGeZi PRO already provides the Adblock format. Its continued inclusion is a source-selection decision, subject to ongoing overlap and compatibility review.
 
 The compiler includes only explicitly supported syntax. Unsupported or ambiguous input is recorded and excluded rather than guessed or rewritten. The 11 inherited upstream exceptions currently in the subscription remain pending review; their presence does not mean NobleDNS has independently approved them. See the [exception review register](data/exception-review.csv).
 
