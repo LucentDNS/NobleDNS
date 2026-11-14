@@ -105,29 +105,6 @@ jobs:
           if [ "$ALLOW_LARGE_CHANGE" = "true" ]; then
             EXTRA_ARGS+=(--allow-large-change)
             echo "Large change explicitly approved by workflow_dispatch input."
-          elif [ -f dist/manifest.json ]; then
-            # One-time, narrowly scoped migration allowance: only the exact
-            # former three-source set -> reviewed four-source set transition.
-            # After the new manifest is published, the old key set no longer
-            # matches and the ordinary drift gate automatically resumes.
-            python - <<'PY'
-          import json
-          from pathlib import Path
-          old = json.loads(Path("dist/manifest.json").read_text(encoding="utf-8"))
-          new = json.loads(Path("config/sources.json").read_text(encoding="utf-8"))
-          old_keys = set(old.get("sources", {}))
-          new_keys = {item.get("key") for item in new.get("sources", [])}
-          former = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
-          approved = {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}
-          if old_keys == former and new_keys == approved:
-              print("Exact one-time source migration detected; allowing its reviewed rule delta.")
-              Path("/tmp/nobledns-source-migration-approved").write_text("yes")
-          PY
-            if [ -f /tmp/nobledns-source-migration-approved ]; then
-              EXTRA_ARGS+=(--allow-large-change)
-            fi
-          fi
-
           if [ -f dist/manifest.json ]; then
             python update.py \
               --out build-output \
