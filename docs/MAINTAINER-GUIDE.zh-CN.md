@@ -68,12 +68,13 @@ NobleDNS/
 
 ## 3. 当前上游来源
 
-当前固定使用三个互补上游：
+当前固定使用四个互补上游：
 
 | 来源 | 用途 |
 |---|---|
-| AdGuard DNS Filter | DNS 广告与追踪过滤 |
-| HaGeZi Multi Normal | 常规 DNS 广告与追踪过滤 |
+| HaGeZi Multi PRO | 通用 DNS 广告、追踪与隐私保护；唯一集成的 HaGeZi Multi 主版本 |
+| HaGeZi TIF Mini | 恶意软件、钓鱼及相关恶意基础设施的威胁情报补充 |
+| AdGuard DNS Filter | DNS 广告与追踪过滤的独立补充来源 |
 | AWAvenue Ads Rule (Only Ads) | 中国大陆 App / 智能设备广告专项补充；仅使用纯广告版本 |
 
 配置文件：
@@ -426,4 +427,4 @@ NobleDNS 是公开维护的 DNS 过滤规则集。自动构建通过代表构建
 
 ## 14. 上游许可证与免责声明复核
 
-每次正式发布前，都要重新核对四个已配置上游规则源（AdGuard DNS Filter、HaGeZi Multi Normal、HaGeZi Multi PRO、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi Normal 与 Multi PRO 均来自同一上游项目；两个版本都应纳入版本与来源核对，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
+每次正式发布前，都要重新核对当前四个生产来源：HaGeZi Multi PRO、HaGeZi TIF Mini、AdGuard DNS Filter，以及 AWAvenue Ads Rule (Only Ads) 的许可证和适用声明。HaGeZi Multi PRO 是唯一集成的 Multi 主版本；Multi Normal 不在生产来源中，因为 HaGeZi 的 Multi 各级为累积关系。TIF Mini 是独立的威胁情报附加源，不是另一个 Multi 主版本。对两个 HaGeZi 来源，都要阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)，并核对其第三方输入数据可能适用的额外条款。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，在维护记录中写明复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款；不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
