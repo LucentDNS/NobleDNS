@@ -91,18 +91,15 @@ The upstream snapshots used for this review were:
 These are repository blob identifiers for the reviewed files; the upstream projects remain authoritative for subsequent updates.
 
 
-## How AdGuard itself handles Chinese DNS rules
+## Pinned upstream references and false-positive rationale
 
-This distinction is visible in AdGuard's own DNS build configuration, not just in our interpretation:
+The configuration and section links used above are pinned to the exact reviewed upstream commits:
 
-- The pinned [AdGuard DNS filter configuration](https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/544efcd7692a0092f924494662ddea76787036f9/configuration.json) explicitly imports the Chinese filter's dedicated `adservers.txt` and `adservers_firstparty.txt` sections. Both use the shared `Filters/exclusions.txt` and the `RemoveModifiers` plus `ValidateAllowIp` transformations.
-- The pinned [Chinese third-party ad-server section](https://github.com/AdguardTeam/AdguardFilters/blob/f2d7ee9c4deec50a05cbbdd5cc587ac8935c1987/ChineseFilter/sections/adservers.txt) says it is for full-domain rules used in third-party contexts; it explicitly says first-party advertising subdomains belong in the separate section.
-- The pinned [Chinese first-party ad-server section](https://github.com/AdguardTeam/AdguardFilters/blob/6706124fbbab26689bbb3075696c76b57c9f61a0/ChineseFilter/sections/adservers_firstparty.txt) limits itself to full subdomains on non-advertising sites.
-- AdGuard's DNS configuration also takes EasyList China through a dedicated hostname-only extraction rule: it excludes non-hostname syntax and rules carrying the `$third-party` modifier before removing remaining modifiers and validating the output. It does not import the complete browser filter unchanged.
+- [AdGuard DNS Filter configuration](https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/544efcd7692a0092f924494662ddea76787036f9/configuration.json)
+- [Chinese third-party ad-server section](https://github.com/AdguardTeam/AdGuardFilters/blob/f2d7ee9c4deec50a05cbbdd5cc587ac8935c1987/ChineseFilter/sections/adservers.txt)
+- [Chinese first-party ad-server section](https://github.com/AdguardTeam/AdGuardFilters/blob/6706124fbbab26689bbb3075696c76b57c9f61a0/ChineseFilter/sections/adservers_firstparty.txt)
 
-A concrete false-positive lesson: `kqzyfj.com` appears in the broad Chinese third-party ad-server section, but AdGuard's DNS shared-exclusion file excludes it. The adjacent upstream reference is [EasyList issue #9445](https://github.com/easylist/easylist/issues/9445), which documents that the hostname is used as a click-through redirect for RoboForm. That is precisely why a hostname's presence in a regional browser filter is not sufficient justification for global DNS blocking. NobleDNS keeps this domain out.
-
-This also confirms the correct integration decision: NobleDNS already consumes AdGuard DNS Filter, whose own configuration contains AdGuard's curated Chinese DNS sections and a scoped EasyList China extraction. Adding the complete AdGuard Chinese filter or EasyList China again as separate NobleDNS sources would duplicate existing coverage and bypass AdGuard's DNS-specific exclusions and transformations.
+The clearest false-positive example is `kqzyfj.com`: it appears in the broad Chinese third-party ad-server section, but AdGuard's DNS shared-exclusion file excludes it. [EasyList issue #9445](https://github.com/easylist/easylist/issues/9445) documents its use as a click-through redirect for RoboForm. NobleDNS therefore keeps it out. The full filter should not be flattened into DNS rules, and the DNS-specific exclusions and context-preserving transformations must remain part of the decision.
 
 ## Mandatory exclusions
 
