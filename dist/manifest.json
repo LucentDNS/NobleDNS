@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T05:16:23.779407+00:00",
+  "built_at_utc": "2026-11-14T06:06:19.292542+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -24,6 +24,13 @@
         "spdx": "GPL-3.0",
         "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
         "qualification": "upstream project license; third-party input terms may apply"
+      },
+      {
+        "key": "hagezi_multi_pro",
+        "name": "HaGeZi Multi PRO",
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+        "qualification": "upstream project license; Multi PRO is a distinct list variant; third-party input terms may apply"
       },
       {
         "key": "awavenue_ads",
@@ -73,6 +80,18 @@
       "simple_exception_rules": 0,
       "excluded_lines_by_reason": {}
     },
+    "hagezi_multi_pro": {
+      "name": "HaGeZi Multi PRO",
+      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+      "license_basis": "upstream project license; Multi PRO is a distinct list variant; third-party input terms may apply",
+      "bytes": 5181990,
+      "sha256": "7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc",
+      "supported_block_rules": 226838,
+      "simple_exception_rules": 0,
+      "excluded_lines_by_reason": {}
+    },
     "awavenue_ads": {
       "name": "AWAvenue Ads Rule (Only Ads)",
       "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
@@ -88,11 +107,12 @@
       }
     }
   },
-  "blocking_rules": 306824,
+  "blocking_rules": 350259,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
     "hagezi_normal": 0,
+    "hagezi_multi_pro": 0,
     "awavenue_ads": 0
   },
   "exception_review": {
@@ -101,22 +121,23 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 306835,
+  "main_subscription_rules": 350270,
   "common_rules": 71,
   "source_only_rules": {
-    "adguard_dns": 95590,
-    "hagezi_normal": 115366,
-    "awavenue_ads": 197
+    "adguard_dns": 94743,
+    "hagezi_normal": 10765,
+    "hagezi_multi_pro": 43435,
+    "awavenue_ads": 190
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "e5a554c526e2e77db8dc4b875cf4066dd9e4a0985debc0dbd11a7dc93cbd5479",
+  "main_subscription_sha256": "2c17371bcbe1267cf96926d34b33fc0c31be4e74aeb670b9cd2e0fc4a669d410",
   "syntax_audit": {
-    "total": 306824,
+    "total": 350259,
     "forms": {
       "domain_and_subdomains_wildcard": 355,
       "domain_and_subdomains_important": 3,
-      "domain_and_subdomains": 306395,
+      "domain_and_subdomains": 349830,
       "domain_anchor_without_end_boundary": 71
     },
     "semantics": {
@@ -145,16 +166,16 @@
         "||pixel.wp.pl^$important"
       ],
       "domain_and_subdomains": [
+        "||0--4.com^",
         "||0--d.com^",
+        "||0-0-0-0-0-0-0-0-0-0-0-0-0-18-0-0-0-0-0-0-0-0-0-0-0-0-0.info^",
+        "||0-0-0-0-0-0-0-0-0-0-0-0-0-33-0-0-0-0-0-0-0-0-0-0-0-0-0.info^",
+        "||0-0-0checkmate.com^",
+        "||0-0-7.site^",
         "||0-02.net^",
-        "||0-btc.com^",
-        "||0-energy.com^",
-        "||0-tox.com^",
-        "||0.07c225f3.online^",
-        "||0.avmarket.rs^",
-        "||0.myikas.com^",
-        "||0.net.easyjet.com^",
-        "||0.org^"
+        "||0-0asia.com^",
+        "||0-100mph.com^",
+        "||0-2.net^"
       ],
       "domain_anchor_without_end_boundary": [
         "||afdads.com",
