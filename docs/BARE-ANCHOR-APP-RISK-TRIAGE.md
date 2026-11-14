@@ -63,7 +63,7 @@ Required test: identify the exact component and opt-in setting, then compare dev
 
 ### Baidu CDN hostname
 
-- Public adblock classification: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
+- Public adblock classification: https://github.com/r-a-y/mobile-hosts/blob/88c316dea56b1e3f5461f39d66142078fc5716f9/AdguardMobileAds.txt
 - Sandbox observation: https://tria.ge/240617-v7lpssxfke/behavioral1
 
 The sandbox trace shows a TeraBox process resolving the hostname in a static-widget/resource context. This does not prove that the content is essential or that blocking causes a user-visible failure, but it is enough to reject a simplistic “ad domain, therefore safe to block” assumption.
@@ -81,8 +81,8 @@ Required test: on a test merchant or controlled checkout, compare payment succes
 
 ### Polaris Office hostname
 
-- AdGuard mobile tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
-- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileSpyware.txt
+- AdGuard mobile tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/SpywareFilter/sections/mobile.txt
+- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/88c316dea56b1e3f5461f39d66142078fc5716f9/AdguardMobileSpyware.txt
 - Older AdAway snapshot: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
 
 The exact hostname appears in AdGuard's mobile tracking section and a separate mobile spyware list. This strengthens the tracking/analytics hypothesis, but does not prove that Polaris Office login, cloud sync, document open/save or collaboration is independent of it.
@@ -91,8 +91,8 @@ Required test: sign-in, cloud sync, open/save, collaboration and recovery.
 
 ### Mobiuspace ad callback
 
-- AdGuard MobileFilter adservers section: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
-- Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
+- AdGuard MobileFilter adservers section: https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/MobileFilter/sections/adservers.txt
+- Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/88c316dea56b1e3f5461f39d66142078fc5716f9/AdguardMobileAds.txt
 
 The exact hostname appears in AdGuard's current mobile adservers section. This supports an advertising role more directly than domain-name inference, but it does not identify all querying apps or prove that callback failure is harmless to app state or rewarded-ad flows.
 
@@ -101,7 +101,7 @@ Required test: identify current apps that query it, then distinguish optional ad
 
 ### Datescan tracking endpoint
 
-- AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+- AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/SpywareFilter/sections/tracking_servers_firstparty.txt
 
 The exact hostname is included in AdGuard's first-party tracking section. This supports a tracking classification, but the current evidence does not identify the embedding application or establish whether it shares a first-party operational workflow.
 
@@ -136,7 +136,7 @@ Required test: NewsBreak sign-in, account linking, feed loading, preferences and
 
 ### CloudFront script endpoint
 
-- EasyPrivacy exact-host entry: https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt
+- EasyPrivacy exact-host entry: https://github.com/easylist/easylist/blob/6db59e375bb5c16601f036f804111eaee296fa73/easyprivacy/easyprivacy_thirdparty.txt
 - Storefront observation: https://seositecheckup.com/seo-audit/www.directfix.com
 
 The exact host appears in EasyPrivacy, and a storefront scan shows a JavaScript asset loaded from it. That is consistent with third-party measurement or marketing code, but a site may also depend on widgets or conversion features delivered by the script.
@@ -145,10 +145,21 @@ Required test: storefront product browsing, cart, checkout page, support widgets
 
 ### Gmarket, Clover Games and Grubhub tracking endpoints
 
-- AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+- AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/SpywareFilter/sections/tracking_servers_firstparty.txt
 
 This source supports a first-party tracking/analytics classification for the exact hostnames. It does not answer whether any endpoint also participates in application health, fraud prevention, checkout or other operational workflows. Test the listed user journeys before declaring the rules harmless.
 
+
+### Evidence snapshot reproducibility
+
+GitHub-hosted evidence files cited in this report are pinned to immutable source commits inspected on 2026-11-14:
+
+- AdGuard filters: `0cbe282a7b179745c082e2d570fc4e9d4b110538` (2026-11-13)
+- EasyList: `6db59e375bb5c16601f036f804111eaee296fa73` (2026-11-14)
+- r-a-y mobile-hosts: `88c316dea56b1e3f5461f39d66142078fc5716f9` (2026-11-13)
+- StevenBlack hosts: `35c74714ad86b36806b3f40f3c36abf8b2063cb5` (2026-11-14)
+
+These are evidence snapshots, not NobleDNS production source pins. The production builder continues to use its separately configured and drift-checked upstream source identities.
 
 ### Additional exact-host matches from upstream classifications
 
@@ -160,7 +171,7 @@ The following entries were found by matching the exact hostname—not just a par
 - `et-code.ru`
 - `pavoshare.com`
 
-Source: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
+Source: https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/MobileFilter/sections/adservers.txt
 
 Required test: identify the applications that actually query each hostname, then test cold launch, sign-in, configuration refresh, core actions and ad/reward-dependent features. In particular, do not assume a hostname beginning with `config.` is optional merely because it is classified in an ad-server list.
 
@@ -175,16 +186,16 @@ Required test: identify the applications that actually query each hostname, then
 - `zorosrv.com` — third-party tracking section
 
 Sources:
-- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
-- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
-- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/SpywareFilter/sections/mobile.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/SpywareFilter/sections/tracking_servers_firstparty.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/0cbe282a7b179745c082e2d570fc4e9d4b110538/SpywareFilter/sections/tracking_servers.txt
 
 Required test: determine which site or app issues each request from DNS logs, then test the relevant content, media, search, account, commerce or public-service workflow. CDN-style and image/script endpoints require particular caution because an endpoint can carry both measurement and user-visible resources.
 
 **EasyPrivacy third-party classifications**
 - `d2fj3s7h83rb61.cloudfront.net`
 
-Source: https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt
+Source: https://github.com/easylist/easylist/blob/6db59e375bb5c16601f036f804111eaee296fa73/easyprivacy/easyprivacy_thirdparty.txt
 
 Required test: identify the embedding site/app and test script-dependent page behavior, media/assets and the complete core user journey. CloudFront is shared hosting infrastructure; the list match alone does not establish the asset's full role.
 

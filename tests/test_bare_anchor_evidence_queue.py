@@ -45,6 +45,19 @@ class BareAnchorEvidenceQueueTests(unittest.TestCase):
             _, errors = module.validate(audit, queue)
         self.assertTrue(any("duplicate queue rule" in error for error in errors))
 
+    def test_floating_github_evidence_ref_fails(self):
+        urls = (
+            "https://github.com/example/repo/blob/master/list.txt",
+            "https://raw.githubusercontent.com/example/repo/main/list.txt",
+        )
+        for url in urls:
+            with self.subTest(url=url):
+                row = f"||example.test,adguard_dns,42,medium,Observed context,upstream_classification,{url},Evidence does not establish safety,unresolved_test_required\\n"
+                with tempfile.TemporaryDirectory() as tmp:
+                    audit, queue = self._write_fixtures(tmp, row)
+                    _, errors = module.validate(audit, queue)
+                self.assertTrue(any("immutable commit refs" in error for error in errors))
+
     def test_wrong_source_line_fails(self):
         row = "||example.test,adguard_dns,999,medium,Observed context,upstream_classification,https://example.test/evidence,Evidence does not establish safety,unresolved_test_required\n"
         with tempfile.TemporaryDirectory() as tmp:

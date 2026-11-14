@@ -20,6 +20,7 @@ AUDIT_FIELDS = [
 RULE_RE = re.compile(r"^\|\|[a-z0-9.-]+$")
 URL_RE = re.compile(r"https://\S+")
 PRIORITIES = {"high", "medium", "low"}
+FLOATING_GITHUB_REF_RE = re.compile(r"https?://(?:github\.com/.+/blob|raw\.githubusercontent\.com/.+)/(?:master|main)/")
 
 
 def read_rows(path: Path, fields: list[str]) -> list[dict[str, str]]:
@@ -69,6 +70,8 @@ def validate(audit_path: Path, queue_path: Path) -> tuple[Counter[str], list[str
         urls = URL_RE.findall(row["evidence_url"])
         if not urls or any(not url.startswith("https://") for url in urls):
             errors.append(f"{queue_path}:{line_no}: at least one HTTPS evidence URL is required for {rule}")
+        if FLOATING_GITHUB_REF_RE.search(row["evidence_url"]):
+            errors.append(f"{queue_path}:{line_no}: GitHub evidence file URLs must use immutable commit refs for {rule}")
         if not row["decision_status"].strip().startswith("unresolved_"):
             errors.append(f"{queue_path}:{line_no}: queue entries must remain unresolved: {rule}")
     return counts, errors
