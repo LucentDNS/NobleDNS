@@ -52,7 +52,7 @@ class BareAnchorEvidenceQueueTests(unittest.TestCase):
         )
         for url in urls:
             with self.subTest(url=url):
-                row = f"||example.test,adguard_dns,42,medium,Observed context,upstream_classification,{url},Evidence does not establish safety,unresolved_test_required\\n"
+                row = f"||example.test,adguard_dns,42,medium,Observed context,upstream_classification,{url},Evidence does not establish safety,unresolved_test_required\n"
                 with tempfile.TemporaryDirectory() as tmp:
                     audit, queue = self._write_fixtures(tmp, row)
                     _, errors = module.validate(audit, queue)
@@ -63,14 +63,14 @@ class BareAnchorEvidenceQueueTests(unittest.TestCase):
             audit = Path(tmp) / "audit.csv"
             queue = Path(tmp) / "queue.csv"
             audit.write_text(
-                "rule,source,source_line_numbers,essential_match_count,essential_matches,review_status,interpretation\\n"
-                "||example.test,adguard_dns,42,0,,manual_hostname_review_required,No sentinel hit\\n"
-                "||second.test,adguard_dns,43,0,,manual_hostname_review_required,No sentinel hit\\n",
+                "rule,source,source_line_numbers,essential_match_count,essential_matches,review_status,interpretation\n"
+                "||example.test,adguard_dns,42,0,,manual_hostname_review_required,No sentinel hit\n"
+                "||second.test,adguard_dns,43,0,,manual_hostname_review_required,No sentinel hit\n",
                 encoding="utf-8",
             )
             queue.write_text(
-                "rule,source,source_line,priority,observed_context,evidence_type,evidence_url,interpretation,decision_status\\n"
-                "||example.test,adguard_dns,42,medium,Observed context,upstream_classification,https://example.test/evidence,Evidence does not establish safety,unresolved_test_required\\n",
+                "rule,source,source_line,priority,observed_context,evidence_type,evidence_url,interpretation,decision_status\n"
+                "||example.test,adguard_dns,42,medium,Observed context,upstream_classification,https://example.test/evidence,Evidence does not establish safety,unresolved_test_required\n",
                 encoding="utf-8",
             )
             _, errors = module.validate(audit, queue)
