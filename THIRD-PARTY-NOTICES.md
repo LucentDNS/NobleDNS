@@ -76,7 +76,7 @@ licenses.
 Any domain appearing in a compiled NobleDNS subscription is included as a DNS blocking target only. Its presence does not mean NobleDNS hosts, publishes, operates, endorses or distributes the associated website or its content.
 
 AdGuard, HaGeZi and AWAvenue are independent upstream projects.
-NobleDNS is not affiliated with or endorsed by either project.
+NobleDNS is not affiliated with or endorsed by any upstream project.
 
 ## 7. HaGeZi upstream disclaimer
 
