@@ -13,11 +13,11 @@ class BrowserThirdPartyScopeAuditTests(unittest.TestCase):
             audit = root / "audit.csv"
             source = root / "source.txt"
             queue_content = (
-                "rule,source,source_line,priority,observed_context,evidence_type,evidence_url,interpretation,decision_status\\n"
-                "||example.test,adguard_dns,1,medium,context,upstream,https://example.test,evidence,unresolved_test_required\\n"
+                "rule,source,source_line,priority,observed_context,evidence_type,evidence_url,interpretation,decision_status\n"
+                "||example.test,adguard_dns,1,medium,context,upstream,https://example.test,evidence,unresolved_test_required\n"
             )
             if include_second:
-                queue_content += "||other.test,adguard_dns,2,medium,context,upstream,https://other.test,evidence,unresolved_test_required\\n"
+                queue_content += "||other.test,adguard_dns,2,medium,context,upstream,https://other.test,evidence,unresolved_test_required\n"
             queue.write_text(queue_content, encoding="utf-8")
             audit.write_text(
                 "hostname,browser_rule,source_line,source_commit,scope,dns_implication\n"
