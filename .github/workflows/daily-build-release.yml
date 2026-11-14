@@ -117,7 +117,7 @@ jobs:
           new = json.loads(Path("config/sources.json").read_text(encoding="utf-8"))
           old_keys = set(old.get("sources", {}))
           new_keys = {item.get("key") for item in new.get("sources", [])}
-          former = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
+          former = {"adguard_dns", "hagezi_normal", "hagezi_multi_pro", "awavenue_ads"}
           approved = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
           if old_keys == former and new_keys == approved:
               print("Exact one-time source migration detected; allowing its reviewed rule delta.")
