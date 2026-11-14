@@ -3,8 +3,8 @@
   "version": "1.0.3",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-13T23:41:23.920379+00:00",
-  "subscription_last_modified": "2026-11-13",
+  "built_at_utc": "2026-11-14T02:12:04.410012+00:00",
+  "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
       "spdx": "GPL-3.0-only",
@@ -36,9 +36,9 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4676266,
-      "sha256": "70764fd7851b7cb1b0278268479f97ac0cece474651c29eb1467206fdd8f7fef",
-      "simple_block_rules": 190421,
+      "bytes": 4677221,
+      "sha256": "f2e80d47c3eda04f410cf2c31da0b96cd084e23b8379a7adba3e6a0ecf4e1926",
+      "simple_block_rules": 190463,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -67,25 +67,31 @@
       "excluded_lines_by_reason": {}
     }
   },
-  "blocking_rules": 306173,
+  "blocking_rules": 306200,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
     "hagezi_normal": 0
   },
-  "main_subscription_rules": 306184,
-  "common_rules": 95262,
+  "exception_review": {
+    "registered_source_exceptions": 11,
+    "active_exceptions": 11,
+    "pending_legacy_baseline": 11,
+    "new_unreviewed_exceptions_allowed": false
+  },
+  "main_subscription_rules": 306211,
+  "common_rules": 95277,
   "source_only_rules": {
-    "adguard_dns": 95159,
-    "hagezi_normal": 115752
+    "adguard_dns": 95186,
+    "hagezi_normal": 115737
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "79958824482c3a0517776a12cc6c5a2157ac73091407806838abaa9d9ccccdfc",
+  "main_subscription_sha256": "27c64022fe0cef5ad938193d6d84df2084900bc21bfa5e22deccbe9ee8cedf89",
   "syntax_audit": {
-    "total": 306173,
+    "total": 306200,
     "forms": {
-      "domain_and_subdomains": 306104,
+      "domain_and_subdomains": 306131,
       "domain_anchor_without_end_boundary": 69
     },
     "semantics": {
@@ -122,7 +128,7 @@
   },
   "policy": {
     "main_list": "blocking-and-exception",
-    "exceptions": "simple upstream exceptions active in the main subscription; complex exception syntax remains excluded pending review",
+    "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals",
     "complex_syntax": "excluded unless semantic equivalence is proven",
     "bare_domain_anchor": "preserved unchanged",
     "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax",

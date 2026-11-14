@@ -1,4 +1,5 @@
-! Simple upstream exception rules active in dns-filter.txt; complex exception syntax remains excluded.
+! Approved exceptions and frozen legacy pending exceptions active in dns-filter.txt.
+! Pending legacy entries are not independently approved by NobleDNS.
 ! Source: adguard_dns
 @@||ad.10010.com^
 @@||ad.abchina.com^

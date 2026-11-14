@@ -6,8 +6,8 @@
 ! Sources: AdGuard DNS Filter, HaGeZi Multi Normal
 ! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).
 ! Content: Listed domains are included as blocking targets only.
-! Last modified: 2026-11-13 (UTC)
-! Blocked domains: 306,173
+! Last modified: 2026-11-14 (UTC)
+! Blocked domains: 306,200
 
 @@||ad.10010.com^
 @@||ad.abchina.com^
@@ -2992,6 +2992,7 @@
 ||2yyhcl-cdn-settings.appsflyersdk.com^
 ||2yyhcl-inapps.appsflyersdk.com^
 ||2yyhcl-launches.appsflyersdk.com^
+||2z3tbggtfbqnnko7pf7cuehwz64o.rest^
 ||2zl2md-cdn-settings.appsflyersdk.com^
 ||2zl2md-inapps.appsflyersdk.com^
 ||2zl2md-launches.appsflyersdk.com^
@@ -6691,6 +6692,7 @@
 ||94rxfir2cmuyq.evew8zq72u6nh5fr32n5rp.cyou^
 ||95389562.cfd^
 ||956c0ff0-1584-4ba1-a1dc-7eb401042d74-00-dhi9f362orh4.spock.replit.dev^
+||9582004f6b.com^
 ||95835.sbs^
 ||9595-aogl.cc^
 ||959fffdae3.com^
@@ -10250,6 +10252,7 @@
 ||abufc.moroccanoil.com^
 ||abuking-enligne.fr^
 ||abukingcasino.fr^
+||abumzucpahxqo.online^
 ||abundanceclientstrangely.com^
 ||abundancegage.com^
 ||abundancepeninsula.com^
@@ -39117,6 +39120,7 @@
 ||baboon.vacanti.com^
 ||babossa-bbqline.com^
 ||babqhlapt.com^
+||babres.xyz^
 ||babrootarrach.cfd^
 ||babsknacky.cfd^
 ||babsst.buildabear.at^
@@ -44906,6 +44910,7 @@
 ||bmdffai.zerowastestore.com^
 ||bmdlexeunvdbt.site^
 ||bmedia.justservingfiles.net^
+||bmestredqolzo.website^
 ||bmetric.com^
 ||bmewxa.smartbuyglasses.ie^
 ||bmf-gv-finanzonline.titanschrauben.info^
@@ -47837,6 +47842,7 @@
 ||buojbmprywppy.site^
 ||buonissimocafi.com^
 ||buontien247.fun^
+||buoyagedubbahmah.cyou^
 ||buoyancychillyshut.com^
 ||buoydeparturediscontent.com^
 ||buoyinglignum.cfd^
@@ -86031,6 +86037,7 @@
 ||ensino.escoladetecnicos.com^
 ||ensmallacidicgoobers.cfd^
 ||ensmwonhtzpdh.space^
+||ensoberevicteefideism.cfd^
 ||ensosignal.com^
 ||enssd.silverpawdog.com^
 ||enstat.xbext.com^
@@ -90065,6 +90072,7 @@
 ||f8c8o45a.eulerian.io^
 ||f8d24e6505.com^
 ||f8ejqxp.cn^
+||f8gei4t89vvo84g3hu6toe.cfd^
 ||f8thmb.qpon^
 ||f8vd4e-cdn-settings.appsflyersdk.com^
 ||f8vd4e-conversions.appsflyersdk.com^
@@ -93826,6 +93834,7 @@
 ||fjwdygativowy.space^
 ||fjwhpouzlllfh.space^
 ||fjxadi.maxi-pieces-50.fr^
+||fjxlauvxpixsi.online^
 ||fjypjaujkuwkd.space^
 ||fjzimaoqu.cn^
 ||fk0hwmdoh.com^
@@ -101347,6 +101356,7 @@
 ||gimfrxstiodmt.space^
 ||gimikit.com^
 ||gimipttrading.com^
+||gimjdpiwjxzrp.space^
 ||gimkig.com^
 ||gimkil.com^
 ||gimkim.com^
@@ -117210,6 +117220,7 @@
 ||hqdvc.onia.com^
 ||hqegsa.villagehouse.jp^
 ||hqeiwwnkce.icu^
+||hqeuaugdvpvro.website^
 ||hqfhspz.com^
 ||hqgcolgn.modudacompany.co.kr^
 ||hqgerminy.com^
@@ -119101,6 +119112,7 @@
 ||ibjdyrcn.ecst.ac.za^
 ||ibjnbnaeeb.com^
 ||ibjsaz5v4.com^
+||ibjzyfsrhqssd.space^
 ||ibkbank.net^
 ||ibkhearv.com^
 ||ibktikewqhktw.site^
@@ -119865,6 +119877,7 @@
 ||igaming-warp-service.io^
 ||igaming.biz^
 ||igamingoffers.com^
+||igarasatchelrutic.cfd^
 ||igazre.com^
 ||igbfwa.com^
 ||igc0.destinia.at^
@@ -121575,6 +121588,7 @@
 ||impishbeastspreserve.com^
 ||impishglove.com^
 ||impit.tradedoubler.com^
+||impkgarrxbgxn.site^
 ||implantlongesttrey.com^
 ||implarededeensino.com.br^
 ||implementgrimace.com^
@@ -127808,6 +127822,7 @@
 ||jiuwert.online^
 ||jiuyuntian3.cn^
 ||jivaranmobby.cfd^
+||jivekrcdcxmni.online^
 ||jivligcm.shop^
 ||jivo-ce.jp^
 ||jivox.com^
@@ -150549,6 +150564,7 @@
 ||m4zoxtrcea1k.controlconceptsusa.com^
 ||m5.4fl7299p2k1q4woch6n6g.cyou^
 ||m5.66077.cn^
+||m57z4gv923.com^
 ||m583.dailydemocrat.com^
 ||m5bjza-cdn-settings.appsflyersdk.com^
 ||m5bjza-inapps.appsflyersdk.com^
@@ -158424,6 +158440,7 @@
 ||mboshmpgkndsc.site^
 ||mbovegchkeacl.online^
 ||mbox.wegmans.com^
+||mbpbhnyearygv.site^
 ||mbpi.cc^
 ||mbqsaloon.com^
 ||mbr.panstellarshop.com^
@@ -171467,6 +171484,7 @@
 ||naherflirt.de^
 ||nahg4lhbr.com^
 ||nahin.nabihababycollection.com^
+||nahobvowdlk.in^
 ||nahoororyza.cyou^
 ||nahrnly.tuningsupply.com^
 ||nahuatlcodens.com^
@@ -203156,6 +203174,7 @@
 ||rizzcasinoz.fr^
 ||rizzio1.fr^
 ||rizzonelli.it^
+||rj0hrgrbeo.com^
 ||rj81nj-cdn-settings.appsflyersdk.com^
 ||rj81nj-launches.appsflyersdk.com^
 ||rjacftfazbyjq.online^
@@ -287551,6 +287570,7 @@
 ||vnqtp.ziptowntees.com^
 ||vnqwpv.i-nobori.com^
 ||vnrcl.axistelaviv.com^
+||vnriacgxxtmow.site^
 ||vnrvss.com^
 ||vnsehotro.com^
 ||vnsendo.info^
@@ -289034,6 +289054,7 @@
 ||vyjak.com^
 ||vyjwxc.elemis.com^
 ||vylivgbhjqkbl.online^
+||vylposmajvdes.site^
 ||vylrhxnitzghi.website^
 ||vymaro.shop^
 ||vynox.de^
@@ -290218,6 +290239,7 @@
 ||wbamedia.com^
 ||wbaosc.com^
 ||wbapp.mobile.sina.cn^
+||wbaykgdbozbut.site^
 ||wbbanner.mrn-news.de^
 ||wbbooupkjgwox.site^
 ||wbcdraefzhffi.site^
@@ -297298,6 +297320,7 @@
 ||xfuck.com^
 ||xfurcakivk.in^
 ||xfurqyknhozeb.site^
+||xfuxpfhoyvskq.online^
 ||xfvclznzhmtte.site^
 ||xfvqdbpowwkxj.space^
 ||xfwblpomxc.com^
@@ -297419,6 +297442,7 @@
 ||xhnln.radandhappy.com^
 ||xhnouqnhyhohr.online^
 ||xhnqhtqrnhurx.site^
+||xhocykctaigpg.site^
 ||xhohnr.fdm.pl^
 ||xhojivmruza.in^
 ||xhovaqdubabj.com^
@@ -301592,6 +301616,7 @@
 ||ylyaphbvbsvts.space^
 ||ylyfdkibvejma.store^
 ||ylyjyzoxrhybw.online^
+||ylytlkncjmcqv.online^
 ||ylzblwispwrsi.online^
 ||ylzgktpchfoot.online^
 ||ylznwl.cn^
@@ -305235,6 +305260,7 @@
 ||zpgnipitynywq.space^
 ||zpgqrz8ibtulre.cfd^
 ||zpgtcgqdycckj.online^
+||zpiacvzcunza.in^
 ||zpihe.seintofficial.com^
 ||zpjgofagauuku.space^
 ||zpjivmwnrhiwd.site^
@@ -305902,6 +305928,7 @@
 ||zwghopnylxsyk.online^
 ||zwgoeg.zakcret.gr^
 ||zwgsousozhihm.space^
+||zwhkfaqumbynh.site^
 ||zwhuehapqxred.online^
 ||zwhwovyxxigtn.online^
 ||zwhxmiesycxku.com^
