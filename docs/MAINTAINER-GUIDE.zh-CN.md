@@ -147,7 +147,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 | 文件 | 检查内容 |
 |---|---|
 | `dns-filter.txt` | 主拦截规则 |
-| `manifest.json` | 来源、数量、哈希、构建信息 |
+| `manifest.json` | 来源、数量、哈希、构建信息、各来源独有规则数及两两精确重叠数 |
 | `validation-report.txt` | 构建验证报告 |
 | `parser-exclusions.csv` | 被排除规则及原因 |
 | `allowlist-active.txt` | 已纳入主订阅的简单上游例外规则 |
@@ -158,6 +158,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 - 规则总量处于构建配置允许的容量范围内。
 - 四个上游均正常获取。
 - 来源规则数量没有异常变化。
+- 对照 manifest 中的 `source_only_rules` 和 `pairwise_source_overlap`，判断各来源的精确独有规则与重复情况；这些是字符串级统计，不等于语义覆盖或实际拦截效果。
 - 新增、删除规则比例合理。
 - 排除原因没有出现异常增长。
 - 主订阅包含封禁规则和通过语法、域名校验的简单上游例外规则；复杂例外仍排除。
