@@ -3,7 +3,7 @@
   "version": "1.0.3",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T02:12:04.410012+00:00",
+  "built_at_utc": "2026-11-14T02:38:34.715573+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -36,9 +36,9 @@
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4677221,
-      "sha256": "f2e80d47c3eda04f410cf2c31da0b96cd084e23b8379a7adba3e6a0ecf4e1926",
-      "simple_block_rules": 190463,
+      "bytes": 4678121,
+      "sha256": "9361c8911858d2067370ec9b460f732f6a7bde3a6d9ae94f18f21ff48b124c2a",
+      "simple_block_rules": 190502,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -67,7 +67,7 @@
       "excluded_lines_by_reason": {}
     }
   },
-  "blocking_rules": 306200,
+  "blocking_rules": 306237,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
@@ -79,19 +79,19 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 306211,
-  "common_rules": 95277,
+  "main_subscription_rules": 306248,
+  "common_rules": 95279,
   "source_only_rules": {
-    "adguard_dns": 95186,
-    "hagezi_normal": 115737
+    "adguard_dns": 95223,
+    "hagezi_normal": 115735
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "27c64022fe0cef5ad938193d6d84df2084900bc21bfa5e22deccbe9ee8cedf89",
+  "main_subscription_sha256": "f74394eaa5c85de070bb903f6f08d3976a8a7fb1a70f1e16cb088588691f6bc9",
   "syntax_audit": {
-    "total": 306200,
+    "total": 306237,
     "forms": {
-      "domain_and_subdomains": 306131,
+      "domain_and_subdomains": 306168,
       "domain_anchor_without_end_boundary": 69
     },
     "semantics": {
