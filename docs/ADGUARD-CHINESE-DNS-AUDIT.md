@@ -25,8 +25,8 @@ The line counts below are a static syntax classification of this snapshot, not a
 | Exceptions | 1,153 |
 | Cosmetic / element rules | 7,657 |
 | Domain rules with modifiers | 703 |
-| Simple hostname-pattern syntax | 5,966 |
-| Wildcard hostname rules | 829 |
+| Simple hostname-pattern syntax | 5,966 (5,958 pass hostname validation; 8 are rejected) |
+| Wildcard-bearing domain rules (not all are portable DNS wildcards) | 829 |
 | URL / regex-like rules | 817 |
 | Other / conditional / unsupported syntax | 3,233 |
 | **Total** | **20,358** |
