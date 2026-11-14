@@ -13,12 +13,14 @@ Official references:
 
 | AdGuard filter/function | Primary responsibility | NobleDNS relationship |
 |---|---|---|
-| Base and language-specific filters | Page/request-level ad filtering | Complementary; do not translate cosmetic or page-context rules into domain blocks |
+| Base, Mobile Ads and language-specific filters | Page/request-level ad filtering | Complementary; do not translate cosmetic or page-context rules into domain blocks |
 | Tracking Protection | Trackers, analytics scripts, tracking APIs and related page requests | Complementary; block only independently supported DNS hostnames, not entire first-party services by assumption |
 | URL Tracking | Remove tracking parameters from URLs | Out of DNS scope; NobleDNS cannot rewrite URLs |
 | Social Media | Hide social buttons, embeds and widgets | Out of DNS scope; do not block whole social platforms to hide page widgets |
 | Annoyances and its subfilters | Cookie notices, popups, app banners, widgets and other page elements | Out of DNS scope; do not block CMP or widget infrastructure wholesale without evidence of independent unwanted DNS behavior |
 | Mail Tracking Protection | Block tracking pixels in email | Complementary only where a dedicated tracking hostname can be safely identified; DNS cannot selectively remove a pixel from message content |
+| Filter unblocking search ads and self-promotions | Allow selected contextual search ads and site self-promotion | DNS cannot make URL/context-specific allow decisions; do not broaden allow rules to entire search or platform domains |
+| Experimental filter | Test potentially conflicting page-level rules | Not a production DNS source; do not import experimental page rules as domain blocks |
 | AdGuard DNS Filter | DNS-compatible domain blocking | Direct DNS-layer comparator and overlapping source; preserve its supported rule semantics and audit conflicts |
 | Security filters | Malicious/phishing domain protection | Complementary only with reliable, current evidence and clear separation from ad/tracker classification |
 
