@@ -1,7 +1,7 @@
 # Real-world effectiveness and compatibility benchmark plan
 
 > Status: protocol and acceptance framework; **no real-world benchmark results have been collected yet**.
-> This document does not change the production subscription or approve any new source.
+This document defines how to measure the current and future production subscription. Source inclusion is governed separately by the source policy and release workflow.
 
 ## 1. Purpose
 
@@ -20,11 +20,11 @@ A result in one category must never be presented as proof in another. A successf
 Run the same test corpus against, at minimum:
 - NobleDNS Balanced (exact published commit and SHA-256).
 - AdGuard DNS Filter (exact downloaded snapshot and SHA-256).
-- HaGeZi Multi PRO (`https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt`; exact downloaded snapshot and SHA-256). This is the primary HaGeZi target; Multi NORMAL is not a substitute for Pro.
+- HaGeZi Multi PRO and Multi Normal as separate snapshots (both are production inputs; neither is a substitute for the other).
 - OISD Big (`https://big.oisd.nl/`; exact downloaded snapshot and SHA-256).
 - anti-AD AdGuard edition (`https://anti-ad.net/adguard.txt`; exact downloaded snapshot and SHA-256). Do not substitute anti-AD's AdGuard Home `easylist.txt`, which uses a different and broader rule grammar.
 
-These are independent comparators, not production inputs. Do not merge comparator data into NobleDNS or treat overlapping entries as independent evidence. Record each snapshot's license, upstream notices, format and parser exclusions before scoring. If a comparator cannot be normalized without changing semantics, mark the affected entries unsupported and disclose the exclusions rather than silently simplifying them.
+OISD Big and anti-AD AdGuard are independent comparators, not production inputs. HaGeZi Multi PRO and Multi Normal are also tested as isolated snapshots to quantify their individual contributions, but they are already configured production inputs. Do not treat overlapping entries as independent evidence. Record each snapshot's license, upstream notices, format and parser exclusions before scoring. If a comparator cannot be normalized without changing semantics, mark the affected entries unsupported and disclose the exclusions rather than silently simplifying them.
 
 For every run, preserve:
 - Test date/time UTC, operator and test location/network.
@@ -60,7 +60,7 @@ Requirements:
 - Keep a blind holdout subset unavailable to the person tuning rules until an evaluation round is frozen.
 - Never commit private traffic logs, identifiers, credentials or user-specific browsing histories.
 
-The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects explicitly expired or non-high-confidence records, refuses to score unsupported rule syntax, and writes SHA-256 plus byte-size identities for the exact rules file, corpus file and scorer source into every result artifact. Its `independent=true` field is an attestation, not cryptographic proof; each row also records a primary reviewer and a distinct independent reviewer. Threat records require an expiry date, and expired evidence is rejected. The scorer now models the v1.0.4 production forms: `||domain^`, `||domain`, hostname wildcard masks, and `$important` priority, including the precedence of important exceptions over important blocks and basic exceptions below important blocks. Regression tests cover the compiler's conservative wildcard subset and these priority relationships. Leading-dot records remain excluded by the production parser. The scorer still refuses any unimplemented modifier or exception form rather than partially scoring a file. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed. The current v1.0.4 build contains 71 bare-anchor rules; each build produces a fresh audit against the critical-service sentinel fixture. A zero-hit result in that small fixture is a regression result, not a complete compatibility finding.
+The offline scorer in `tools/score_benchmark.py` validates this CSV schema, rejects explicitly expired or non-high-confidence records, refuses to score unsupported rule syntax, and writes SHA-256 plus byte-size identities for the exact rules file, corpus file and scorer source into every result artifact. Its `independent=true` field is an attestation, not cryptographic proof; each row also records a primary reviewer and a distinct independent reviewer. Threat records require an expiry date, and expired evidence is rejected. The scorer currently models the published hostname-rule forms: `||domain^`, `||domain`, hostname wildcard masks, and `$important` priority, including the precedence of important exceptions over important blocks and basic exceptions below important blocks. Regression tests cover the compiler's conservative wildcard subset and these priority relationships. Leading-dot records remain excluded by the production parser. The scorer still refuses any unimplemented modifier or exception form rather than partially scoring a file. This offline model is not a substitute for a real client or DNS query; comparator lists must be normalized to semantically equivalent supported forms with all exclusions disclosed before a fair score can be claimed. The v1.0.4 baseline contained 71 bare-anchor rules; each build produces a fresh audit against the critical-service sentinel fixture. A zero-hit result in that small fixture is a regression result, not a complete compatibility finding.
 
 ## 4. Metrics
 
@@ -159,7 +159,7 @@ Do not invent numerical pass thresholds before collecting a baseline. Establish 
 
 ## 8. Current evidence and honest status
 
-The first reproducible exact-rule differential was collected on 2026-11-14 against AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard. Its immutable snapshot identities, exact supported-syntax overlap counts, unsupported-line counts and limitations are recorded in [Comparator baseline 2026-11-14](COMPARATOR-BASELINE-2026-11-14.md). This is a useful source-delta inventory, not a real-world efficacy benchmark. It identifies 43,435 supported exact HaGeZi PRO block rules absent from NobleDNS v1.0.4; these are a prioritized review and integration queue, not automatically safe additions.
+The first reproducible exact-rule differential was collected on 2026-11-14 against AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard. Its immutable snapshot identities, exact supported-syntax overlap counts, unsupported-line counts and limitations are recorded in [Comparator baseline 2026-11-14](COMPARATOR-BASELINE-2026-11-14.md). This is a useful source-delta inventory, not a real-world efficacy benchmark. It identified 43,435 supported exact HaGeZi PRO block rules absent from NobleDNS v1.0.4. The source has since been added alongside Multi Normal through the reviewed source-migration workflow; those 43,435 exact-string additions were not individually hand-reviewed and must not be described as independently proven safe or effective.
 
 At the time this plan is added:
 - The automated regression corpus contains 72 essential-service hostnames and 20 known advertising-infrastructure hostnames; these are regression sentinels, not a representative independent benchmark.
@@ -169,7 +169,7 @@ At the time this plan is added:
 - A first exact-rule differential exists, but no comparative efficacy, false-positive or performance score has been established.
 - The rule-liveness observation fixture is empty; no live multi-vantage liveness conclusions exist.
 
-Therefore, current evidence does not support claims that NobleDNS is fully field-tested, has a measured low false-positive rate, or is objectively superior to established lists. This does not by itself mean the published v1.0.4 release is a half-finished product; it means those stronger empirical claims remain unproven and must not be advertised as facts.
+Therefore, current evidence does not support claims that NobleDNS is fully field-tested, has a measured low false-positive rate, or is objectively superior to established lists. This does not by itself mean a public release is a half-finished product; it means those stronger empirical claims remain unproven and must not be advertised as facts.
 
 ## 9. Reporting template
 

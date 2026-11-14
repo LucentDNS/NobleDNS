@@ -35,17 +35,24 @@ DNS filtering is one layer of protection. It cannot block every ad, particularly
 
 ## Sources and rule handling
 
-The current build combines three complementary upstreams:
+The current build combines four complementary upstreams:
 
 1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — broad DNS advertising and tracking coverage.
 2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt) — broad balanced DNS protection.
-3. [AWAvenue Ads Rule — Ads-only AdGuard variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — a focused advertising source with additional attention to app and smart-device advertising scenarios.
+3. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — broader DNS coverage retained alongside Multi Normal; PRO does not replace NORMAL, preserving NORMAL-only rules.
+4. [AWAvenue Ads Rule — Ads-only AdGuard variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — a focused advertising source with additional attention to app and smart-device advertising scenarios.
 
-NobleDNS deliberately uses AWAvenue’s Ads-only variant, not its broader privacy or unwelcome categories. This adds a focused advertising layer without importing its separate telemetry, push, update or other unwanted-connection categories. The compiler preserves supported AdGuard DNS hostname rules, including documented wildcard patterns with fixed suffix labels and the `$important` modifier. Unsupported or ambiguous syntax is recorded and excluded rather than rewritten. NobleDNS independently controls its build process and is not affiliated with or endorsed by any upstream project.
+NobleDNS retains both distinct HaGeZi Multi Normal and Multi PRO variants and deliberately uses AWAvenue’s Ads-only variant, not its broader privacy or unwelcome categories. This adds a focused advertising layer without importing its separate telemetry, push, update or other unwanted-connection categories. The compiler preserves supported AdGuard DNS hostname rules, including documented wildcard patterns with fixed suffix labels and the `$important` modifier. Unsupported or ambiguous syntax is recorded and excluded rather than rewritten. NobleDNS independently controls its build process and is not affiliated with or endorsed by any upstream project.
 
 The compiled subscription contains supported rules parsed from the configured sources. Unsupported or complex syntax is excluded rather than guessed or silently rewritten. The main subscription also includes simple upstream exception rules accepted by the parser; these can override matching block rules in compatible clients. Upstream inclusion establishes provenance, not proof that an exception is necessary or correctly scoped. The 11 inherited entries currently present in the published build remain marked pending in the [exception review register](data/exception-review.csv); they have not been independently approved by NobleDNS. Active exceptions are listed separately for inspection.
 
 A rule count is not a measure of quality, and inclusion in the compiled list does not mean every domain has been individually reviewed by NobleDNS.
+
+## Complementarity with AdGuard's official filters
+
+NobleDNS is a DNS-layer complement, not a replacement for AdGuard Base, language-specific filters, Tracking Protection, URL Tracking, Social Media, Annoyances, Mail Tracking Protection or page-element rules. DNS filtering operates on hostname resolution; it cannot hide page elements, remove URL tracking parameters, handle cookie notices or rewrite page content. Those jobs belong to the corresponding AdGuard filters. NobleDNS therefore avoids converting page-level rules into broad domain blocks and applies conservative handling to shared infrastructure used for sign-in, payments, identity, push, CDNs and updates. Exception review and regression tests are part of that compatibility policy.
+
+This is a design and test requirement, not a claim that every AdGuard filter has been field-tested in every client/site/app combination. See [AdGuard complementarity and compatibility policy](docs/ADGUARD-COMPATIBILITY.md).
 
 ## Build transparency
 

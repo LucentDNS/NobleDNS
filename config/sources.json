@@ -16,6 +16,14 @@
       "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt"
     },
     {
+      "key": "hagezi_multi_pro",
+      "name": "HaGeZi Multi PRO",
+      "filename": "hagezi_multi_pro.txt",
+      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+      "min_bytes": 1000000,
+      "min_rules": 100000
+    },
+    {
       "key": "awavenue_ads",
       "name": "AWAvenue Ads Rule (Only Ads)",
       "filename": "awavenue_ads.txt",
