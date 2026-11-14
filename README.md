@@ -70,7 +70,7 @@ Remove account details, tokens and other personal information from logs before s
 
 ## Documentation
 
-[Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Quality policy](docs/QUALITY.md) · [Compatibility test plan](docs/COMPATIBILITY-TEST-PLAN.md) · [Real-world benchmark protocol](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [Single-edition policy](docs/EDITION-POLICY.md) · [Third-party notices and licenses](THIRD-PARTY-NOTICES.md)
+[Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Quality policy](docs/QUALITY.md) · [Compatibility test plan](docs/COMPATIBILITY-TEST-PLAN.md) · [Comparator baseline](docs/COMPARATOR-BASELINE-2026-11-14.md) · [AdGuard Chinese DNS audit](docs/ADGUARD-CHINESE-DNS-AUDIT.md) · [Real-world benchmark protocol](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [Single-edition policy](docs/EDITION-POLICY.md) · [Third-party notices and licenses](THIRD-PARTY-NOTICES.md)
 
 ## License
 
