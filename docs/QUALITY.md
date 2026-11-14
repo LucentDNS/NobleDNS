@@ -31,7 +31,7 @@ The build removes a child rule only when all of the following are true:
 - The parent is not a public suffix according to the pinned Mozilla Public Suffix List snapshot.
 - The relationship is a true DNS-label suffix relationship, not a string-suffix coincidence.
 
-The PSL snapshot is pinned to commit `c3a53eed2cc49353c5fb5c30536186795d5c451b` and checked against SHA-256 `a078bef78fa2c8b5e09c41b44669f7403e0afceca21a3144c2a9f98872b26be6` on every build. Both ICANN and PRIVATE sections are included, and exact, wildcard and exception PSL rules are interpreted. If the snapshot is missing, altered or malformed, the build fails closed.
+The PSL snapshot is pinned to commit `c3a53eed2cc49353c5fb5c30536186795d5c451b` and checked against SHA-256 `7379dee58164b5f7cda5e37f2cc85b3d1754245dc313178eef5cbdcaca758650` on every build. Both ICANN and PRIVATE sections are included, and exact, wildcard and exception PSL rules are interpreted. If the snapshot is missing, altered or malformed, the build fails closed.
 
 Bare anchors (`||domain`), wildcard rules, `$important` rules, exceptions and other syntax are never compressed. Every removed rule is listed with its covering parent and source provenance in `domain-compression-audit.csv`. The audit is deterministic and the compression step is idempotent. The first rollout permits only an exact compression-only migration of at most 10,000 removals when all upstream source fingerprints are unchanged; ordinary source and rule drift limits remain in force afterward.
 
