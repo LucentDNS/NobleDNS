@@ -12,6 +12,14 @@
       "min_rules": 100000
     },
     {
+      "key": "hagezi_tif_mini",
+      "name": "HaGeZi TIF Mini",
+      "filename": "hagezi_tif_mini.txt",
+      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt",
+      "min_bytes": 1000000,
+      "min_rules": 100000
+    },
+    {
       "key": "adguard_dns",
       "name": "AdGuard DNS Filter",
       "filename": "adguard_dns.txt",
