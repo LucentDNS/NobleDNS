@@ -6,7 +6,7 @@ The stable subscription URL is:
 
 `https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt`
 
-Validated scheduled builds update the subscription on the default branch. GitHub Releases are reserved for human-readable SemVer product versions (`vMAJOR.MINOR.PATCH`). The workflow treats each published version as immutable: if the tag/release already exists, it refuses to retarget it or replace its assets. Daily builds update the stable subscription on `main` instead. For GitHub-enforced immutability (locked assets and tags plus a release attestation), the repository owner must enable **Settings → Releases → Enable release immutability**. This setting applies only to future releases; existing v1.0.0–v1.0.7 releases are not retroactively protected.
+Validated scheduled builds update the rolling subscription on the default branch. GitHub Releases are reserved for human-readable SemVer product-version snapshots (`vMAJOR.MINOR.PATCH`). Release assets are point-in-time snapshots and do not follow later scheduled data refreshes; users who want the current list should subscribe to the main-branch URL above. The publisher workflow treats each published version as immutable by policy: if the tag/release already exists, it refuses to retarget it or replace its assets. The current `v1.0.7` release reports `immutable: false` in GitHub's metadata, so this policy is not yet enforced by GitHub's platform-level release lock. To protect future releases, the repository owner must enable **Settings → Releases → Enable release immutability**. GitHub applies this setting only to future releases; existing v1.0.0–v1.0.7 releases are not retroactively protected.
 
 To publish a new product version, update `VERSION_BASE` in `update.py` and add exactly one matching dated section to `CHANGELOG.md` in the same reviewed change. The workflow extracts only that version's section for the GitHub Release description.
 
@@ -24,7 +24,7 @@ Do not routinely use `--allow-large-change`. First compare the new upstream snap
 
 ## Rollback
 
-If a newly published daily build causes a confirmed regression, identify the last known-good commit from the repository history and revert the affected `dist/` update through the repository's protected change process. SemVer releases are treated as immutable by workflow policy; do not treat a daily build as a new product version.
+If a newly published daily build causes a confirmed regression, identify the last known-good commit from the repository history and revert the affected `dist/` update through the repository's protected change process. Existing SemVer release assets and tags are not rewritten by the publisher workflow; do not treat a daily build as a new product version.
 
 ## Repository and permissions
 
