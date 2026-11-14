@@ -1,54 +1,50 @@
 # Changelog
 
-## 2026-11-14 — Align threat-feed refresh and subscription expiry
+All notable changes to NobleDNS are documented here. Versioned sections describe the matching published SemVer release; routine upstream refreshes do not create new product versions.
 
-- Run the scheduled build three times daily at 8-hour intervals to match HaGeZi TIF Mini's upstream expiry.
-- Set the generated subscription expiry to 8 hours so clients refresh the compiled threat-intelligence data on the same cadence.
-- Bump the build version to 1.0.7 and update CI assertions and maintainer/release documentation.
+## Unreleased
 
-## 2026-11-14 — Add HaGeZi TIF Mini threat-intelligence coverage
+### Added
+- Add a reproducible, audit-only review of AdGuard's Chinese browser filter and its DNS-scope candidates; do not import browser-context rules into the production DNS subscription.
+- Document AdGuard's dedicated Chinese DNS source sections, shared exclusions and the rationale for keeping the current production source set unchanged.
+- Record an updated mature-list differential baseline and align hostname benchmark scoring with production validation by excluding IP literals from hostname counts.
 
-- Add HaGeZi TIF Mini as a dedicated security add-on alongside the sole Multi main tier, HaGeZi Multi PRO.
-- Exact comparison against the v1.0.5 published subscription found 68,404 duplicate rules and 117,911 incremental rules; projected subscription size is 457,457 including the existing 11 exception rules, leaving 42,543 rules below the 500,000 ceiling.
-- Keep AdGuard DNS Filter and AWAvenue Ads-only; update source allowlists, licensing notices, tests, one-time migration gate and documentation. Publication remains contingent on all CI quality gates.
+### Changed
+- Clarify that exact-rule overlap and automated build success are not measurements of real-world efficacy, precision, recall or client compatibility.
 
-## 2026-11-14 — HaGeZi tier consolidation
+## [1.0.7] - 2026-11-14
 
-- Remove HaGeZi Multi Normal from production inputs; Multi PRO is the sole HaGeZi Multi tier, following HaGeZi's cumulative-tier guidance.
-- Retain AdGuard DNS Filter as an independently audited supplemental source, not as an AdGuard-client compatibility requirement.
-- Keep AWAvenue Ads-only as the focused advertising supplement. Update source validation, licensing notices, workflow migration checks, and documentation to the three-source policy.
+### Changed
+- Run scheduled upstream refreshes three times daily at 8-hour intervals to align with HaGeZi TIF Mini's declared subscription expiry.
+- Set the generated subscription expiry metadata to 8 hours.
 
-All notable changes to NobleDNS are documented here.
+## [1.0.6] - 2026-11-14
+
+### Added
+- Add HaGeZi TIF Mini as a threat-intelligence supplement alongside HaGeZi Multi PRO.
+- Add HaGeZi Multi PRO as the sole HaGeZi Multi tier and remove Multi Normal from production inputs, following the upstream cumulative-tier model.
+- Complete the four-source production composition with AdGuard DNS Filter and AWAvenue Ads-only.
+- Record the exact comparison against the previous v1.0.5 subscription: 68,404 duplicate rules and 117,911 incremental rules; the resulting build contained 457,446 blocking rules and 11 inherited exceptions.
+
+### Changed
+- Keep the 500,000-rule ceiling as a hard limit, not a target; retain source drift and output validation gates.
+
+## [1.0.5] - 2026-11-14
+
+### Added
+- Add the dedicated AWAvenue Ads-only AdGuard DNS variant as a focused advertising supplement.
+- Add generated-subscription regression sentinels for 72 essential-service hostnames and 20 known advertising hostnames.
+- Add an absolute drift ceiling of 3,000 additions and 3,000 removals per build, alongside the percentage-based source drift gate.
+- Add subscription last-modified metadata, active-exception limits and upstream licensing metadata.
+
+### Changed
+- Preserve supported AdGuard DNS wildcard hostname patterns and the documented `$important` modifier without rewriting their semantics.
+- Clarify the distinction between parser/build validation and real-world filtering effectiveness.
 
 ## [1.0.4] - 2026-11-14
 
 ### Fixed
 - Preserve supported upstream wildcard hostname rules and `$important` priority semantics without rewriting their patterns; continue excluding dynamic-suffix and ambiguous patterns.
-
-## Unreleased
-
-### Added
-- Add HaGeZi Multi PRO as a fourth production input while retaining HaGeZi Multi Normal; the one-time source migration is narrowly exempted from the ordinary drift gate, which automatically resumes after the new baseline is published.
-- Document the DNS-layer complementarity boundary with AdGuard's official filter categories: NobleDNS does not claim to replace page-element, URL-modification or annoyance filters.
-- Add source-count, URL, license and subscription-header regression checks for the four-source composition.
-
-
-### Added
-- Add the dedicated AWAvenue Ads-only AdGuard DNS source as a focused app/smart-device advertising complement.
-- Preserve documented AdGuard DNS wildcard hostname patterns with a static suffix and the `$important` modifier instead of discarding these supported rules.
-- Add generated-subscription regression gates for 72 essential-service hostnames and 20 known advertising-infrastructure hostnames.
-- Enforce an additional absolute drift ceiling of 3,000 rule additions and 3,000 removals per build, alongside the existing percentage-based source drift gate.
-- Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.
-- Publish verified build statistics and clarify that compiled domains are included as DNS blocking targets only.
-- Add an explicit quality gate limiting active exception/allow rules to 50, so an abnormal allow-rule surge fails validation.
-- Document the exact workflow for adding regression fixtures and updating their pinned counts.
-- Add code and upstream rule-data license metadata to the generated subscription banner.
-- Split the maintainer guide into separate English and Simplified Chinese documents while keeping their operational instructions aligned.
-
-### Fixed
-- Remove stale build-count figures from the unreleased notes; the generated manifest and validation report are the authoritative sources for current rule counts.
-- Align the quality policy with the new regression corpus while explicitly limiting what the small sample can claim.
-- Preserve the previous subscription modification date on identical rule content to avoid timestamp-only daily subscription churn.
 
 ## [1.0.3] - 2026-11-12
 
@@ -65,8 +61,7 @@ All notable changes to NobleDNS are documented here.
 
 ### Fixed
 - Keep the root-level `NobleDNS.txt` subscription byte-identical to `dist/dns-filter.txt`.
-- Include `Version` and `Expires: 1 day` metadata in the filter header and verify it against the manifest.
-- Keep the SemVer release immutable and versioned independently from content-addressed audit releases.
+- Include version and expiry metadata in the filter header and verify it against the manifest.
 
 ## [1.0.1] - 2026-11-12
 
@@ -83,17 +78,15 @@ All notable changes to NobleDNS are documented here.
 ## [1.0.0] - 2026-11-12
 
 ### Added
-- Public release workflow that publishes validated subscription and audit artifacts.
-- Public feedback guidance for blocking and compatibility reports.
+- Publish the first public NobleDNS subscription and validated release artifacts.
+- Add public feedback guidance for blocking and compatibility reports.
 
 ### Changed
-- NobleDNS is maintained and published as a public DNS filtering rule set.
-- Main-branch pushes run the complete build, validation and publication process.
-- Documented the difference between parser/build validation and real-world filtering efficacy.
-- Added an immutable SemVer release alongside content-addressed audit Releases.
+- Run build, validation and publication through the main-branch workflow.
+- Document the distinction between build integrity and real-world filtering efficacy.
 
 ### Fixed
-- Corrected GitHub Actions output handling so the release identity hash is passed to the publication job.
+- Correct GitHub Actions output handling so the release identity hash is passed to the publication job.
 
 ## Historical notes
 
@@ -101,7 +94,8 @@ Earlier development milestones and the RC2.2 reproducibility baseline are retain
 
 ## Changelog maintenance
 
-- Keep changes that are not yet released under the Unreleased section.
-- Move changes into a versioned section only when that version is actually released.
+- Keep unreleased work under `[Unreleased]`.
+- Add a dated version section only when preparing the matching SemVer release.
 - Use the actual release version and release date; do not fabricate historical release entries.
-- Record meaningful project changes rather than routine build noise.
+- The release workflow extracts only the matching version section for GitHub Release notes; it never publishes the entire changelog as a release description.
+- Record meaningful project changes rather than routine upstream refresh noise.
