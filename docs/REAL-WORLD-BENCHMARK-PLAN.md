@@ -20,7 +20,7 @@ A result in one category must never be presented as proof in another. A successf
 Run the same test corpus against, at minimum:
 - NobleDNS Balanced (exact published commit and SHA-256).
 - AdGuard DNS Filter (exact downloaded snapshot and SHA-256).
-- HaGeZi Multi PRO (`https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt`; exact downloaded snapshot and SHA-256). This is the primary HaGeZi target; Multi NORMAL is not a substitute for Pro.
+- HaGeZi Multi PRO (`https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt`; exact downloaded snapshot and SHA-256). This is also the production HaGeZi upstream; freeze the exact snapshot and verify NobleDNS preserves its supported rules without silently dropping semantics.
 - OISD Big (`https://big.oisd.nl/`; exact downloaded snapshot and SHA-256).
 - anti-AD AdGuard edition (`https://anti-ad.net/adguard.txt`; exact downloaded snapshot and SHA-256). Do not substitute anti-AD's AdGuard Home `easylist.txt`, which uses a different and broader rule grammar.
 
