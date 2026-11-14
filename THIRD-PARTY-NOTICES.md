@@ -1,4 +1,4 @@
-﻿# Third-Party Notices
+# Third-Party Notices
 
 NobleDNS incorporates and processes third-party DNS filtering rules.
 NobleDNS does not claim original authorship of upstream rule content.
