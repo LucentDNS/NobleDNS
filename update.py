@@ -145,7 +145,7 @@ def load_config(path: Path = CONFIG_PATH) -> dict:
     return cfg
 
 
-def valid_domain(raw: str) -> tuple[bool, str]:
+def valid_domain(raw: str, psl: PublicSuffixList | None = None) -> tuple[bool, str]:
     # A trailing dot in these source patterns changes anchor semantics; do not strip it.
     if not raw or raw.endswith(".") or len(raw) > 253:
         return False, "invalid_domain_length_or_trailing_dot"
@@ -174,10 +174,12 @@ def valid_domain(raw: str) -> tuple[bool, str]:
                     return False, "invalid_punycode_label"
             except (idna.IDNAError, UnicodeError):
                 return False, "invalid_punycode_label"
+    if psl is not None and psl.is_public_suffix(domain):
+        return False, "public_suffix_not_allowed"
     return True, domain
 
 
-def valid_wildcard_pattern(raw: str) -> tuple[bool, str]:
+def valid_wildcard_pattern(raw: str, psl: PublicSuffixList | None = None) -> tuple[bool, str]:
     """Validate a conservative subset of AdGuard's documented hostname wildcards.
 
     Preserve the source pattern verbatim (lower-cased) only when its final label
@@ -197,6 +199,11 @@ def valid_wildcard_pattern(raw: str) -> tuple[bool, str]:
     ok, reason = valid_domain(pattern.replace("*", "x"))
     if not ok:
         return False, reason
+    if psl is not None:
+        last_wildcard_label = max(i for i, label in enumerate(labels) if "*" in label)
+        static_suffix = ".".join(labels[last_wildcard_label + 1:])
+        if static_suffix and psl.is_public_suffix(static_suffix):
+            return False, "wildcard_public_suffix_not_allowed"
     return True, pattern
 
 
@@ -216,7 +223,7 @@ def classify_non_simple(line: str) -> str:
     return "other_syntax"
 
 
-def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOCKS):
+def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOCKS, psl: PublicSuffixList | None = None):
     # Strict decoding: replacement characters could silently corrupt a source.
     text = data.decode("utf-8-sig", errors="strict")
     blocks, exceptions = set(), set()
@@ -247,14 +254,14 @@ def parse_source(data: bytes, source_key: str, min_blocks: int = MIN_SOURCE_BLOC
         if match:
             candidate = match.group(1)
             if "*" in candidate:
-                ok, result = valid_wildcard_pattern(candidate)
+                ok, result = valid_wildcard_pattern(candidate, psl)
                 if not ok:
                     reason = "wildcard_syntax" if result == "invalid_wildcard_pattern" else result
                     rejected[reason] += 1
                     rows.append((source_key, line_no, reason, line))
                     continue
             else:
-                ok, result = valid_domain(candidate)
+                ok, result = valid_domain(candidate, psl)
                 if not ok:
                     rejected[result] += 1
                     rows.append((source_key, line_no, result, line))
@@ -593,6 +600,7 @@ def build(args) -> Path:
     now = datetime.now(timezone.utc)
     version = VERSION_BASE
     parsed, exceptions, source_stats, rejected_rows, raw_snapshots = {}, {}, {}, [], {}
+    psl = PublicSuffixList()
     input_dir = Path(args.input_dir) if args.input_dir else None
     for source in cfg["sources"]:
         key, filename = source["key"], source["filename"]
@@ -605,7 +613,7 @@ def build(args) -> Path:
         min_bytes = int(source.get("min_bytes", MIN_SOURCE_BYTES))
         if len(data) < min_bytes: raise ValueError(f"{key}: source smaller than {min_bytes} bytes")
         raw_snapshots[filename] = data
-        blocks, exc, rejected, rows = parse_source(data, key, min_blocks=int(source.get("min_rules", MIN_SOURCE_BLOCKS)))
+        blocks, exc, rejected, rows = parse_source(data, key, min_blocks=int(source.get("min_rules", MIN_SOURCE_BLOCKS)), psl=psl)
         parsed[key], exceptions[key] = blocks, exc
         rejected_rows.extend(rows)
         license_info = UPSTREAM_LICENSES[key]
@@ -613,7 +621,6 @@ def build(args) -> Path:
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
     source_union = set().union(*(parsed[key] for key in keys))
-    psl = PublicSuffixList()
     merged, compression_rows = compress_simple_domain_rules(source_union, parsed, psl)
     compression_removed_rules = {row["removed_rule"] for row in compression_rows}
     compression_summary = {
