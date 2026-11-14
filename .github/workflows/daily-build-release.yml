@@ -221,8 +221,8 @@ jobs:
           assert manifest.get("blocking_rules", 0) <= 500_000, \
               "Blocking rule count exceeds the project ceiling"
 
-          assert len(manifest.get("sources", {})) == 2, \
-              "Expected exactly two upstream sources"
+          assert len(manifest.get("sources", {})) == 3, \
+              "Expected exactly three upstream sources"
 
           subscription = Path("build-output/latest/dns-filter.txt").read_text(encoding="utf-8")
           legacy = Path("build-output/latest/NobleDNS.txt").read_text(encoding="utf-8")
@@ -247,8 +247,8 @@ jobs:
           assert original_code.get("spdx") == "GPL-3.0-only", \
               "Unexpected original project code license metadata"
 
-          assert isinstance(upstream_data, list) and len(upstream_data) == 2, \
-              "Expected licensing metadata for exactly two upstream sources"
+          assert isinstance(upstream_data, list) and len(upstream_data) == 3, \
+              "Expected licensing metadata for exactly three upstream sources"
 
           print("Manifest source count, rule ceiling, and licensing metadata verified.")
           PY
