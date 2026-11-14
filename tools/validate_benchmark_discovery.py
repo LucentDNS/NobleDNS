@@ -6,7 +6,7 @@ from collections import Counter
 from pathlib import Path
 SOURCE_FIELDS=["request_domain","pages_seen_on","share_of_pages","requests_total","requests_setting_cookies","cookie_setting_request_share"]
 TRIAGE_FIELDS=["domain"]+SOURCE_FIELDS[1:]+["owner","owner_category","preliminary_lane","evidence","review_status","review_note"]
-LANES={"adtech_candidate","functional_control","mixed_or_contextual","unmapped"}
+LANES={"ads_owner_review","infra_platform_owner_review","mixed_owner_review","unmapped"}
 HOST_RE=re.compile(r"(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}\Z")
 def read_csv(path:Path,fields:list[str])->list[dict[str,str]]:
     with path.open(encoding="utf-8-sig",newline="") as f:
@@ -15,9 +15,9 @@ def read_csv(path:Path,fields:list[str])->list[dict[str,str]]:
         return list(reader)
 def expected_lane(category:str)->str:
     if not category:return "unmapped"
-    if category=="ads":return "adtech_candidate"
-    if category in {"infra","platform"}:return "functional_control"
-    return "mixed_or_contextual"
+    if category=="ads":return "ads_owner_review"
+    if category in {"infra","platform"}:return "infra_platform_owner_review"
+    return "mixed_owner_review"
 def validate(source_path:Path,triage_path:Path):
     errors=[]; source=read_csv(source_path,SOURCE_FIELDS); triage=read_csv(triage_path,TRIAGE_FIELDS)
     source_by={}
