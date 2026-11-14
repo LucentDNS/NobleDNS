@@ -45,6 +45,7 @@ A query occurring near a failure is correlation, not proof. Attribute the failur
 
 ### P0 — investigate first
 - **CapCut:** cold launch; signup; login; profile/account; open project; edit; upload/import; export; playback/share. The current lead is `||mssdk.capcutapi.us`; do not assume it is the only relevant hostname.
+- **Juspay/payment integrations:** use a test merchant or controlled checkout; compare payment success, failure and cancellation, order confirmation and merchant-side status reconciliation. The current lead is `||logs.juspay.in`; never disrupt a live financial transaction.
 - **Huawei component:** identify whether the exact HiViewTunnel component exists on the tested device and whether the relevant user-experience/diagnostics setting is enabled. Test system stability, account/device services, diagnostics and normal network functions. Do not generalize one Huawei model's result to all Huawei devices.
 - **TeraBox:** cold launch; login; browse files; preview; upload; download; share; widget/static UI. The current lead is `||global-staticplat.cdn.bcebos.com`; distinguish static assets from advertising behavior.
 

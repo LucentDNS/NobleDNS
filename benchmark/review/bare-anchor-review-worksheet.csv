@@ -33,7 +33,7 @@ rule,source,source_line,review_priority,hostname_cue,classification,evidence_sta
 "||imgg.dt00.net","adguard_dns","9928","P1","image_or_tracking","unclassified","not_reviewed","pending","","",""
 "||itv.hexun.com","adguard_dns","179479","P2","no_obvious_semantic_token","unclassified","not_reviewed","pending","","",""
 "||js.goods.redtram.com","adguard_dns","9958","P2","no_obvious_semantic_token","unclassified","not_reviewed","pending","","",""
-"||logs.juspay.in","adguard_dns","21748","P1","logging_or_telemetry","unclassified","not_reviewed","pending","","",""
+"||logs.juspay.in","adguard_dns","21748","P0","logging_or_telemetry","unclassified","not_reviewed","pending","","",""
 "||logservice.dbankcloud.cn","adguard_dns","19205","P0","logging_or_telemetry","unclassified","not_reviewed","pending","","",""
 "||loneday.com","adguard_dns","10024","P2","no_obvious_semantic_token","unclassified","not_reviewed","pending","","",""
 "||mjavagames.ru","adguard_dns","10086","P2","no_obvious_semantic_token","unclassified","not_reviewed","pending","","",""
