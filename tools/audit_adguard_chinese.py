@@ -43,8 +43,10 @@ def classify(line: str) -> str:
         return "domain_with_modifier"
     if line.startswith("||") and "*" in line:
         return "domain_wildcard"
+    if line.startswith("||") and RULE_RE.fullmatch(line):
+        return "domain_hostname_pattern"
     if line.startswith("||"):
-        return "domain_syntax_other"
+        return "other_domain_syntax"
     if line.startswith("/") or "://" in line or ("/" in line and not line.startswith("//")):
         return "url_or_regex"
     return "other"
@@ -91,7 +93,7 @@ def audit(source: Path, current: Path, csv_path: Path, json_path: Path) -> dict:
             continue
         kind = classify(line)
         counts[kind] += 1
-        if kind != "domain_syntax_other":
+        if kind != "domain_hostname_pattern":
             continue
         match = RULE_RE.fullmatch(line)
         if not match:
