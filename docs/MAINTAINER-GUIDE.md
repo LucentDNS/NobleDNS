@@ -99,6 +99,15 @@ When evaluating a new source, record:
 
 ## 4. Routine Maintenance Workflow
 
+Use Python 3.12 and install the pinned dependency set before local validation:
+
+```powershell
+py -3.12 -m pip install --requirement requirements.txt
+```
+
+The current `requirements.txt` pins `idna==3.20`; the builder is not standard-library-only.
+
+
 ### 4.1 Check Repository Status
 
 In PowerShell:
@@ -189,7 +198,7 @@ Compare:
 - Added rules.
 - Removed rules.
 - Upstream source changes.
-- Changes in overlap between the two sources.
+- Changes in overlap across all four sources, including exact overlap and parent/child coverage.
 - Changes in complex-syntax exclusions.
 - Changes in the number of excluded leading-dot rules (`.domain^`, `.domain`).
 - Exception-rule changes and whether those rules entered `allowlist-active.txt`.
@@ -203,7 +212,7 @@ The builder uses a default drift threshold of 15% and performs two types of chec
 
 ### 5.1 Upstream Source Rule-Count Changes
 
-- For each upstream source, compare the current number of parsed `simple_block_rules` with the number recorded in the previous manifest.
+- For each upstream source, compare the current number of parsed `supported_block_rules` with the number recorded in the previous manifest.
 - Calculate the percentage change using the previous count as the baseline.
 - If either source exceeds the threshold, the build fails.
 
