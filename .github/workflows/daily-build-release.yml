@@ -25,6 +25,7 @@ on:
       - 'data/**'
       - 'tests/**'
       - 'tools/**'
+      - 'benchmark/**'
       - 'docs/**'
       - 'update.py'
       - 'requirements*.txt'
@@ -89,7 +90,10 @@ jobs:
       - name: Run regression tests
         run: python -m unittest discover -s tests -v
 
-      - name: Validate benchmark discovery and triage integrity\n        run: python tools/validate_benchmark_discovery.py\n\n      - name: Build from upstream sources with drift protection
+      - name: Validate benchmark discovery and triage integrity
+        run: python tools/validate_benchmark_discovery.py
+
+      - name: Build from upstream sources with drift protection
         shell: bash
         env:
           ALLOW_LARGE_CHANGE: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_large_change || false }}
