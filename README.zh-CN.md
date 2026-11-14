@@ -35,17 +35,24 @@ DNS 过滤只是网络防护的一环，无法拦截所有广告，尤其是第�
 
 ## 上游来源与规则处理
 
-当前构建组合三个互补来源：
+当前构建组合四个互补来源：
 
 1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt)：广泛的 DNS 广告与跟踪防护。
 2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt)：均衡型通用 DNS 防护。
-3. [AWAvenue 秋风规则（AdGuard 纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt)：针对 App 与智能设备广告场景的专项补充。
+3. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt)：更全面的通用 DNS 防护补充。保留 Multi Normal，不以 PRO 替换 Normal，以免丢失 Normal 独有规则。
+4. [AWAvenue 秋风规则（AdGuard 纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt)：针对 App 与智能设备广告场景的专项补充。
 
-NobleDNS 只采用 AWAvenue 的纯广告版本，不引入其更广泛的隐私或“不受欢迎”类别，避免把遥测、推送、更新等独立类别一并混入。构建器保留受支持的 AdGuard DNS 主机名规则，包括末尾标签及至少另一个标签固定的通配符规则和 `$important` 修饰符；对不支持或语义不明确的语法则记录原因并排除，不擅自改写。NobleDNS 独立维护自身构建流程，与任何上游项目均无隶属或背书关系。
+NobleDNS 同时保留 HaGeZi Multi Normal 与 Multi PRO 两种不同覆盖范围的列表，并只采用 AWAvenue 的纯广告版本，不引入其更广泛的隐私或“不受欢迎”类别，避免把遥测、推送、更新等独立类别一并混入。构建器保留受支持的 AdGuard DNS 主机名规则，包括末尾标签及至少另一个标签固定的通配符规则和 `$important` 修饰符；对不支持或语义不明确的语法则记录原因并排除，不擅自改写。NobleDNS 独立维护自身构建流程，与任何上游项目均无隶属或背书关系。
 
 正式订阅由配置来源中成功解析且受支持的规则构成。对于不支持或复杂的语法，构建器会予以排除，而不是猜测含义或擅自改写。主订阅还包含解析器接受的简单上游例外规则；这些规则可能在兼容客户端中覆盖匹配的封禁规则。规则出现在上游列表中只能证明其来源，不能证明例外确有必要或范围恰当。当前正式构建继承的 11 条例外仍标记为 pending，尚未经过 NobleDNS 独立批准；具体状态见[例外规则审核登记册](data/exception-review.csv)。当前生效的例外规则也会单独列出，供用户检查。
 
 规则数量不等于规则质量；规则进入编译结果，也不代表 NobleDNS 已对每个域名逐条人工审核。
+
+## 与 AdGuard 官方过滤器的互补关系
+
+NobleDNS 定位为 DNS 层补充，不替代 AdGuard Base、语言过滤器、Tracking Protection、URL Tracking、Social Media、Annoyances、Mail Tracking Protection 或网页元素规则。DNS 层只处理域名解析请求，无法隐藏网页元素、移除 URL 跟踪参数、处理 Cookie 提示或改写页面内容。应由 AdGuard 对应过滤器完成这些工作。NobleDNS 的兼容性策略是避免把网页级规则粗暴转换成整域名封禁；对登录、支付、身份验证、推送、CDN、更新及其他共享基础设施域名保持保守，并通过例外审查和回归测试控制风险。
+
+这是一项设计与测试要求，不代表已经逐一验证了 AdGuard 所有过滤器与所有网站、应用的组合效果。实际兼容性仍需按客户端版本和具体使用场景测试。详见 [AdGuard 过滤器互补与兼容策略](docs/ADGUARD-COMPATIBILITY.md)。
 
 ## 构建透明度
 
