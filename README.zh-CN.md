@@ -29,13 +29,14 @@ DNS 过滤只处理域名解析，不能拦截所有广告，也不能替代网�
 
 ## 规则来源
 
-当前正式构建组合以下三个来源：
+当前正式构建组合以下四个来源：
 
-1. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — 唯一集成的 HaGeZi Multi 主版本，也是通用过滤核心。HaGeZi 官方说明各级 Multi 版本逐级包含低级版本，因此不再并行订阅 Normal。
-2. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — 经独立审计的 DNS 层补充来源。保留依据是其增量规则价值，而不是 AdGuard 客户端必须搭配官方 DNS 规则。
-3. [AWAvenue 秋风规则（纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — 广告场景专项补充。
+1. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — 唯一集成的 HaGeZi Multi 主版本，也是通用过滤核心。各级 Multi 版本逐级包含低级版本，因此不并行订阅 Normal。
+2. [HaGeZi TIF Mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt) — 恶意软件、钓鱼及相关恶意基础设施的威胁情报补充。它是主规则之外的附加列表，不是另一个 Multi 主版本。TIF Mini 是 TIF Medium 的精简版本，不等同于完整 TIF。
+3. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — 经独立审计的 DNS 层补充来源。保留依据是其增量规则价值，而不是 AdGuard 客户端必须搭配官方 DNS 规则。
+4. [AWAvenue 秋风规则（纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — 广告场景专项补充。
 
-AdGuard DNS Filter 并非 AdGuard 软件的格式兼容要求：HaGeZi PRO 本身就提供 Adblock 格式。是否继续集成官方 DNS 规则，属于上游来源取舍，仍须持续审计其增量价值与兼容性。
+AdGuard DNS Filter 并非 AdGuard 软件的格式兼容要求：HaGeZi PRO 本身就提供 Adblock 格式。是否继续集成官方 DNS 规则，属于上游来源取舍，仍须持续审计其增量价值与兼容性。HaGeZi 建议主 Multi 版本搭配一种 TIF 版本；NobleDNS 选择 TIF Mini，以满足项目固定规则上限。
 
 构建器只收录明确支持的规则语法；不支持或语义不明确的内容会记录并排除，不擅自猜测或改写。当前订阅继承的 11 条上游例外仍处于待审核状态，尚不代表 NobleDNS 已独立批准。详见[例外规则审核登记册](data/exception-review.csv)。
 
