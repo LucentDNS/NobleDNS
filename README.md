@@ -22,7 +22,7 @@ Legacy compatibility URL: `https://raw.githubusercontent.com/LucentDNS/NobleDNS/
 - **Compatibility first:** sign-in, payments, banking, communications, push notifications, maps, video and software updates are important review areas.
 - **Transparent sources:** upstreams, build manifests, syntax audits and parser exclusions are published.
 - **Automated maintenance:** sources are refreshed and builds are checked regularly, with safeguards for unusual changes.
-- **Safe compression:** exact duplicates are removed, and only simple child-domain rules covered by an existing non-public-suffix parent rule are compressed using a pinned Public Suffix List snapshot.
+- **Safe validation and compression:** source rules targeting public suffixes are rejected; exact duplicates are removed; only simple child-domain rules covered by an existing non-public-suffix parent rule are compressed using a pinned Public Suffix List snapshot.
 
 DNS filtering operates at the hostname-resolution layer. It cannot block every ad or replace cosmetic filtering, URL parameter removal or cookie-notice handling.
 
