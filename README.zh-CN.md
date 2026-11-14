@@ -58,6 +58,7 @@ NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪�
 - [语法审计](dist/syntax-audit.json)：受支持规则语法统计。
 - [解析排除记录](dist/parser-exclusions.csv)：未收录的原始规则及排除原因。
 - [当前生效例外](dist/allowlist-active.txt)：订阅中包含的例外规则。
+- [AdGuard 中文过滤器 DNS 范围审计](dist/adguard-chinese-dns-audit.json)及[候选规则清单](dist/adguard-chinese-dns-candidates.csv)：仅供审计，不会自动并入正式订阅。
 
 项目设置 500,000 条规则上限，并执行来源变化检查与自动化回归测试。这些措施用于降低维护风险，不能替代真实设备测试和独立效果评测。
 
@@ -74,7 +75,7 @@ NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪�
 
 ## 项目文档
 
-[安全政策](SECURITY.md) · [贡献指南](CONTRIBUTING.md) · [质量政策](docs/QUALITY.md) · [兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md) · [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [单一版本政策](docs/EDITION-POLICY.md) · [第三方声明与许可证](THIRD-PARTY-NOTICES.md)
+[安全政策](SECURITY.md) · [贡献指南](CONTRIBUTING.md) · [质量政策](docs/QUALITY.md) · [兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md) · [成熟规则集差异基线](docs/COMPARATOR-BASELINE-2026-11-14.md) · [AdGuard 中文过滤器 DNS 审计](docs/ADGUARD-CHINESE-DNS-AUDIT.md) · [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [单一版本政策](docs/EDITION-POLICY.md) · [第三方声明与许可证](THIRD-PARTY-NOTICES.md)
 
 ## 许可证
 

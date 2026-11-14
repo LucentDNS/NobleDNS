@@ -1,46 +1,51 @@
 # Comparator differential baseline — 2026-11-14
 
-> Run: GitHub Actions #537, PR validation run. This is a frozen initial rule-set differential, not an efficacy benchmark.
-> NobleDNS subscription SHA-256: `e5a554c526e2e77db8dc4b875cf4066dd9e4a0985debc0dbd11a7dc93cbd5479`.
+> Run: GitHub Actions #578, PR validation run. This is a frozen exact-rule differential, **not** an efficacy benchmark.
+> NobleDNS: v1.0.7; subscription SHA-256: `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`.
+> Workflow: [run #578](https://github.com/LucentDNS/NobleDNS/actions/runs/43579323077) · [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76).
 
 ## Snapshot identities
 
-| List | URL | Bytes | SHA-256 | Raw non-comment lines |
-|---|---|---:|---|---:|
-| NobleDNS v1.0.4 | [main subscription](https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt) | 7,369,306 | `e5a554c526e2e77db8dc4b875cf4066dd9e4a0985debc0dbd11a7dc93cbd5479` | 306,835 |
-| AdGuard DNS Filter | [source](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) | 4,678,883 | `0ab3e6393db16f26343dc0cd66060366418b3c6713fd4639e06ff11a38b49174` | 191,429 |
-| HaGeZi Multi PRO | [source](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) | 5,181,990 | `7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc` | 226,839 |
-| OISD Big | [source](https://big.oisd.nl/) | 5,149,246 | `979fa2ff7241574ecea8325a47f080dc38b12c2d31cb121d55413981718be6cb` | 228,004 |
-| anti-AD AdGuard | [source](https://anti-ad.net/adguard.txt) | 2,253,041 | `a419ebcda1c7df5582f06ace56391b5b9a6c1f2530747a1ace0062d0f1acdfe0` | 102,096 |
+| List | Bytes | SHA-256 | Raw non-comment lines |
+|---|---:|---|---:|
+| NobleDNS v1.0.7 | 10,585,030 | `635d5fcab5605459f5d1df59911de26dde5e6f218b2ce5acd9ed812e03cece47` | 457,508 |
+| AdGuard DNS Filter | 4,679,830 | `c92cac0d119051ff734783996c9ca20cf54114503d3c8b989ee1cef5e72ac25d` | 191,470 |
+| HaGeZi Multi PRO | 5,206,879 | `5059c6cd741c4129ef57b51a39cddeb6d4187e6ed4c32cc84200ece11f2fa083` | 227,849 |
+| OISD Big | 5,150,561 | `6e19e0e4546e53b7571719b66bb09f10f39d18b50699d48513265e5e5cc52fcf` | 228,059 |
+| anti-AD AdGuard | 2,253,041 | `a419ebcda1c7df5582f06ace56391b5b9a6c1f2530747a1ace0062d0f1acdfe0` | 102,096 |
 
 ## Exact supported-syntax differential
 
-Counts below compare exact rule strings accepted by the current offline scorer. Exceptions are reported separately from blocking rules.
+Counts compare exact canonical rule strings accepted by NobleDNS's offline scorer. Exceptions are reported separately from blocking rules.
 
 | Comparator | NobleDNS blocks | Comparator blocks | Exact shared | NobleDNS-only | Comparator-only | Comparator unsupported |
 |---|---:|---:|---:|---:|---:|---:|
-| AdGuard DNS Filter | 306,824 | 190,968 | 190,894 | 115,930 | 74 | 450 |
-| HaGeZi Multi PRO | 306,824 | 226,838 | 183,403 | 123,421 | 43,435 | 1 (ABP header) |
-| OISD Big | 306,824 | 228,003 | 93,624 | 213,200 | 134,379 | 1 (ABP header) |
-| anti-AD AdGuard | 306,824 | 102,011 | 81,315 | 225,509 | 20,696 | 36 |
+| AdGuard DNS Filter | 457,497 | 190,935 | 190,935 | 266,562 | 0 | 524 |
+| HaGeZi Multi PRO | 457,497 | 227,848 | 227,848 | 229,649 | 0 | 1 (ABP header) |
+| OISD Big | 457,497 | 228,058 | 190,477 | 267,020 | 37,581 | 1 (ABP header) |
+| anti-AD AdGuard | 457,497 | 102,011 | 82,943 | 374,554 | 19,068 | 36 |
 
-All 11 NobleDNS active exceptions exactly matched the AdGuard DNS Filter snapshot. The comparator snapshot contained 11 AdGuard exceptions, 0 HaGeZi PRO exceptions, 0 OISD exceptions and 49 anti-AD exceptions; anti-AD's 49 are not automatically approved for NobleDNS.
+NobleDNS has 11 active exceptions, all matching the AdGuard DNS Filter snapshot exactly. HaGeZi PRO and OISD contain no supported exceptions in these snapshots. anti-AD contains 49 exceptions; none is automatically approved for NobleDNS.
 
-## Immediate findings and action
+## Findings and decisions
 
-1. **HaGeZi Multi PRO is the clearest immediate coverage gap.** There are 43,435 supported exact block rules in the PRO snapshot that are not present in NobleDNS v1.0.4. A source-level preview found that adding PRO while retaining the existing sources would remain below the 500,000-rule ceiling by simple exact-set arithmetic; however, a production build, license/provenance review, compatibility regression and explicit large-change review are still required. Do not infer that all 43,435 are safe to add solely from upstream inclusion.
-2. **AdGuard DNS Filter is very close by exact rule identity.** The current snapshot has 74 supported exact block rules absent from NobleDNS. Its 450 unsupported lines include regex rules, `$badfilter`, leading-dot records and other syntax outside the current DNS hostname compiler. Those must not be silently rewritten.
-3. **OISD Big and anti-AD have substantial independent deltas.** Their exclusive counts are discovery queues, not instructions to import every rule. The anti-AD parser currently excludes 36 lines, including dynamic-suffix and broad wildcard patterns. These require semantic review before any parser expansion.
-4. Preserve each run's downloaded snapshots and report so changes can be reproduced and audited.
+1. **HaGeZi Multi PRO is fully covered by exact rule identity.** All 227,848 supported PRO block rules appear in NobleDNS v1.0.7; the comparator-only count is zero. Adding HaGeZi Multi Normal or another Multi tier would be redundant. TIF Mini is a distinct threat-intelligence add-on and is not part of this general-list comparison.
+2. **AdGuard DNS Filter's hostname-rule subset is fully covered.** After aligning the benchmark scorer with the production compiler, its comparator-only count is zero. The 524 excluded lines comprise 74 IP-literal rules (not DNS hostnames) and 450 other unsupported forms, including regex, leading-dot, wildcard and modifier syntax. These must not be flattened into guessed hostname blocks.
+3. **OISD Big has 37,581 exact supported rules absent from NobleDNS.** This is a discovery queue, not a bulk-import recommendation. Adding all of them would consume about 88.4% of the remaining 42,492-rule headroom before any future source growth, and exact presence in OISD does not independently prove safety for NobleDNS's user base.
+4. **anti-AD AdGuard has 19,068 exact supported rules absent from NobleDNS.** These are also discovery candidates only. anti-AD has 36 unsupported lines, including broad/dynamic wildcard patterns, and its 49 exceptions are not portable approvals.
+5. **The current production ceiling remains 500,000 rules.** NobleDNS contains 457,497 blocking rules plus 11 active exceptions (457,508 total), leaving 42,492 subscription slots. The remaining space is not a target to fill.
+6. **The comparator output is a syntax inventory, not a quality score.** It cannot establish true-positive rate, false-positive rate, real-world coverage, app compatibility, latency or resource use.
 
-## Limitations
+The scheduled comparator tool downloads immutable snapshots for each run, records their SHA-256 and byte sizes, and refuses to silently normalize unsupported syntax. The complete machine-readable report and downloaded snapshots are retained in the GitHub Actions artifact for the run.
 
-- Exact text overlap does not establish semantic equivalence. Different syntaxes may match the same hostnames, and this first report does not attempt full cross-grammar equivalence.
-- The comparator lists are moving URLs. The byte size and SHA-256 above identify only this run's exact snapshots.
+## Limits
+
+- Exact string overlap does not establish semantic equivalence. Different supported patterns can match the same hostname, and the comparator does not prove actual DNS-client behavior.
 - Unsupported lines are counted and examples retained; they are not evaluated.
-- The reviewed independent hostname corpus remains empty. Therefore this report gives **no** precision, recall, false-positive rate, application compatibility, real-world ad-blocking efficacy, or performance result.
-- A higher unique-rule count can increase both coverage and breakage risk. Each proposed production addition needs provenance, scope and compatibility review.
+- Moving URLs can change between runs; the byte size and SHA-256 above identify only this run's snapshots.
+- The independent reviewed hostname corpus is still insufficient to support a representative precision/recall or real-world compatibility claim.
+- More unique rules can increase both coverage and breakage risk. Every proposed production addition still needs provenance, evidence, scope assessment and regression tests.
 
 ## Reproduction
 
-The daily workflow runs `tools/comparator_differential.py` after the normal build and stores `comparator-differential.json` plus all fetched snapshots in the `nobledns-build-audit-<run>` artifact. See [workflow run #537](https://github.com/LucentDNS/NobleDNS/actions/runs/43562093365) and [PR #65](https://github.com/LucentDNS/NobleDNS/pull/65).
+The daily workflow runs `tools/comparator_differential.py` after the production build. The full report is `comparator-differential.json` in the [run #575 build-audit artifact](https://github.com/LucentDNS/NobleDNS/actions/runs/43579150459). The AdGuard Chinese audit is documented separately in [ADGUARD-CHINESE-DNS-AUDIT.md](ADGUARD-CHINESE-DNS-AUDIT.md).

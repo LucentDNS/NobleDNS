@@ -196,6 +196,19 @@ jobs:
             --out-dir build-output/latest/comparators \
             --output build-output/latest/comparator-differential.json
 
+      - name: Audit AdGuard Chinese filter for DNS-scope candidates (no production import)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt" \
+            --output /tmp/nobledns-adguard-chinese-filter.txt
+          python tools/audit_adguard_chinese.py \
+            --source /tmp/nobledns-adguard-chinese-filter.txt \
+            --current build-output/latest/dns-filter.txt \
+            --csv build-output/latest/adguard-chinese-dns-candidates.csv \
+            --json build-output/latest/adguard-chinese-dns-audit.json
+
       - name: Record build environment provenance
         shell: bash
         run: |
@@ -230,6 +243,8 @@ jobs:
           test -s "$OUT/validation-report.txt"
           test -s "$OUT/exception-overlap-audit.csv"
           test -s "$OUT/bare-anchor-audit.csv"
+          test -s "$OUT/adguard-chinese-dns-audit.json"
+          test -s "$OUT/adguard-chinese-dns-candidates.csv"
           test -s "$OUT/allowlist-active.txt"
           test -s "$OUT/parser-exclusions.csv"
           test -s "$OUT/LICENSE"
@@ -325,7 +340,7 @@ jobs:
               else ""
           )
 
-          audit_paths = ("syntax-audit.json", "syntax-review.csv", "exception-overlap-audit.csv", "bare-anchor-audit.csv")
+          audit_paths = ("syntax-audit.json", "syntax-review.csv", "exception-overlap-audit.csv", "bare-anchor-audit.csv", "adguard-chinese-dns-audit.json", "adguard-chinese-dns-candidates.csv")
 
           def normalized_audit_bytes(path):
               # Git normalizes text files to LF; compare semantic text, not checkout
@@ -485,6 +500,8 @@ jobs:
           cp build-output/latest/validation-report.txt dist/validation-report.txt
           cp build-output/latest/exception-overlap-audit.csv dist/exception-overlap-audit.csv
           cp build-output/latest/bare-anchor-audit.csv dist/bare-anchor-audit.csv
+          cp build-output/latest/adguard-chinese-dns-audit.json dist/adguard-chinese-dns-audit.json
+          cp build-output/latest/adguard-chinese-dns-candidates.csv dist/adguard-chinese-dns-candidates.csv
           cp build-output/latest/allowlist-active.txt dist/allowlist-active.txt
           rm -f dist/whitelist-review.txt
           cp build-output/latest/parser-exclusions.csv dist/parser-exclusions.csv
@@ -537,6 +554,8 @@ jobs:
           test -s dist/manifest.json
           test -s dist/validation-report.txt
           test -s dist/exception-overlap-audit.csv
+          test -s dist/adguard-chinese-dns-audit.json
+          test -s dist/adguard-chinese-dns-candidates.csv
           test -s dist/allowlist-active.txt
           test -s dist/parser-exclusions.csv
           test -s dist/syntax-audit.json
@@ -593,6 +612,8 @@ jobs:
             dist/syntax-review.csv \
             dist/exception-overlap-audit.csv \
             dist/bare-anchor-audit.csv \
+            dist/adguard-chinese-dns-audit.json \
+            dist/adguard-chinese-dns-candidates.csv \
             LICENSE \
             THIRD-PARTY-NOTICES.md \
             licenses/GPL-3.0.txt \

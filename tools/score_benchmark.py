@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import csv
 import json
 import re
@@ -24,11 +25,19 @@ FIELDS = [
     "hostname", "category", "expected", "evidence_ref", "evidence_summary",
     "confidence", "reviewed_on", "expires_on", "independent", "reviewer", "independent_reviewer",
 ]
+IPV4_LIKE_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
 
 def valid_hostname(value: str) -> bool:
     if not value or not value.isascii() or len(value) > 253 or "." not in value or value.endswith("."):
         return False
+    if IPV4_LIKE_RE.fullmatch(value):
+        return False
+    try:
+        ipaddress.ip_address(value)
+        return False
+    except ValueError:
+        pass
     labels = value.split(".")
     return all(
         1 <= len(label) <= 63
