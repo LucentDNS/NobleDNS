@@ -44,7 +44,6 @@ class BareAnchorDiscoveryOverlapTests(unittest.TestCase):
         self.assertEqual(rows[0]["discovery_match_count"], "1")
         self.assertEqual(rows[0]["discovery_matches"], "example.test.evil.test")
         self.assertEqual(rows[0]["review_status"], "discovery_overlap_review_required")
-        self.assertIn("not proof", rows[0]["interpretation"] if rows[0]["discovery_match_count"] == "0" else "not proof")
 
     def test_no_overlap_is_diagnostic_not_clearance(self):
         with tempfile.TemporaryDirectory() as tmp:
