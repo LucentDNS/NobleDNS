@@ -110,7 +110,7 @@ class ConfigTests(unittest.TestCase):
 
     def test_exactly_three_approved_sources(self):
         cfg = mod.load_config()
-        self.assertEqual([x["key"] for x in cfg["sources"]], ["adguard_dns", "hagezi_normal", "awavenue_ads"])
+        self.assertEqual([x["key"] for x in cfg["sources"]], ["adguard_dns", "hagezi_pro", "awavenue_ads"])
         self.assertEqual(cfg["sources"][2]["min_bytes"], 10000)
         self.assertEqual(cfg["sources"][2]["min_rules"], 300)
         self.assertEqual(cfg["max_rules"], 500000)
