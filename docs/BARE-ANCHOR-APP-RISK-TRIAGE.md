@@ -196,6 +196,7 @@ This source supports a first-party tracking/analytics classification for the exa
 
 The expanded queue also uses the following immutable public snapshots:
 
+- HaGeZi DNS blocklists: `73cfbb14c802c057629c614a679265af081842ac` (2026-11-13); the exact CapCut hostname appears in the dedicated Native TikTok list, not the Multi Normal list.
 - AdGuard BrowserExtension: `69965fa59a5d5a44531768780850d3e788fa93e1` (2026-11-09). Its filter metadata identifies filter ID 23 as the **AdGuard Ukrainian filter** (version 2.0.9.55, updated 2026-10-29), not a global tracker list. Many entries are scoped with `$third-party` in browser filtering; that scope cannot be preserved by DNS-only blocking.
 - ntopng tracker catalogue: `4b18950f29e95a08be44901a3fc1a331aac5230f` (2026-11-13).
 - HostsVN: `cf81902c19468dde6be6a293b17df16165baa427` (2026-11-11).
