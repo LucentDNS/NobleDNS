@@ -2,7 +2,7 @@
 
 > Run: GitHub Actions #578, PR validation run. This is a frozen exact-rule differential, **not** an efficacy benchmark.
 > NobleDNS: v1.0.7; subscription SHA-256: `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`.
-> Workflow: [run #575](https://github.com/LucentDNS/NobleDNS/actions/runs/43579323077) · [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76).
+> Workflow: [run #578](https://github.com/LucentDNS/NobleDNS/actions/runs/43579323077) · [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76).
 
 ## Snapshot identities
 
