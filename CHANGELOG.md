@@ -2,6 +2,18 @@
 
 All notable changes to NobleDNS are documented here. Versioned sections describe the matching published SemVer release; routine upstream refreshes do not create new product versions.
 
+## [1.0.8] - 2026-11-14
+
+### Added
+- Apply conservative parent/child compression to simple hostname rules using a pinned Mozilla Public Suffix List snapshot, with deterministic per-rule audit output and source provenance.
+- Verify the PSL snapshot SHA-256 and interpret exact, wildcard, exception, ICANN and PRIVATE suffix rules; fail the build if the pinned data is missing or altered.
+- Publish compression and PSL metadata artifacts with the build.
+
+### Changed
+- Preserve bare anchors, wildcard rules, modifier-bearing rules, and exceptions unchanged during parent/child compression.
+- Allow the first compression rollout only when the exact removed-rule set matches the audit and all upstream source fingerprints remain unchanged.
+- Keep dead-domain scanning out of scheduled Actions because a full-list scan is too expensive for the available free runner budget.
+
 ## Unreleased
 
 ### Added
