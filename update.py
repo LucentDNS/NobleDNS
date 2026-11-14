@@ -317,8 +317,9 @@ def check_drift(current: dict, current_rules: set[str], previous_manifest: Path 
     old = json.loads(previous_manifest.read_text(encoding="utf-8"))
     changes = []
     for key, now in current.items():
-        before = old.get("sources", {}).get(key, {}).get("simple_block_rules")
-        after = now.get("simple_block_rules")
+        old_source = old.get("sources", {}).get(key, {})
+        before = old_source.get("supported_block_rules", old_source.get("simple_block_rules"))
+        after = now.get("supported_block_rules")
         if before is None or not before: continue
         pct = abs(after - before) * 100.0 / before
         if pct > max_percent:
@@ -551,7 +552,7 @@ def build(args) -> Path:
         parsed[key], exceptions[key] = blocks, exc
         rejected_rows.extend(rows)
         license_info = UPSTREAM_LICENSES[key]
-        source_stats[key] = {"name": source["name"], "url": source["url"], "license": license_info["spdx"], "license_url": license_info["license_url"], "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data), "simple_block_rules": len(blocks), "simple_exception_rules": len(exc), "excluded_lines_by_reason": dict(rejected)}
+        source_stats[key] = {"name": source["name"], "url": source["url"], "license": license_info["spdx"], "license_url": license_info["license_url"], "license_basis": license_info["basis"], "bytes": len(data), "sha256": sha256(data), "supported_block_rules": len(blocks), "simple_exception_rules": len(exc), "excluded_lines_by_reason": dict(rejected)}
         print(f"{key}: {len(blocks):,} blocks, {len(exc):,} exceptions, {sum(rejected.values()):,} excluded")
     keys = [x["key"] for x in cfg["sources"]]
     merged = set().union(*(parsed[key] for key in keys))
