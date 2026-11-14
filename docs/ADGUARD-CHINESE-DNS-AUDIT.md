@@ -50,13 +50,13 @@ The five uncovered candidates were individually triaged:
 
 | Candidate | Source context / independent signal | Decision |
 |---|---|---|
-| `kqzyfj.com` | Appears in an advertising-domain blocklist and is identified as a CJ Affiliate redirect/tracking domain. Blocking the whole redirect domain can interfere with legitimate affiliate links and attribution. | Hold; no production import without a narrower, demonstrably safe DNS use case |
+| `kqzyfj.com` | Present in the broad Chinese ad-server section but explicitly excluded by AdGuard DNS's shared exclusions; [EasyList issue #9445](https://github.com/easylist/easylist/issues/9445) documents its use as a RoboForm click-through redirect. | Do not import; preserve legitimate affiliate click-through behavior |
 | `h1.azuimeh.top` | No sufficiently reliable independent evidence was found to establish its current purpose and impact. | Unresolved; do not block on source presence alone |
 | `symaa.cn` | Appears under an upstream `NOT_OPTIMIZED PLATFORM(ios, ext_android_cb, ext_safari)` condition. DNS cannot preserve this client/platform scope; the domain's purpose is not independently established. | Exclude from DNS conversion |
 | `https-filtering-check.adtidy.org` | The upstream section labels this endpoint as an AdGuard HTTPS-filtering detection check, not an advertising hostname. | Do not block; preserve legitimate security/filter diagnostics |
 | `uyux77jurw.com` | It appears in a cluster of unrelated, opaque-looking hostnames, but no reliable independent reputation or behavioral evidence was found. A name pattern is not proof. | Unresolved; hold for evidence, do not import |
 
-The `kqzyfj.com` corroborating references are [IPFire's advertising-domain entry](https://www.ipfire.org/dbl/lists/ads/domains/kqzyfj.com) and an [affiliate-link reference identifying CJ's rotating redirect domains](https://dailyintelservice.com/learn/affiliate-link-anatomy-identify-a-network-from-a-url). These are supporting signals, not proof that the domain should be globally blocked.
+The `kqzyfj.com` decision is grounded in AdGuard's own DNS exclusion and the linked EasyList issue, not just a reputation-list match.
 
 This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the five uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review. The fifth unmatched hostname appeared in the latest upstream snapshot; it has not been promoted or treated as malicious.
 
@@ -89,6 +89,20 @@ The upstream snapshots used for this review were:
 - AdGuard Chinese first-party adservers section blob: `bbfcb39e47d48822ccfcba292cc8458b6265ca26`.
 
 These are repository blob identifiers for the reviewed files; the upstream projects remain authoritative for subsequent updates.
+
+
+## How AdGuard itself handles Chinese DNS rules
+
+This distinction is visible in AdGuard's own DNS build configuration, not just in our interpretation:
+
+- The pinned [AdGuard DNS filter configuration](https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/544efcd7692a0092f924494662ddea76787036f9/configuration.json) explicitly imports the Chinese filter's dedicated `adservers.txt` and `adservers_firstparty.txt` sections. Both use the shared `Filters/exclusions.txt` and the `RemoveModifiers` plus `ValidateAllowIp` transformations.
+- The pinned [Chinese third-party ad-server section](https://github.com/AdguardTeam/AdguardFilters/blob/f2d7ee9c4deec50a05cbbdd5cc587ac8935c1987/ChineseFilter/sections/adservers.txt) says it is for full-domain rules used in third-party contexts; it explicitly says first-party advertising subdomains belong in the separate section.
+- The pinned [Chinese first-party ad-server section](https://github.com/AdguardTeam/AdguardFilters/blob/6706124fbbab26689bbb3075696c76b57c9f61a0/ChineseFilter/sections/adservers_firstparty.txt) limits itself to full subdomains on non-advertising sites.
+- AdGuard's DNS configuration also takes EasyList China through a dedicated third-party-only extraction rule, rather than importing its entire browser filter unchanged.
+
+A concrete false-positive lesson: `kqzyfj.com` appears in the broad Chinese third-party ad-server section, but AdGuard's DNS shared-exclusion file excludes it. The adjacent upstream reference is [EasyList issue #9445](https://github.com/easylist/easylist/issues/9445), which documents that the hostname is used as a click-through redirect for RoboForm. That is precisely why a hostname's presence in a regional browser filter is not sufficient justification for global DNS blocking. NobleDNS keeps this domain out.
+
+This also confirms the correct integration decision: NobleDNS already consumes AdGuard DNS Filter, whose own configuration contains AdGuard's curated Chinese DNS sections and a scoped EasyList China extraction. Adding the complete AdGuard Chinese filter or EasyList China again as separate NobleDNS sources would duplicate existing coverage and bypass AdGuard's DNS-specific exclusions and transformations.
 
 ## Mandatory exclusions
 
