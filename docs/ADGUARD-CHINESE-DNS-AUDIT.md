@@ -46,7 +46,7 @@ The CI run above extracted **5,959 syntactically simple, valid hostname candidat
 - **5 not covered** by that comparison.
 - **0 candidates approved or added** to the production subscription.
 
-The four uncovered candidates were individually triaged:
+The five uncovered candidates were individually triaged:
 
 | Candidate | Source context / independent signal | Decision |
 |---|---|---|
@@ -58,7 +58,7 @@ The four uncovered candidates were individually triaged:
 
 The `kqzyfj.com` corroborating references are [IPFire's advertising-domain entry](https://www.ipfire.org/dbl/lists/ads/domains/kqzyfj.com) and an [affiliate-link reference identifying CJ's rotating redirect domains](https://dailyintelservice.com/learn/affiliate-link-anatomy-identify-a-network-from-a-url). These are supporting signals, not proof that the domain should be globally blocked.
 
-This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the four uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review. The fifth unmatched hostname appeared in the latest upstream snapshot; it has not been promoted or treated as malicious.
+This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the five uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review. The fifth unmatched hostname appeared in the latest upstream snapshot; it has not been promoted or treated as malicious.
 
 ## Mandatory exclusions
 
