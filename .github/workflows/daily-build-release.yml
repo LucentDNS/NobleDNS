@@ -397,7 +397,7 @@ jobs:
           name: nobledns-build-audit-${{ github.run_number }}
           path: build-output/latest/
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 5
 
   publish:
     name: Publish validated subscription and versioned release
