@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- Promote HaGeZi Multi PRO to the production upstream baseline to align NobleDNS's coverage target with the established balanced PRO tier. Retain AdGuard DNS Filter and AWAvenue Ads-only as complementary sources; validate the resulting delta and compatibility gates before release.
+
+
 All notable changes to NobleDNS are documented here.
 
 ## [1.0.4] - 2026-11-14
