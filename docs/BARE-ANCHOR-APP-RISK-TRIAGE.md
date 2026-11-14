@@ -61,7 +61,7 @@ A public-evidence pass now has at least one exact-host lead for all 69 bare-anch
 | `||moneymaiker.ru` | 10096 | Medium | AdGuard Ukrainian filter exact-host rule | Identify requester; test account, payment and core site features before any safety conclusion. |
 | `||moneysyst.biz` | 10097 | Medium | AdGuard Ukrainian filter exact-host rule | Identify requester; test account, payment and core site features. |
 | `||mptri.net` | 10106 | Medium | AdGuard Ukrainian filter exact-host rule | Identify requester; test the embedding site's complete core journey. |
-| `||mtm.qdqmedia.com` | 184356 | High | EasyPrivacy international third-party list, OISD domain list and a public badfilter override | Identify the site/service, inspect the badfilter rationale and test analytics, consent, form submission and conversion workflows. |
+| `||mtm.qdqmedia.com` | 184356 | High | EasyPrivacy international third-party list and OISD; a separate badfilter targets a caret-terminated variant | Identify the site/service, inspect the badfilter rationale and test analytics, consent, form submission and conversion workflows. |
 | `||obislame.ru` | 10146 | Medium | AdGuard Ukrainian filter exact-host rule | Identify requester; test content, navigation and account workflows. |
 | `||platinumcode.net` | 10194 | Medium | AdGuard Ukrainian filter exact-host rule | Identify requester; test embedding site features and core navigation. |
 | `||promoblocks.ru` | 10215 | Medium | AdGuard Ukrainian filter exact-host rule | Identify requester; test promotional widgets and core site functions. |
