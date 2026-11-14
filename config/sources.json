@@ -14,6 +14,14 @@
       "name": "HaGeZi Multi Normal",
       "filename": "hagezi_normal.txt",
       "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt"
+    },
+    {
+      "key": "awavenue_ads",
+      "name": "AWAvenue Ads Rule (Only Ads)",
+      "filename": "awavenue_ads.txt",
+      "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
+      "min_bytes": 10000,
+      "min_rules": 300
     }
   ]
 }
