@@ -20,7 +20,7 @@ AUDIT_FIELDS = [
 RULE_RE = re.compile(r"^\|\|[a-z0-9.-]+$")
 URL_RE = re.compile(r"https://\S+")
 PRIORITIES = {"high", "medium", "low"}
-FLOATING_GITHUB_REF_RE = re.compile(r"https?://(?:github\\.com/.+/blob|raw\\.githubusercontent\\.com/.+)/(?:master|main)/")
+FLOATING_GITHUB_REF_RE = re.compile(r"https?://(?:github\.com/.+/blob|raw\\.githubusercontent\.com/.+)/(?:master|main)/")
 
 
 def read_rows(path: Path, fields: list[str]) -> list[dict[str, str]]:
