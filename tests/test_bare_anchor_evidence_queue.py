@@ -76,12 +76,12 @@ class BareAnchorEvidenceQueueTests(unittest.TestCase):
             _, errors = module.validate(audit, queue)
         self.assertTrue(any("missing 1 current audit rules" in error for error in errors))
 
-    def test_wrong_source_line_fails(self):
+    def test_historical_source_line_survives_upstream_reordering(self):
         row = "||example.test,adguard_dns,999,medium,Observed context,upstream_classification,https://example.test/evidence,Evidence does not establish safety,unresolved_test_required\n"
         with tempfile.TemporaryDirectory() as tmp:
             audit, queue = self._write_fixtures(tmp, row)
             _, errors = module.validate(audit, queue)
-        self.assertTrue(any("source line mismatch" in error for error in errors))
+        self.assertEqual(errors, [])
 
 
 if __name__ == "__main__":

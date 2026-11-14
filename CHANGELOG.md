@@ -5,6 +5,7 @@ All notable changes to NobleDNS are documented here.
 ## Unreleased
 
 ### Added
+- Add the dedicated AWAvenue Ads-only AdGuard DNS source as a focused app/smart-device advertising complement; retain only supported simple DNS hostname rules and audit all excluded syntax.
 - Add generated-subscription regression gates for 72 essential-service hostnames and 20 known advertising-infrastructure hostnames.
 - Enforce an additional absolute drift ceiling of 3,000 rule additions and 3,000 removals per build, alongside the existing percentage-based source drift gate.
 - Add subscription metadata for the last rule-set modification date and blocking-rule count; keep the date stable when rule content is unchanged.

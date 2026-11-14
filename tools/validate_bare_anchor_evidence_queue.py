@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate evidence-queue uniqueness and source attribution against the generated audit."""
+"""Validate evidence-queue uniqueness and source attribution against the generated audit.
+
+source_line is retained as historical provenance only. Upstream list insertions
+and reordering do not change the identity of a rule and must not break daily CI.
+"""
 from __future__ import annotations
 
 import argparse
@@ -59,9 +63,9 @@ def validate(audit_path: Path, queue_path: Path) -> tuple[Counter[str], list[str
         else:
             if row["source"].strip() != audit["source"]:
                 errors.append(f"{queue_path}:{line_no}: source mismatch for {rule}")
-            source_lines = set(filter(None, audit["source_line_numbers"].split(";")))
-            if row["source_line"].strip() not in source_lines:
-                errors.append(f"{queue_path}:{line_no}: source line mismatch for {rule}")
+            # source_line records the line in the snapshot used when the
+            # evidence entry was created. It is intentionally not compared
+            # with the current upstream line number, which is not stable.
         if priority not in PRIORITIES:
             errors.append(f"{queue_path}:{line_no}: invalid priority {priority!r}")
         for field in ("observed_context", "evidence_type", "interpretation", "decision_status"):

@@ -30,7 +30,21 @@ NobleDNS does not claim original authorship of upstream rule content.
 HaGeZi also identifies third-party input data that may be subject
 to separate terms. Those terms must be respected where applicable.
 
-## 3. NobleDNS modifications
+## 3. AWAvenue Ads Rule (Only Ads)
+
+- Project: AWAvenue 秋风广告规则
+- Maintainer: TG-Twilight
+- Official repository:
+  https://github.com/TG-Twilight/AWAvenue-Ads-Rule
+- Upstream rule: dedicated AdGuard `Only.Ads` variant (advertising category only)
+  https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt
+- License: GPL-3.0
+- License file:
+  https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE
+
+NobleDNS uses the dedicated Ads-only variant, not the upstream Full Protection, No Privacy or No Unwelcome variants. The builder retains only supported simple DNS hostname rules and records unsupported lines as parser exclusions.
+
+## 4. NobleDNS modifications
 
 NobleDNS retrieves, validates, filters, deduplicates and compiles
 the approved upstream sources.
@@ -41,7 +55,7 @@ syntax rather than silently converting it into guessed equivalents.
 The resulting files contain upstream-derived material and must not
 be represented as wholly original NobleDNS content.
 
-## 4. Licensing and redistribution
+## 5. Licensing and redistribution
 
 The original NobleDNS project code is licensed under
 GNU GPL version 3, GPL-3.0-only.
@@ -57,14 +71,14 @@ This notice is an attribution and licensing guide. It does not
 replace the upstream license texts or grant rights beyond those
 licenses.
 
-## 5. Content designation and disclaimer
+## 6. Content designation and disclaimer
 
 Any domain appearing in a compiled NobleDNS subscription is included as a DNS blocking target only. Its presence does not mean NobleDNS hosts, publishes, operates, endorses or distributes the associated website or its content.
 
-AdGuard and HaGeZi are independent upstream projects.
-NobleDNS is not affiliated with or endorsed by either project.
+AdGuard, HaGeZi and AWAvenue are independent upstream projects.
+NobleDNS is not affiliated with or endorsed by any upstream project.
 
-## 6. HaGeZi upstream disclaimer
+## 7. HaGeZi upstream disclaimer
 
 HaGeZi publishes its DNS blocklists under GPL-3.0 and states that the GPL license copy must accompany redistribution. The GPL-3.0 text is included in this repository and in the generated build artifact.
 

@@ -35,12 +35,13 @@ DNS filtering is one layer of protection. It cannot block every ad, particularly
 
 ## Sources and rule handling
 
-The current build uses two general-purpose upstream sources:
+The current build combines three complementary upstreams:
 
-1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt)
-2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt)
+1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — broad DNS advertising and tracking coverage.
+2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt) — broad balanced DNS protection.
+3. [AWAvenue Ads Rule — Ads-only AdGuard variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — a focused advertising source with additional attention to app and smart-device advertising scenarios.
 
-These are not mainland-China-specific datasets. NobleDNS independently controls its build process and is not affiliated with or endorsed by either upstream project.
+NobleDNS deliberately uses AWAvenue’s Ads-only variant, not its broader privacy or unwelcome categories. This adds a focused advertising layer without importing its separate telemetry, push, update or other unwanted-connection categories. The source is parsed conservatively: supported simple DNS hostname rules are retained; unsupported wildcard and other syntax is recorded and excluded. NobleDNS independently controls its build process and is not affiliated with or endorsed by any upstream project.
 
 The compiled subscription contains supported rules parsed from the configured sources. Unsupported or complex syntax is excluded rather than guessed or silently rewritten. The main subscription also includes simple upstream exception rules accepted by the parser; these can override matching block rules in compatible clients. Upstream inclusion establishes provenance, not proof that an exception is necessary or correctly scoped. The 11 inherited entries currently present in the published build remain marked pending in the [exception review register](data/exception-review.csv); they have not been independently approved by NobleDNS. Active exceptions are listed separately for inspection.
 
