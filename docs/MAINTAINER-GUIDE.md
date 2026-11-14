@@ -288,18 +288,18 @@ Current automation behavior:
 
 | Trigger | Behavior |
 |---|---|
-| Daily schedule | Build and validate; synchronize public artifacts when conditions are met |
+| 8-hour schedule | Build and validate three times daily; synchronize public artifacts when conditions are met |
 | Push to `main` | Build, validate, and synchronize public artifacts |
 | Pull request | Build and validate; do not publish |
 | Manual run | Build and validate, then execute the public-release logic |
 
-Daily scheduled time:
+Scheduled times:
 
-02:23 China Standard Time (UTC+8).
+02:23, 10:23 and 18:23 China Standard Time (UTC+8).
 
 GitHub Actions uses UTC, so the cron expression is:
 
-`23 18 * * *`
+`23 2,10,18 * * *`
 
 If an automated build fails, inspect the logs first. Do not repeatedly rerun it or bypass protections without understanding the failure.
 
