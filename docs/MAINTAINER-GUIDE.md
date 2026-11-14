@@ -69,12 +69,13 @@ Main file responsibilities:
 
 ## 3. Current Upstream Sources
 
-The project currently uses exactly two upstream sources:
+The project currently uses three complementary upstream sources:
 
 | Source | Purpose |
 |---|---|
 | AdGuard DNS Filter | DNS advertising and tracking protection |
 | HaGeZi Multi Normal | General DNS advertising and tracking protection |
+| AWAvenue Ads Rule (Only Ads) | Focused app / smart-device advertising coverage; Ads-only variant |
 
 Configuration file:
 
@@ -143,7 +144,7 @@ Pay particular attention to these files:
 In particular, verify that:
 
 - The total rule count does not exceed 500,000.
-- Both upstream sources were fetched successfully.
+- All three upstream sources were fetched successfully.
 - Source rule counts have not changed unexpectedly.
 - Addition and removal ratios are reasonable.
 - Exclusion reasons have not increased abnormally.
