@@ -12,14 +12,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.6"
+VERSION_BASE = "1.0.7"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
     "! Description: DNS filtering for ads, trackers, telemetry and unwanted domains.\n"
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
     f"! Version: {VERSION_BASE}\n"
-    "! Expires: 1 day\n"
+    "! Expires: 8 hours\n"
     "! Sources: HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, AWAvenue Ads Rule (Only Ads)\n"
     "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).\n"
     "! Content: Listed domains are included as blocking targets only.\n"
