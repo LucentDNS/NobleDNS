@@ -17,6 +17,16 @@ This file is a maintainer-generated **first-pass work queue** over the 100-domai
 
 Every row is marked `primary_triage_only`. A second distinct reviewer and additional independent evidence are still required before any row enters the scored benchmark corpus. The queue does not change NobleDNS production rules.
 
+## Independent cross-check and licensing decision
+
+A read-only cross-check was performed against DuckDuckGo Tracker Radar's categorized tracker-domain dataset at commit `815b4d9a72bf9694076faf97471bd1ecc9ac14a0` (source file: `build-data/static/categorized_trackers.csv`). There were exact root-domain matches for 78 of the 100 discovery rows. This is a **corroboration signal only**: Tracker Radar categories include mixed functions such as CDN, embedded content, payment, social features and advertising; a category match is not a hostname-level blocking verdict.
+
+The Tracker Radar repository declares **CC BY-NC-SA 4.0** for its data. NobleDNS does not redistribute its categorized rows or merge its labels into the committed queue because the non-commercial/share-alike terms require a separate licensing-compatibility review. The pinned source and license are recorded here for audit reproducibility:
+- Dataset: https://github.com/duckduckgo/tracker-radar/blob/815b4d9a72bf9694076faf97471bd1ecc9ac14a0/build-data/static/categorized_trackers.csv
+- License: https://github.com/duckduckgo/tracker-radar/blob/815b4d9a72bf9694076faf97471bd1ecc9ac14a0/LICENSE
+
+This check does not promote any row to the reviewed benchmark corpus and does not establish precision, recall or false-positive rate.
+
 ## Triage totals
 
 - Ads-owner candidates: 45
