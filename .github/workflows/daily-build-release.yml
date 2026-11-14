@@ -166,6 +166,14 @@ jobs:
       - name: Validate browser third-party scope-loss audit
         run: python tools/validate_browser_third_party_scope_audit.py --queue benchmark/discovery/bare-anchor-app-risk-triage.csv --audit benchmark/discovery/browser-third-party-scope-audit.csv --source /tmp/nobledns-adguard-filter-23.txt
 
+      - name: Differential audit against mature DNS lists
+        run: |
+          set -euo pipefail
+          python tools/comparator_differential.py \
+            --nobledns build-output/latest/dns-filter.txt \
+            --out-dir build-output/latest/comparators \
+            --output build-output/latest/comparator-differential.json
+
       - name: Record build environment provenance
         shell: bash
         run: |
