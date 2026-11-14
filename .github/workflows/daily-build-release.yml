@@ -133,6 +133,14 @@ jobs:
             --essential tests/fixtures/essential-domains.txt \
             --output build-output/latest/bare-anchor-audit.csv
 
+      - name: Audit bare-anchor overlap against HTTP Archive discovery seed
+        run: |
+          set -euo pipefail
+          python tools/audit_bare_anchor_discovery_overlap.py \
+            --audit build-output/latest/bare-anchor-audit.csv \
+            --discovery benchmark/discovery/http-archive-third-party-domains-2026-06.csv \
+            --output build-output/latest/bare-anchor-discovery-overlap.csv
+
       - name: Validate bare-anchor review worksheet coverage
         run: |
           set -euo pipefail
