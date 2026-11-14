@@ -39,7 +39,7 @@ These categories define review priorities; they do not imply that every named se
 
 ## Current compilation model
 
-The current public build compiles supported blocking rules from four configured sources: AdGuard DNS Filter, HaGeZi Multi Normal, HaGeZi Multi PRO, and AWAvenue Ads Rule (Only Ads). AdGuard DNS Filter and the two HaGeZi variants provide general-purpose DNS coverage; Multi Normal and Multi PRO are retained together because each contributes unique rules. AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
+The current public build compiles supported blocking rules from three configured sources: HaGeZi Multi PRO, AdGuard DNS Filter, and AWAvenue Ads Rule (Only Ads). Multi PRO is the sole HaGeZi Multi tier because the upstream tiers are cumulative; Multi Normal is not duplicated alongside it. AdGuard DNS Filter remains a separately audited DNS-layer supplement, not a requirement for AdGuard client compatibility. AWAvenue is a focused advertising-only supplement. Automated parsing, syntax constraints, source drift checks and output validation reduce build risk, but they do not constitute manual, per-domain mainland compatibility review. Do not describe every compiled entry as individually vetted by NobleDNS. The stricter evidence and review steps below apply to confirmed corrections, project-authored additions and any future source change proposal.
 
 ## Rule acceptance and correction
 
@@ -87,7 +87,7 @@ Do not expand parser scope or alter source semantics merely to increase coverage
 
 ## Automated publication checks
 
-- Exactly the four approved sources load successfully and decode as strict UTF-8.
+- Exactly the three approved sources load successfully and decode as strict UTF-8.
 - Each source exceeds configured minimum size and parsed-block count.
 - Per-source parsed rule count does not drift more than 15% from the last published manifest without review/override.
 - Main output has valid supported syntax, no duplicates, nonzero rules and no more than 500,000 rules.
