@@ -159,12 +159,14 @@ Do not invent numerical pass thresholds before collecting a baseline. Establish 
 
 ## 8. Current evidence and honest status
 
+The first reproducible exact-rule differential was collected on 2026-11-14 against AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard. Its immutable snapshot identities, exact supported-syntax overlap counts, unsupported-line counts and limitations are recorded in [Comparator baseline 2026-11-14](COMPARATOR-BASELINE-2026-11-14.md). This is a useful source-delta inventory, not a real-world efficacy benchmark. It identifies 43,435 supported exact HaGeZi PRO block rules absent from NobleDNS v1.0.4; these are a prioritized review and integration queue, not automatically safe additions.
+
 At the time this plan is added:
 - The automated regression corpus contains 72 essential-service hostnames and 20 known advertising-infrastructure hostnames; these are regression sentinels, not a representative independent benchmark.
 - The reviewed evidence corpus is not yet populated; only a header-only CSV template and an offline scorer exist.
 - The real DNS client compatibility matrix remains NOT TESTED unless supported by linked, reproducible run evidence.
 - No comprehensive mainland application/site task matrix has been completed.
-- No comparative efficacy or performance score has been established.
+- A first exact-rule differential exists, but no comparative efficacy, false-positive or performance score has been established.
 - The rule-liveness observation fixture is empty; no live multi-vantage liveness conclusions exist.
 
 Therefore, current evidence does not support claims that NobleDNS is fully field-tested, has a measured low false-positive rate, or is objectively superior to established lists. This does not by itself mean the published v1.0.4 release is a half-finished product; it means those stronger empirical claims remain unproven and must not be advertised as facts.
