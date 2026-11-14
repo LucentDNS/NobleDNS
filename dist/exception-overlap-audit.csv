@@ -1,0 +1,12 @@
+exception_rule,exception_host,overlap_count,overlapping_block_rules,overlap_relations,review_priority,interpretation
+@@||ad.10010.com^,ad.10010.com,1,||m1.ad.10010.com^,||m1.ad.10010.com^ [block_below_exception],high,"Static overlap only; exception precedence may allow matching names. Review evidence, scope and real-client behavior before changing the rule."
+@@||ad.abchina.com^,ad.abchina.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||ad.kazakinfo.com^,ad.kazakinfo.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||ad.ourgame.com^,ad.ourgame.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||adcdn.pingan.com^,adcdn.pingan.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||advert.kf5.com^,advert.kf5.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||api.ads.tvb.com^,api.ads.tvb.com,1,||ads.tvb.com^,||ads.tvb.com^ [exception_below_block],medium,"Static overlap only; exception precedence may allow matching names. Review evidence, scope and real-client behavior before changing the rule."
+@@||app-advertise.zhihuishu.com^,app-advertise.zhihuishu.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||buyad.bi-xenon.cn^,buyad.bi-xenon.cn,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||captcha.su.baidu.com^,captcha.su.baidu.com,0,,,none,No overlap found among the supported blocking rules in this snapshot; this does not establish that the exception is necessary.
+@@||img.ads.tvb.com^,img.ads.tvb.com,1,||ads.tvb.com^,||ads.tvb.com^ [exception_below_block],medium,"Static overlap only; exception precedence may allow matching names. Review evidence, scope and real-client behavior before changing the rule."
