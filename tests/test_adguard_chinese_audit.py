@@ -8,7 +8,7 @@ from tools.audit_adguard_chinese import audit, classify, covered_by_current, loa
 
 class AdGuardChineseAuditTests(unittest.TestCase):
     def test_classification_keeps_contextual_and_page_rules_out_of_dns_candidates(self):
-        self.assertEqual(classify("||ad.example^"), "domain_syntax_other")
+        self.assertEqual(classify("||ad.example^"), "domain_hostname_pattern")
         self.assertEqual(classify("||ad.example^$third-party"), "domain_with_modifier")
         self.assertEqual(classify("||ad.example^$domain=site.example"), "domain_with_modifier")
         self.assertEqual(classify("example.com##.ad"), "cosmetic_or_element")
