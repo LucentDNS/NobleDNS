@@ -43,7 +43,7 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertEqual(len(unsupported), 2)
             self.assertTrue(all("invalid hostname" in item for item in unsupported))
 
-    def test_parent_block_and_exception_precedence(self) -> None
+    def test_parent_block_and_exception_precedence(self) -> None:
         blocks = {"||ads.example.test^", "||example.test^"}
         exceptions = {"@@||safe.example.test^"}
         self.assertEqual(scorer.decide("cdn.ads.example.test", blocks, exceptions)[0], "block")
