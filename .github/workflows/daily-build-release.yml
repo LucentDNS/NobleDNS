@@ -515,6 +515,7 @@ jobs:
             dist/parser-exclusions.csv \
             dist/syntax-audit.json \
             dist/syntax-review.csv \
+            dist/exception-overlap-audit.csv \
             LICENSE \
             THIRD-PARTY-NOTICES.md \
             licenses/GPL-3.0.txt \
