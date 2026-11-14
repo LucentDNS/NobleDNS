@@ -41,7 +41,7 @@ DNS 过滤只是网络防护的一环，无法拦截所有广告，尤其是第�
 2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt)：均衡型通用 DNS 防护。
 3. [AWAvenue 秋风规则（AdGuard 纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt)：针对 App 与智能设备广告场景的专项补充。
 
-NobleDNS 只采用 AWAvenue 的纯广告版本，不引入其更广泛的隐私或“不受欢迎”类别，避免把遥测、推送、更新等独立类别一并混入。构建器只保留受支持的简单 DNS 域名规则；通配符及其他不支持的语法会记录原因并排除。NobleDNS 独立维护自身构建流程，与任何上游项目均无隶属或背书关系。
+NobleDNS 只采用 AWAvenue 的纯广告版本，不引入其更广泛的隐私或“不受欢迎”类别，避免把遥测、推送、更新等独立类别一并混入。构建器保留受支持的 AdGuard DNS 主机名规则，包括具有固定域名后缀的通配符规则和 `$important` 修饰符；对不支持或语义不明确的语法则记录原因并排除，不擅自改写。NobleDNS 独立维护自身构建流程，与任何上游项目均无隶属或背书关系。
 
 正式订阅由配置来源中成功解析且受支持的规则构成。对于不支持或复杂的语法，构建器会予以排除，而不是猜测含义或擅自改写。主订阅还包含解析器接受的简单上游例外规则；这些规则可能在兼容客户端中覆盖匹配的封禁规则。规则出现在上游列表中只能证明其来源，不能证明例外确有必要或范围恰当。当前正式构建继承的 11 条例外仍标记为 pending，尚未经过 NobleDNS 独立批准；具体状态见[例外规则审核登记册](data/exception-review.csv)。当前生效的例外规则也会单独列出，供用户检查。
 
