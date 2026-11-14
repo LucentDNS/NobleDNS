@@ -120,7 +120,7 @@ class ConfigTests(unittest.TestCase):
             p = Path(td) / "manifest.json"
             p.write_text(json.dumps({"sources":{"adguard_dns":{"simple_block_rules":100}}}))
             with self.assertRaises(RuntimeError):
-                mod.check_drift({"adguard_dns":{"simple_block_rules":130}}, set(), p, 15.0)
+                mod.check_drift({"adguard_dns":{"supported_block_rules":130}}, set(), p, 15.0)
 
     def test_drift_gate_blocks_large_rule_set_delta(self):
         import tempfile, json
