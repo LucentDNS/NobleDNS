@@ -15,9 +15,10 @@ These rules are not automatically invalid and are not rewritten. However, unlike
 - Source attribution: **69/69 matched to the AdGuard DNS Filter snapshot**
 - Critical-service sentinels checked: **72**
 - Matches against the current essential-service sentinel set: **0**
+- Matches against the 100-domain HTTP Archive third-party discovery seed: **0**
 - Production rules modified: **0**
 
-The 72 sentinels cover mainland banks and payments, telecom carriers, government services, mainstream applications, and operating-system/update domains. They are a small curated regression set, not a comprehensive inventory of all critical hostnames.
+The 72 sentinels cover mainland banks and payments, telecom carriers, government services, mainstream applications, and operating-system/update domains. They are a small curated regression set, not a comprehensive inventory of all critical hostnames. A separate diagnostic scan also found zero overlaps with the 100-domain HTTP Archive third-party discovery seed; those domains are discovery candidates, not ground truth, so this zero is not a compatibility or efficacy result.
 
 ## Interpretation and limitations
 
