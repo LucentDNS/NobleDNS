@@ -7,7 +7,7 @@
 
 The 69 bare-anchor rules are inherited from the AdGuard DNS Filter. The automated 69-by-72 essential-service sentinel check currently reports no hits, but it cannot cover every app-specific hostname or distinguish telemetry from required application dependencies.
 
-A public-evidence pass has identified 12 hostnames requiring targeted investigation. Four are P0 because of potential payment, sign-up, device-component or static-resource impact; eight are medium-priority workflow checks. These are investigation priorities, not findings that the rules are incorrect.
+A public-evidence pass has identified 17 hostnames requiring targeted investigation. Four are P0 because of potential payment, sign-up, device-component or static-resource impact; 13 are medium-priority workflow checks. These are investigation priorities, not findings that the rules are incorrect.
 
 | Rule | Source line | Priority | Evidence signal | Required workflow |
 |---|---:|---|---|---|
@@ -20,6 +20,11 @@ A public-evidence pass has identified 12 hostnames requiring targeted investigat
 | `||ats.gmarket.co.kr` | 15186 | Medium | Listed in AdGuard's first-party tracking section | Gmarket account, search, cart, checkout, order and payment |
 | `||datadog-log.clovergames.io` | 15234 | Medium | Listed in AdGuard's first-party tracking section | Clover Games login, gameplay, purchases and account recovery |
 | `||taplytics-umami.grubhub.com` | 16203 | Medium | Listed in AdGuard's first-party tracking section | Grubhub browsing, cart, checkout, order status and account |
+| `||api-ad-callback.mobiuspace.net` | 11625 | Medium | Exact hostname is in AdGuard MobileFilter adservers section | Identify querying apps; core actions and rewarded-ad-dependent features |
+| `||api.cloudmobi.net` | 11856 | Medium | Exact hostname is in AdGuard MobileFilter adservers section | Identify querying apps; core workflows and ad-dependent features |
+| `||analysis.polarisoffice.com` | 19279 | Medium | Exact hostname is in AdGuard mobile spyware section and a separate mobile spyware list | Polaris Office sign-in, cloud sync, open/save and collaboration |
+| `||track.datescan.info` | 18038 | Medium | Exact hostname is in AdGuard first-party tracking section | Identify embedding site/app; test core user journey |
+| `||events-proxy.mintlify.com` | 184755 | Medium | Public request trace records it on a documentation page; request semantics remain unknown | Documentation load, search, navigation and feedback |
 
 Machine-readable evidence, source URLs, limitations and statuses are recorded in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv).
 
@@ -79,6 +84,43 @@ The exact hostname appears in multiple public mobile-ad lists. These lists may s
 
 Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
 
+
+### Mobiuspace ad callback and CloudMobi ad endpoint
+
+- AdGuard MobileFilter adservers section: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
+- Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
+
+AdGuard's current mobile adservers section contains both exact hostnames, `api-ad-callback.mobiuspace.net` and `api.cloudmobi.net`. This is stronger purpose evidence than an unverified domain-name guess. It still does not identify all apps using them or prove that app state, rewarded-ad flows or other functions are unaffected.
+
+Required test: identify apps that actually query each host, then test app cold start, sign-in, core actions, rewarded-ad-dependent features and recovery with the exact rule toggled.
+
+### Polaris Office analysis endpoint
+
+- AdGuard mobile spyware section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
+- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileSpyware.txt
+- Older AdAway snapshot: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
+
+The exact hostname is present in AdGuard's mobile spyware section and a separate mobile spyware list. This strengthens the tracking/analytics hypothesis, but does not prove that Polaris Office login, cloud sync, document open/save or collaboration is independent of it.
+
+Required test: Polaris Office sign-in, cloud sync, open/save, collaboration and account recovery with the exact rule toggled.
+
+### Datescan tracking endpoint
+
+- AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+
+The exact hostname is included in AdGuard's first-party tracking section. This supports a tracking classification, but the current evidence does not identify the embedding application or establish whether it shares a first-party operational workflow.
+
+Required test: identify the site/app issuing the query from DNS logs and test its complete core journey with the rule toggled.
+
+### Mintlify events proxy
+
+- URL-query report: https://urlquery.net/report/41b47938-f11c-4a58-a1fa-9f0f471f8852
+- Current subdomain observation: https://supax.online/findings?all=1&domain=mintlify.com
+
+A public report of a Claude documentation page records a request to `events-proxy.mintlify.com`, and a current subdomain enumeration confirms the host exists. This establishes observed use, not the payload's purpose. It may be analytics/event collection, but the evidence is insufficient to label it confidently or claim blocking is harmless.
+
+Required test: documentation page load, navigation, search, feedback and any embedded interactive elements with the exact rule toggled.
+
 ### AdsWizz delivery endpoint
 
 - Official SDK documentation: https://docs.sdk.adswizz.com/web/index.html
@@ -123,4 +165,4 @@ This source supports a first-party tracking/analytics classification for the exa
 - If the hostname has mixed use, prefer a narrower rule or no block over knowingly breaking a core user task.
 - Keep every entry unresolved until the required tests and independent review are available.
 
-The 12 entries are a prioritized slice of the 69-rule inventory, not a claim that the other 57 domains have been cleared. Production blocking rules remain unchanged.
+The 17 entries are a prioritized slice of the 69-rule inventory, not a claim that the other 52 domains have been cleared. Production blocking rules remain unchanged.
