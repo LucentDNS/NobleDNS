@@ -9,7 +9,7 @@ from pathlib import Path
 import idna
 
 PSL_COMMIT = "c3a53eed2cc49353c5fb5c30536186795d5c451b"
-PSL_SHA256 = "a078bef78fa2c8b5e09c41b44669f7403e0afceca21a3144c2a9f98872b26be6"
+PSL_SHA256 = "7379dee58164b5f7cda5e37f2cc85b3d1754245dc313178eef5cbdcaca758650"
 PSL_PATH = Path(__file__).resolve().parents[1] / "data" / "public_suffix_list.dat"
 
 
