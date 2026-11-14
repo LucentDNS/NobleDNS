@@ -344,7 +344,7 @@ jobs:
               for key, value in new["sources"].items()
           }
 
-          expected_source_keys = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
+          expected_source_keys = {"adguard_dns", "hagezi_multi_pro", "hagezi_tif_mini", "awavenue_ads"}
           if set(new_sources) != expected_source_keys:
               raise ValueError("Build requires exactly the four approved source hashes")
 
