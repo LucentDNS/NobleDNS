@@ -6,13 +6,13 @@ The stable subscription URL is:
 
 `https://raw.githubusercontent.com/LucentDNS/NobleDNS/main/dist/dns-filter.txt`
 
-Validated daily builds update the subscription on the default branch. GitHub Releases are reserved for immutable, human-readable SemVer product versions (`vMAJOR.MINOR.PATCH`). Daily builds do not create hash-named Releases. Existing SemVer releases are not rewritten.
+Validated scheduled builds update the subscription on the default branch. GitHub Releases are reserved for immutable, human-readable SemVer product versions (`vMAJOR.MINOR.PATCH`). Scheduled builds do not create hash-named Releases. Existing SemVer releases are not rewritten.
 
 To publish a new product version, update `VERSION_BASE` in `update.py` and add the matching dated entry to `CHANGELOG.md` in the same reviewed change.
 
-## Daily schedule
+## 8-hour schedule
 
-The scheduled GitHub Actions run starts at 18:23 UTC (02:23 China Standard Time). GitHub may delay scheduled workflows during periods of high load. For an immediate run, use Actions → NobleDNS daily build and release → Run workflow.
+The scheduled GitHub Actions workflow runs three times daily: 18:23, 02:23 and 10:23 UTC (02:23, 10:23 and 18:23 China Standard Time, UTC+8). This matches the 8-hour expiry declared by HaGeZi TIF Mini. GitHub may delay scheduled workflows during periods of high load. For an immediate run, use Actions → NobleDNS scheduled build and release → Run workflow.
 
 ## Failure behavior
 
