@@ -7,7 +7,7 @@ from pathlib import Path
 SOURCE_FIELDS=["request_domain","pages_seen_on","share_of_pages","requests_total","requests_setting_cookies","cookie_setting_request_share"]
 TRIAGE_FIELDS=SOURCE_FIELDS+["owner","owner_category","preliminary_lane","evidence","review_status","review_note"]
 LANES={"adtech_candidate","functional_control","mixed_or_contextual","unmapped"}
-HOST_RE=re.compile(r"(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}\\Z")
+HOST_RE=re.compile(r"(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}\\Z")
 def read_csv(path:Path,fields:list[str])->list[dict[str,str]]:
     with path.open(encoding="utf-8-sig",newline="") as f:
         reader=csv.DictReader(f)
@@ -55,7 +55,7 @@ def main():
     try:
         counts,errors=validate(a.source,a.triage)
         if errors:
-            print("Benchmark discovery integrity validation failed:",file=sys.stderr);print("\\n".join(errors),file=sys.stderr);return 1
+            print("Benchmark discovery integrity validation failed:",file=sys.stderr);print("\n".join(errors),file=sys.stderr);return 1
         print(f"Validated {sum(counts.values())} discovery rows; preliminary lanes: {dict(sorted(counts.items()))}")
         print("LIMITATION: integrity only; no domain is approved or scored as block/allow ground truth.")
         return 0
