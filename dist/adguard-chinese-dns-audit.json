@@ -1,0 +1,31 @@
+{
+  "audit": "AdGuard Chinese DNS-scope audit",
+  "status": "AUDIT_ONLY_NO_SOURCE_INTEGRATION",
+  "source_url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt",
+  "source_repository": "AdguardTeam/FiltersRegistry",
+  "source_path": "filters/filter_224_Chinese/filter.txt",
+  "source_bytes": 758767,
+  "source_sha256": "acba900510ad8403977fb2c96a82e85d8cedfce88e5ccf37341008ae94034c2a",
+  "source_lines": 22068,
+  "current_subscription_sha256": "635d5fcab5605459f5d1df59911de26dde5e6f218b2ce5acd9ed812e03cece47",
+  "classification_counts": {
+    "cosmetic_or_element": 7657,
+    "domain_hostname_pattern": 5959,
+    "domain_wildcard": 829,
+    "domain_with_modifier": 703,
+    "exception": 1153,
+    "invalid_or_non_hostname_domain_syntax": 8,
+    "other": 128,
+    "other_domain_syntax": 3103,
+    "url_or_regex": 819
+  },
+  "candidate_count": 5959,
+  "candidate_coverage_count": 5954,
+  "candidate_not_covered_count": 5,
+  "limitations": [
+    "A syntactically simple hostname rule is only a DNS-syntax candidate, not proof that global DNS blocking is safe.",
+    "The source contains browser-context, platform, first-party and exception semantics that this static audit does not resolve.",
+    "Coverage is a conservative suffix/wildcard comparison; it is not a full emulation of every AdGuard client matching edge case.",
+    "No candidate is approved or added to the public subscription by this tool."
+  ]
+}
