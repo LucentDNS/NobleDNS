@@ -82,9 +82,9 @@ Configuration file:
 
 `config/sources.json`
 
-Current rule limit:
+Capacity control:
 
-`500,000`
+Rule capacity is enforced by build configuration and automated gates. Any change must account for client capacity, build resources and update risk.
 
 Do not add, remove, or replace an upstream source without a complete evaluation.
 
@@ -153,7 +153,7 @@ Pay particular attention to these files:
 
 In particular, verify that:
 
-- The total rule count does not exceed 500,000.
+- The total rule count remains within the capacity configured for the build.
 - All four configured upstream sources were fetched successfully.
 - Source rule counts have not changed unexpectedly.
 - Addition and removal ratios are reasonable.
@@ -247,7 +247,7 @@ Pause the build-and-release process and investigate if any of the following occu
 - Incomplete upstream downloads.
 - Invalid UTF-8 encoding.
 - Invalid output rules.
-- A total rule count above 500,000.
+- A total rule count above the capacity configured for the build.
 
 Only after confirming that the upstream changes are genuine and reasonable, and completing a rule-difference review, may a maintainer manually override the drift checks:
 
