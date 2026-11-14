@@ -72,7 +72,7 @@ class CompressionTests(unittest.TestCase):
         self.assertEqual(
             [(row["removed_rule"], row["covered_by"]) for row in audit],
             [("||ads.example.com^", "||example.com^"),
-             ("||deep.ads.example.com^", "||ads.example.com^")],
+             ("||deep.ads.example.com^", "||example.com^")],
         )
 
     def test_public_suffix_never_becomes_compression_parent(self):
