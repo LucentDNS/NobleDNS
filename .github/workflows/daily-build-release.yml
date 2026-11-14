@@ -312,9 +312,9 @@ jobs:
               for key, value in new["sources"].items()
           }
 
-          expected_source_keys = {"adguard_dns", "hagezi_normal"}
+          expected_source_keys = {"adguard_dns", "hagezi_normal", "awavenue_ads"}
           if set(new_sources) != expected_source_keys:
-              raise ValueError("Build requires exactly the two approved source hashes")
+              raise ValueError("Build requires exactly the three approved source hashes")
 
           if len(new_hash) != 64 or any(len(value) != 64 for value in new_sources.values()):
               raise ValueError("Invalid SHA256 length in build manifest")
