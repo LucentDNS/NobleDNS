@@ -18,7 +18,7 @@ Legacy compatibility URL: `https://raw.githubusercontent.com/LucentDNS/NobleDNS/
 
 ## Our priorities
 
-- **Measured blocking:** rule scope and potential impact matter more than raw rule counts.
+- **Conservative filtering:** rule scope and potential impact matter more than raw rule counts.
 - **Compatibility first:** sign-in, payments, banking, communications, push notifications, maps, video and software updates are important review areas.
 - **Transparent sources:** upstreams, build manifests, syntax audits and parser exclusions are published.
 - **Automated maintenance:** sources are refreshed and builds are checked regularly, with safeguards for unusual changes.
@@ -80,4 +80,4 @@ A domain's presence in the subscription identifies it only as a DNS filtering ta
 
 ---
 
-The builder and regression tests use the Python standard library. Python 3.12 is required for maintenance; see the [maintainer guide](docs/MAINTAINER-GUIDE.md).
+Maintenance requires Python 3.12 and the pinned `idna==3.20` dependency in `requirements.txt`; see the [maintainer guide](docs/MAINTAINER-GUIDE.md).

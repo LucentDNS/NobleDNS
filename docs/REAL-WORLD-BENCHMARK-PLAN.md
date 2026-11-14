@@ -19,12 +19,11 @@ A result in one category must never be presented as proof in another. A successf
 
 Run the same test corpus against, at minimum:
 - NobleDNS Balanced (exact published commit and SHA-256).
-- AdGuard DNS Filter (exact downloaded snapshot and SHA-256).
-- HaGeZi Multi PRO and Multi Normal as separate snapshots (both are production inputs; neither is a substitute for the other).
+- The four production upstream snapshots for attribution: HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, and AWAvenue Ads Rule (Only Ads).
 - OISD Big (`https://big.oisd.nl/`; exact downloaded snapshot and SHA-256).
 - anti-AD AdGuard edition (`https://anti-ad.net/adguard.txt`; exact downloaded snapshot and SHA-256). Do not substitute anti-AD's AdGuard Home `easylist.txt`, which uses a different and broader rule grammar.
 
-OISD Big and anti-AD AdGuard are independent comparators, not production inputs. HaGeZi Multi PRO and Multi Normal are also tested as isolated snapshots to quantify their individual contributions, but they are already configured production inputs. Do not treat overlapping entries as independent evidence. Record each snapshot's license, upstream notices, format and parser exclusions before scoring. If a comparator cannot be normalized without changing semantics, mark the affected entries unsupported and disclose the exclusions rather than silently simplifying them.
+OISD Big and anti-AD AdGuard are independent comparators, not production inputs. The current production composition is HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter, and AWAvenue Ads-only. HaGeZi Multi Normal is **not** a production input: HaGeZi's Multi tiers are cumulative, so NobleDNS selects PRO as its sole Multi tier rather than stacking Normal and PRO. Multi Normal may appear only in a clearly labeled historical or variant comparison; never count it as a current production source. Do not treat overlapping entries as independent evidence. Record each snapshot's license, upstream notices, format and parser exclusions before scoring. If a comparator cannot be normalized without changing semantics, mark the affected entries unsupported and disclose the exclusions rather than silently simplifying them.
 
 For every run, preserve:
 - Test date/time UTC, operator and test location/network.
@@ -159,7 +158,7 @@ Do not invent numerical pass thresholds before collecting a baseline. Establish 
 
 ## 8. Current evidence and honest status
 
-The first reproducible exact-rule differential was collected on 2026-11-14 against AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard. Its immutable snapshot identities, exact supported-syntax overlap counts, unsupported-line counts and limitations are recorded in [Comparator baseline 2026-11-14](COMPARATOR-BASELINE-2026-11-14.md). This is a useful source-delta inventory, not a real-world efficacy benchmark. It identified 43,435 supported exact HaGeZi PRO block rules absent from NobleDNS v1.0.4. The source has since been added alongside Multi Normal through the reviewed source-migration workflow; those 43,435 exact-string additions were not individually hand-reviewed and must not be described as independently proven safe or effective.
+The first reproducible exact-rule differential was collected on 2026-11-14 against AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard. Its immutable snapshot identities, exact supported-syntax overlap counts, unsupported-line counts and limitations are recorded in [Comparator baseline 2026-11-14](COMPARATOR-BASELINE-2026-11-14.md). This is a useful source-delta inventory, not a real-world efficacy benchmark. The historical comparison identified 43,435 supported exact HaGeZi PRO block rules absent from NobleDNS v1.0.4. The subsequent source consolidation replaced Multi Normal with Multi PRO as the sole HaGeZi Multi tier; HaGeZi TIF Mini was later added as a distinct threat-intelligence supplement. Multi Normal is not part of the current production source set. Those historical exact-string differences were not individually hand-reviewed and must not be described as independently proven safe or effective.
 
 At the time this plan is added:
 - The automated regression corpus contains 72 essential-service hostnames and 20 known advertising-infrastructure hostnames; these are regression sentinels, not a representative independent benchmark.
@@ -188,7 +187,7 @@ The immediate execution sequence is therefore:
 2. Collect independent evidence for each candidate, including observed function and exact hostname scope.
 3. Have a second reviewer adjudicate the proposed labels; leave disputed or insufficiently supported rows unscored.
 4. Populate the reviewed corpus only after the evidence and review fields are complete.
-5. Freeze NobleDNS, AdGuard DNS Filter, HaGeZi Multi PRO, OISD Big and anti-AD AdGuard snapshots and run the scorer; then validate the most consequential findings in actual DNS clients and real application tasks.
+5. Freeze NobleDNS, all four current production-source snapshots (HaGeZi Multi PRO, HaGeZi TIF Mini, AdGuard DNS Filter and AWAvenue Ads-only), plus OISD Big and anti-AD AdGuard comparator snapshots; run the scorer, then validate the most consequential findings in actual DNS clients and real application tasks.
 
 The discovery seed is attributed under CC BY 4.0. See [its provenance and limitations](../benchmark/discovery/README.md) before reuse.
 

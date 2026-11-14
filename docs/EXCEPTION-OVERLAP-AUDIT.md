@@ -2,6 +2,7 @@
 
 > Snapshot: NobleDNS main build from GitHub Actions run 449 (2026-11-14).
 > This is a static scope audit, not a judgment that any exception is justified.
+> This report predates the current source consolidation. The HaGeZi Multi Normal hash below is historical provenance for run #449 only; Multi Normal is not a current production source.
 
 ## Reproducible inputs
 

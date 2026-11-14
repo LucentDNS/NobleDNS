@@ -16,7 +16,7 @@ Missed-block reports should include the exact hostname, page/app context and evi
 
 ## What maintainers do after a report
 
-Routine upstream refreshes are automated by the scheduled build workflow. It runs three times daily (02:23, 10:23 and 18:23 China Standard Time), rebuilds from the four approved sources, runs regression and quality gates, and publishes changed subscription artifacts to the default branch only after validation. Daily data refreshes do not create or retarget immutable SemVer releases.
+Routine upstream refreshes are automated by the scheduled build workflow. It runs three times daily (02:23, 10:23 and 18:23 China Standard Time), rebuilds from the four approved sources, runs regression and quality gates, and publishes changed subscription artifacts to the default branch only after validation. Daily data refreshes update the main-branch subscription only; they do not create or retarget SemVer releases. Published release assets remain point-in-time snapshots and are not refreshed by routine builds.
 
 For users, the intended steady state is simple: report a reproducible issue; maintainers handle verification and correction. A report is not automatically converted into a rule change. The maintainer will:
 

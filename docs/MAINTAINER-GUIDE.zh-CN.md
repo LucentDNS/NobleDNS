@@ -68,13 +68,16 @@ NobleDNS/
 
 ## 3. 当前上游来源
 
-当前固定使用三个互补上游：
+当前固定使用四个互补上游：
 
 | 来源 | 用途 |
 |---|---|
-| AdGuard DNS Filter | DNS 广告与追踪过滤 |
-| HaGeZi Multi Normal | 常规 DNS 广告与追踪过滤 |
-| AWAvenue Ads Rule (Only Ads) | 中国大陆 App / 智能设备广告专项补充；仅使用纯广告版本 |
+| HaGeZi Multi PRO | 通用广告、跟踪与隐私过滤；唯一集成的 HaGeZi Multi 主版本 |
+| HaGeZi TIF Mini | 恶意软件、钓鱼及相关恶意基础设施威胁情报补充 |
+| AdGuard DNS Filter | DNS 层广告与跟踪过滤补充 |
+| AWAvenue Ads Rule (Only Ads) | 广告场景专项补充；仅使用纯广告版本 |
+
+HaGeZi Multi 各级规则是累积关系，因此不并行集成 Multi Normal；TIF Mini 是独立威胁情报补充，不是第二个 Multi 主版本。
 
 配置文件：
 
@@ -96,6 +99,15 @@ NobleDNS/
 - 对构建资源和订阅体积的影响。
 
 ## 4. 日常维护流程
+
+维护环境使用 Python 3.12。安装仓库锁定的依赖：
+
+```powershell
+py -3.12 -m pip install --requirement requirements.txt
+```
+
+当前 `requirements.txt` 固定 `idna==3.20`；构建器并非完全只依赖 Python 标准库。
+
 
 ### 4.1 检查仓库状态
 
@@ -144,7 +156,7 @@ py -3.12 .\update.py --proxy http://127.0.0.1:7897 --out .\build-output --previo
 特别关注：
 
 - 总规则数不得超过 500,000。
-- 三个上游均正常获取。
+- 四个上游均正常获取。
 - 来源规则数量没有异常变化。
 - 新增、删除规则比例合理。
 - 排除原因没有出现异常增长。
@@ -188,7 +200,7 @@ git diff --check
 - 新增规则。
 - 删除规则。
 - 上游来源变化。
-- 两个来源之间的重叠变化。
+- 四个来源之间的重叠变化，包括精确重叠与父子域覆盖关系。
 - 复杂语法排除变化。
 - 前置点规则（`.domain^`、`.domain`）的排除数量变化。
 - 例外规则变化及其是否进入 `allowlist-active.txt`。
@@ -202,7 +214,7 @@ git diff --check
 
 ### 5.1 上游来源规则数量变化
 
-- 分别比较每个上游当前解析出的 `simple_block_rules` 数量与上一份 manifest 中记录的数量。
+- 分别比较每个上游当前解析出的 `supported_block_rules` 数量与上一份 manifest 中记录的数量。
 - 以旧数量为基数计算变化百分比。
 - 任一来源变化超过阈值时，构建失败。
 
@@ -293,11 +305,11 @@ build-output/
 
 每日计划时间：
 
-北京时间 02:23。
+北京时间 02:23、10:23 和 18:23（每 8 小时一次）。
 
 GitHub Actions 使用 UTC，因此 cron 为：
 
-`23 18 * * *`
+`23 2,10,18 * * *`
 
 自动构建失败时，应先检查日志，不要直接反复运行或绕过保护。
 
@@ -426,4 +438,4 @@ NobleDNS 是公开维护的 DNS 过滤规则集。自动构建通过代表构建
 
 ## 14. 上游许可证与免责声明复核
 
-每次正式发布前，都要重新核对四个已配置上游规则源（AdGuard DNS Filter、HaGeZi Multi Normal、HaGeZi Multi PRO、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi Normal 与 Multi PRO 均来自同一上游项目；两个版本都应纳入版本与来源核对，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。
+每次正式发布前，都要重新核对四个实际集成的上游规则源（HaGeZi Multi PRO、HaGeZi TIF Mini、AdGuard DNS Filter、AWAvenue Ads Rule Only Ads）的当前许可证和适用声明。HaGeZi Multi PRO 与 TIF Mini 虽来自同一上游项目，但属于不同规则产品，必须分别核对其用途、版本和适用说明，并阅读[HaGeZi 上游官方免责声明](https://github.com/hagezi/dns-blocklists#disclaimer)。同时核对 AdGuard 与 AWAvenue 各自的许可证及适用声明，并在维护日志中记录复核日期和重要变化。本仓库的第三方声明只是摘要和链接，不能替代上游条款。不能认为仅有 GPL 标识就自动解决了所有第三方输入数据的权利问题。

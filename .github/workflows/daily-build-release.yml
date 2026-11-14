@@ -397,7 +397,7 @@ jobs:
           name: nobledns-build-audit-${{ github.run_number }}
           path: build-output/latest/
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 5
 
   publish:
     name: Publish validated subscription and versioned release
@@ -564,9 +564,9 @@ jobs:
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
 
-      # GitHub Releases are reserved for immutable SemVer product versions.
+      # GitHub Releases are reserved for stable SemVer product-version snapshots.
       # Daily validated subscription updates are published to the main branch only.
-      - name: Publish immutable SemVer release
+      - name: Publish versioned SemVer release
         env:
           GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
         shell: bash
@@ -591,8 +591,8 @@ jobs:
               exit 1
             fi
 
-            echo "Stable version release already exists; leaving it immutable."
-            echo "Daily subscription updates are published on main; this SemVer release remains immutable."
+            echo "Stable version release already exists; leaving its tag and assets unchanged."
+            echo "Daily subscription updates are published on main; this SemVer release remains unchanged by the publisher workflow."
             exit 0
           fi
 
@@ -600,6 +600,12 @@ jobs:
             echo "::error::The version tag exists without a GitHub Release. Refusing to retarget it."
             exit 1
           fi
+
+          NOTES_FILE="$RUNNER_TEMP/nobledns-release-notes.md"
+          python tools/extract_release_notes.py \
+            --changelog CHANGELOG.md \
+            --version "$VERSION" \
+            --output "$NOTES_FILE"
 
           gh release create "$VERSION_TAG" \
             dist/dns-filter.txt \
@@ -619,4 +625,4 @@ jobs:
             licenses/GPL-3.0.txt \
             --target "$(git rev-parse HEAD)" \
             --title "NobleDNS $VERSION" \
-            --notes-file CHANGELOG.md
+            --notes-file "$NOTES_FILE"
