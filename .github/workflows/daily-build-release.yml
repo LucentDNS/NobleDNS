@@ -82,6 +82,7 @@ jobs:
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
+          test -s licenses/MPL-2.0.txt
 
           cmp -s LICENSE licenses/GPL-3.0.txt
 
@@ -231,11 +232,13 @@ jobs:
           test -s "$OUT/LICENSE"
           test -s "$OUT/THIRD-PARTY-NOTICES.md"
           test -s "$OUT/licenses/GPL-3.0.txt"
+          test -s "$OUT/licenses/MPL-2.0.txt"
           test -s "$OUT/sources/sources-manifest.json"
 
           cmp -s LICENSE "$OUT/LICENSE"
           cmp -s THIRD-PARTY-NOTICES.md "$OUT/THIRD-PARTY-NOTICES.md"
           cmp -s licenses/GPL-3.0.txt "$OUT/licenses/GPL-3.0.txt"
+          cmp -s licenses/MPL-2.0.txt "$OUT/licenses/MPL-2.0.txt"
 
           python - <<'PY'
           import json
@@ -555,6 +558,7 @@ jobs:
           test -s LICENSE
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
+          test -s licenses/MPL-2.0.txt
 
       # GitHub Releases are reserved for stable SemVer product-version snapshots.
       # Daily validated subscription updates are published to the main branch only.
@@ -617,6 +621,7 @@ jobs:
             LICENSE \
             THIRD-PARTY-NOTICES.md \
             licenses/GPL-3.0.txt \
+            licenses/MPL-2.0.txt \
             --target "$(git rev-parse HEAD)" \
             --title "NobleDNS $VERSION" \
             --notes-file "$NOTES_FILE"
