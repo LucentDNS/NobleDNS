@@ -10,6 +10,12 @@ All notable changes to NobleDNS are documented here.
 ## Unreleased
 
 ### Added
+- Add HaGeZi Multi PRO as a fourth production input while retaining HaGeZi Multi Normal; the one-time source migration is narrowly exempted from the ordinary drift gate, which automatically resumes after the new baseline is published.
+- Document the DNS-layer complementarity boundary with AdGuard's official filter categories: NobleDNS does not claim to replace page-element, URL-modification or annoyance filters.
+- Add source-count, URL, license and subscription-header regression checks for the four-source composition.
+
+
+### Added
 - Add the dedicated AWAvenue Ads-only AdGuard DNS source as a focused app/smart-device advertising complement.
 - Preserve documented AdGuard DNS wildcard hostname patterns with a static suffix and the `$important` modifier instead of discarding these supported rules.
 - Add generated-subscription regression gates for 72 essential-service hostnames and 20 known advertising-infrastructure hostnames.
