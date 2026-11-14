@@ -208,14 +208,14 @@ class BenchmarkDiscoveryIntegrityTests(unittest.TestCase):
         validator = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(validator)
         source_row = {"request_domain":"ads.example.com","pages_seen_on":"100","share_of_pages":"0.1","requests_total":"200","requests_setting_cookies":"50","cookie_setting_request_share":"0.25"}
-        triage_row = {"domain":source_row["request_domain"],**{k:v for k,v in source_row.items() if k != "request_domain"},"owner":"Example Ads","owner_category":"ads","preliminary_lane":"adtech_candidate","evidence":"https://example.com/source","review_status":"primary_triage_only","review_note":"Not approved for blocking; domain-level review required."}
+        triage_row = {"domain":source_row["request_domain"],**{k:v for k,v in source_row.items() if k != "request_domain"},"owner":"Example Ads","owner_category":"ads","preliminary_lane":"ads_owner_review","evidence":"https://example.com/source","review_status":"primary_triage_only","review_note":"Not approved for blocking; domain-level review required."}
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             source=self._write(root,"source.csv",validator.SOURCE_FIELDS,[source_row])
             triage=self._write(root,"triage.csv",validator.TRIAGE_FIELDS,[triage_row])
             counts,errors=validator.validate(source,triage)
         self.assertEqual(errors,[])
-        self.assertEqual(counts["adtech_candidate"],1)
+        self.assertEqual(counts["ads_owner_review"],1)
 
     def test_tampered_metrics_and_incorrect_lane_are_rejected(self) -> None:
         import importlib.util
@@ -223,7 +223,7 @@ class BenchmarkDiscoveryIntegrityTests(unittest.TestCase):
         validator = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(validator)
         source_row = {"request_domain":"cdn.example.com","pages_seen_on":"100","share_of_pages":"0.1","requests_total":"200","requests_setting_cookies":"50","cookie_setting_request_share":"0.25"}
-        triage_row = {"domain":source_row["request_domain"],**{k:v for k,v in source_row.items() if k != "request_domain"},"share_of_pages":"0.9","owner":"Example CDN","owner_category":"infra","preliminary_lane":"adtech_candidate","evidence":"https://example.com/source","review_status":"primary_triage_only","review_note":"Not approved for blocking."}
+        triage_row = {"domain":source_row["request_domain"],**{k:v for k,v in source_row.items() if k != "request_domain"},"share_of_pages":"0.9","owner":"Example CDN","owner_category":"infra","preliminary_lane":"ads_owner_review","evidence":"https://example.com/source","review_status":"primary_triage_only","review_note":"Not approved for blocking."}
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             source=self._write(root,"source.csv",validator.SOURCE_FIELDS,[source_row])
