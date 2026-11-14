@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-14 — HaGeZi tier consolidation
+
+- Remove HaGeZi Multi Normal from production inputs; Multi PRO is the sole HaGeZi Multi tier, following HaGeZi's cumulative-tier guidance.
+- Retain AdGuard DNS Filter as an independently audited supplemental source, not as an AdGuard-client compatibility requirement.
+- Keep AWAvenue Ads-only as the focused advertising supplement. Update source validation, licensing notices, workflow migration checks, and documentation to the three-source policy.
+
 All notable changes to NobleDNS are documented here.
 
 ## [1.0.4] - 2026-11-14

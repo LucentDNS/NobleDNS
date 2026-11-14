@@ -20,7 +20,7 @@ FILTER_HEADER = (
     "! Homepage: https://github.com/LucentDNS/NobleDNS\n"
     f"! Version: {VERSION_BASE}\n"
     "! Expires: 1 day\n"
-    "! Sources: AdGuard DNS Filter, HaGeZi Multi Normal, HaGeZi Multi PRO, AWAvenue Ads Rule (Only Ads)\n"
+    "! Sources: HaGeZi Multi PRO, AdGuard DNS Filter, AWAvenue Ads Rule (Only Ads)\n"
     "! License: GPL-3.0-only (code); upstream rule data: GPL-3.0 (see THIRD-PARTY-NOTICES; third-party rights may apply).\n"
     "! Content: Listed domains are included as blocking targets only.\n"
 )
@@ -64,11 +64,6 @@ UPSTREAM_LICENSES = {
         "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
         "basis": "upstream project license; third-party rights may apply",
     },
-    "hagezi_normal": {
-        "spdx": "GPL-3.0",
-        "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
-        "basis": "upstream project license; third-party input terms may apply",
-    },
     "hagezi_multi_pro": {
         "spdx": "GPL-3.0",
         "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
@@ -101,7 +96,6 @@ def validate_licensing_files() -> None:
     notices = THIRD_PARTY_NOTICES_PATH.read_text(encoding="utf-8-sig")
     required_notice_terms = (
         "AdGuard DNS Filter",
-        "HaGeZi Multi Normal",
         "HaGeZi Multi PRO",
         "AWAvenue Ads Rule (Only Ads)",
         "GPL-3.0",
@@ -121,15 +115,14 @@ def load_config(path: Path = CONFIG_PATH) -> dict:
     if cfg.get("project") != PROJECT:
         raise ValueError("config project must be NobleDNS")
     sources = cfg.get("sources")
-    if not isinstance(sources, list) or len(sources) != 4:
-        raise ValueError("Exactly four approved upstream sources are required")
+    if not isinstance(sources, list) or len(sources) != 3:
+        raise ValueError("Exactly three approved upstream sources are required")
     keys = [x.get("key") for x in sources]
-    approved = {"adguard_dns", "hagezi_normal", "hagezi_multi_pro", "awavenue_ads"}
+    approved = {"adguard_dns", "hagezi_multi_pro", "awavenue_ads"}
     if set(keys) != approved or len(set(keys)) != len(approved):
-        raise ValueError("Only the approved AdGuard DNS Filter, HaGeZi Multi Normal, HaGeZi Multi PRO and AWAvenue Ads-only sources are allowed")
+        raise ValueError("Only the approved HaGeZi Multi PRO, AdGuard DNS Filter and AWAvenue Ads-only sources are allowed")
     expected = {
         "adguard_dns": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-        "hagezi_normal": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt",
         "hagezi_multi_pro": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
         "awavenue_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt",
     }

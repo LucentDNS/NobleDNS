@@ -4,24 +4,18 @@
   "max_rules": 500000,
   "sources": [
     {
-      "key": "adguard_dns",
-      "name": "AdGuard DNS Filter",
-      "filename": "adguard_dns.txt",
-      "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
-    },
-    {
-      "key": "hagezi_normal",
-      "name": "HaGeZi Multi Normal",
-      "filename": "hagezi_normal.txt",
-      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt"
-    },
-    {
       "key": "hagezi_multi_pro",
       "name": "HaGeZi Multi PRO",
       "filename": "hagezi_multi_pro.txt",
       "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
       "min_bytes": 1000000,
       "min_rules": 100000
+    },
+    {
+      "key": "adguard_dns",
+      "name": "AdGuard DNS Filter",
+      "filename": "adguard_dns.txt",
+      "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
     },
     {
       "key": "awavenue_ads",
