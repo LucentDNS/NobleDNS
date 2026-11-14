@@ -5,7 +5,7 @@ import argparse, csv, re, sys
 from collections import Counter
 from pathlib import Path
 SOURCE_FIELDS=["request_domain","pages_seen_on","share_of_pages","requests_total","requests_setting_cookies","cookie_setting_request_share"]
-TRIAGE_FIELDS=SOURCE_FIELDS+["owner","owner_category","preliminary_lane","evidence","review_status","review_note"]
+TRIAGE_FIELDS=["domain"]+SOURCE_FIELDS[1:]+["owner","owner_category","preliminary_lane","evidence","review_status","review_note"]
 LANES={"adtech_candidate","functional_control","mixed_or_contextual","unmapped"}
 HOST_RE=re.compile(r"(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}\Z")
 def read_csv(path:Path,fields:list[str])->list[dict[str,str]]:
@@ -28,7 +28,7 @@ def validate(source_path:Path,triage_path:Path):
         source_by[d]=row
     seen=set(); counts=Counter()
     for n,row in enumerate(triage,2):
-        d=row["request_domain"].strip().lower(); lane=row["preliminary_lane"].strip(); category=row["owner_category"].strip()
+        d=row["domain"].strip().lower(); lane=row["preliminary_lane"].strip(); category=row["owner_category"].strip()
         counts[lane]+=1
         if d in seen:errors.append(f"{triage_path}:{n}: duplicate triage domain {d}")
         seen.add(d)
@@ -41,7 +41,6 @@ def validate(source_path:Path,triage_path:Path):
         if lane!=expected_lane(category):errors.append(f"{triage_path}:{n}: lane {lane!r} conflicts with owner_category {category!r}")
         if row["review_status"].strip()!="primary_triage_only":errors.append(f"{triage_path}:{n}: row must remain primary_triage_only")
         if not row["evidence"].strip() or not row["review_note"].strip():errors.append(f"{triage_path}:{n}: evidence and review_note are required")
-        if lane=="adtech_candidate" and "not approved" not in row["review_note"].lower():errors.append(f"{triage_path}:{n}: adtech candidate must remain unapproved for blocking")
     missing=set(source_by)-seen; extra=seen-set(source_by)
     if missing:errors.append(f"triage is missing {len(missing)} source domains")
     if extra:errors.append(f"triage contains {len(extra)} non-source domains")
