@@ -19,7 +19,7 @@ class BenchmarkScorerTests(unittest.TestCase):
     def test_file_identity_records_size_and_sha256(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"
-            data = b"||ads.example.test^\\n"
+            data = b"||ads.example.test^\n"
             path.write_bytes(data)
             identity = scorer.file_identity(path)
             self.assertEqual(identity["bytes"], len(data))
@@ -34,7 +34,7 @@ class BenchmarkScorerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"
             path.write_text(
-                "||127.0.0.1^\\n||999.999.999.999^\\n||ads.example.test^\\n",
+                "||127.0.0.1^\n||999.999.999.999^\n||ads.example.test^\n",
                 encoding="utf-8",
             )
             blocks, exceptions, unsupported = scorer.load_rules(path)
