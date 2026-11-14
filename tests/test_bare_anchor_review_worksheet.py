@@ -46,13 +46,13 @@ class BareAnchorReviewWorksheetTests(unittest.TestCase):
             audit = Path(tmp) / "audit.csv"
             worksheet = Path(tmp) / "worksheet.csv"
             audit.write_text(
-                "rule,source,source_line_numbers,essential_match_count,essential_matches,review_status,interpretation\\n"
-                "||example.test,adguard_dns,999,0,,manual_hostname_review_required,No hit\\n",
+                "rule,source,source_line_numbers,essential_match_count,essential_matches,review_status,interpretation\n"
+                "||example.test,adguard_dns,999,0,,manual_hostname_review_required,No hit\n",
                 encoding="utf-8",
             )
             worksheet.write_text(
-                "rule,source,source_line,review_priority,hostname_cue,classification,evidence_status,decision,reviewer,independent_reviewer,notes\\n"
-                "||example.test,adguard_dns,12,P2,none,unclassified,not_reviewed,pending,,,,\\n",
+                "rule,source,source_line,review_priority,hostname_cue,classification,evidence_status,decision,reviewer,independent_reviewer,notes\n"
+                "||example.test,adguard_dns,12,P2,none,unclassified,not_reviewed,pending,,,,\n",
                 encoding="utf-8",
             )
             _, errors = module.validate(audit, worksheet)
