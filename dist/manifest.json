@@ -1,9 +1,9 @@
 {
   "project": "NobleDNS",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T05:05:45.494662+00:00",
+  "built_at_utc": "2026-11-14T05:16:23.779407+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -45,18 +45,18 @@
       "license_basis": "upstream project license; third-party rights may apply",
       "bytes": 4678883,
       "sha256": "0ab3e6393db16f26343dc0cd66060366418b3c6713fd4639e06ff11a38b49174",
-      "simple_block_rules": 190534,
+      "supported_block_rules": 190894,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
-        "wildcard_syntax": 405,
         "regex_or_path_syntax": 21,
         "other_anchor_syntax": 90,
+        "wildcard_syntax": 48,
         "unsupported_leading_dot_dns_syntax": 28,
-        "modifier_important": 5,
         "other_modifier": 7,
         "modifier_badfilter": 5,
         "other_syntax": 53,
+        "modifier_important": 2,
         "single_label_not_fqdn": 1,
         "other_exception_syntax": 195
       }
@@ -69,7 +69,7 @@
       "license_basis": "upstream project license; third-party input terms may apply",
       "bytes": 4938559,
       "sha256": "8efb755163dfdb32ce1058a8b8402bbc779ea19ea44b9b310f508bf256ed8b26",
-      "simple_block_rules": 211014,
+      "supported_block_rules": 211014,
       "simple_exception_rules": 0,
       "excluded_lines_by_reason": {}
     },
@@ -81,14 +81,14 @@
       "license_basis": "upstream project license; only the dedicated Ads-only AdGuard variant is used",
       "bytes": 16004,
       "sha256": "f4b660efb332b59960d7c8f2313db2c42af347f41d28c24c0834713bc7809928",
-      "simple_block_rules": 658,
+      "supported_block_rules": 658,
       "simple_exception_rules": 0,
       "excluded_lines_by_reason": {
         "wildcard_syntax": 4
       }
     }
   },
-  "blocking_rules": 306464,
+  "blocking_rules": 306824,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
     "adguard_dns": 11,
@@ -101,28 +101,49 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 306475,
+  "main_subscription_rules": 306835,
   "common_rules": 71,
   "source_only_rules": {
-    "adguard_dns": 95230,
+    "adguard_dns": 95590,
     "hagezi_normal": 115366,
     "awavenue_ads": 197
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "1c529528ed9f7b7cc354e22ef92cd5371e88f26082e0d59d20ae736f4a4e695a",
+  "main_subscription_sha256": "e5a554c526e2e77db8dc4b875cf4066dd9e4a0985debc0dbd11a7dc93cbd5479",
   "syntax_audit": {
-    "total": 306464,
+    "total": 306824,
     "forms": {
+      "domain_and_subdomains_wildcard": 355,
+      "domain_and_subdomains_important": 3,
       "domain_and_subdomains": 306395,
-      "domain_anchor_without_end_boundary": 69
+      "domain_anchor_without_end_boundary": 71
     },
     "semantics": {
+      "domain_and_subdomains_wildcard": "Preserves a supported AdGuard hostname wildcard pattern unchanged; dynamic public suffixes are excluded.",
+      "domain_and_subdomains_important": "Blocks the matching hostname scope with AdGuard's documented important priority modifier.",
       "domain_and_subdomains": "Blocks the domain and all subdomains.",
       "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains."
     },
-    "review_required": 69,
+    "review_required": 71,
     "examples": {
+      "domain_and_subdomains_wildcard": [
+        "||*-datareceiver.aki-game.net^",
+        "||*-default-cn.rum.aliyuncs.com^",
+        "||*-sdk.rum.aliyuncs.com^",
+        "||*.exaapi.com^",
+        "||*adapt-beacon.awsprodops.movetv.com^",
+        "||*cdn-settings.appsflyersdk.com^",
+        "||*conversions.appsflyersdk.com^",
+        "||*launches.appsflyersdk.com^",
+        "||*register.appsflyersdk.com^",
+        "||*two-gun-volley.pages.dev^"
+      ],
+      "domain_and_subdomains_important": [
+        "||adsrvmedia.adk2.co^$important",
+        "||bet.championat.com^$important",
+        "||pixel.wp.pl^$important"
+      ],
       "domain_and_subdomains": [
         "||0--d.com^",
         "||0-02.net^",
@@ -152,7 +173,7 @@
   "policy": {
     "main_list": "blocking-and-exception",
     "exceptions": "exact source exception sets are checked against the review register; approved entries and the frozen legacy pending baseline are active; legacy pending entries are not NobleDNS approvals",
-    "complex_syntax": "excluded unless semantic equivalence is proven",
+    "complex_syntax": "unsupported syntax excluded; documented hostname wildcards and $important are preserved without rewriting",
     "bare_domain_anchor": "preserved unchanged",
     "leading_dot_domain_anchor": "excluded; not part of the documented AdGuard DNS hostname-pattern syntax",
     "source_drift_gate_percent": 15.0

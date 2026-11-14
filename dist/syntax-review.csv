@@ -33,6 +33,7 @@
 ||imgg.dt00.net,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||itv.hexun.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||js.goods.redtram.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
+||log*-normal-*.tiktokv.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||logs.juspay.in,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||logservice.dbankcloud.cn,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||loneday.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
@@ -44,6 +45,7 @@
 ||mtm.qdqmedia.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||obislame.ru,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||pavoshare.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
+||pixel*.adswizz.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||platinumcode.net,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||promoblocks.ru,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns
 ||psma01.com,domain_anchor_without_end_boundary,"Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",adguard_dns

@@ -1,15 +1,36 @@
 {
-  "total": 306464,
+  "total": 306824,
   "forms": {
+    "domain_and_subdomains_wildcard": 355,
+    "domain_and_subdomains_important": 3,
     "domain_and_subdomains": 306395,
-    "domain_anchor_without_end_boundary": 69
+    "domain_anchor_without_end_boundary": 71
   },
   "semantics": {
+    "domain_and_subdomains_wildcard": "Preserves a supported AdGuard hostname wildcard pattern unchanged; dynamic public suffixes are excluded.",
+    "domain_and_subdomains_important": "Blocks the matching hostname scope with AdGuard's documented important priority modifier.",
     "domain_and_subdomains": "Blocks the domain and all subdomains.",
     "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains."
   },
-  "review_required": 69,
+  "review_required": 71,
   "examples": {
+    "domain_and_subdomains_wildcard": [
+      "||*-datareceiver.aki-game.net^",
+      "||*-default-cn.rum.aliyuncs.com^",
+      "||*-sdk.rum.aliyuncs.com^",
+      "||*.exaapi.com^",
+      "||*adapt-beacon.awsprodops.movetv.com^",
+      "||*cdn-settings.appsflyersdk.com^",
+      "||*conversions.appsflyersdk.com^",
+      "||*launches.appsflyersdk.com^",
+      "||*register.appsflyersdk.com^",
+      "||*two-gun-volley.pages.dev^"
+    ],
+    "domain_and_subdomains_important": [
+      "||adsrvmedia.adk2.co^$important",
+      "||bet.championat.com^$important",
+      "||pixel.wp.pl^$important"
+    ],
     "domain_and_subdomains": [
       "||0--d.com^",
       "||0-02.net^",
