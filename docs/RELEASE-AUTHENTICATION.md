@@ -66,7 +66,7 @@ Edit the active `Protect main` ruleset. Preserve the existing deletion and force
 
 1. **Require a pull request before merging**.
 2. **Require status checks to pass** and select the exact check name `Build and validate`.
-3. Require branches to be up to date before merging, if the option is available.
+3. Enable **Require branches to be up to date before merging** (strict required status checks). The 2026-11-14 audit found the active `Protect main` ruleset had `strict_required_status_checks_policy: false`; change it to `true` so a PR cannot merge using a successful check from an outdated base.
 4. Add the **NobleDNS Publisher** GitHub App under **Bypass list → Apps**, with bypass mode **Always allow**.
 
 The App bypass is necessary because the publisher updates generated artifacts directly on `main` after validation. Use the App identity, not the generic GitHub Actions actor, as the bypass actor. Do not add repository administrators, maintainers, or broad roles to the bypass list merely to make automation work.
