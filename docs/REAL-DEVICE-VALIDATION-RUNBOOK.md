@@ -74,7 +74,7 @@ Any confirmed banking, identity, payment, messaging, carrier, system-update or d
 
 ## 6. Reporting
 
-Store one row per hostname-rule-task observation in the accompanying CSV template. Preserve sanitized evidence references and exact versions. Keep discovery leads separate from confirmed classifications. A hostname is not "safe" merely because it did not appear in a short test; absence of a query is not evidence of absence of dependency.
+Store one row per hostname-rule-task observation in the [real-device test CSV template](../benchmark/review/real-device-test-template.csv). For a non-technical owner workflow, use the [Chinese quick-start guide](REAL-DEVICE-VALIDATION-QUICKSTART.zh-CN.md). Preserve sanitized evidence references and exact versions. Keep discovery leads separate from confirmed classifications. A hostname is not "safe" merely because it did not appear in a short test; absence of a query is not evidence of absence of dependency.
 
 A review is complete only when the primary reviewer records evidence and a distinct independent reviewer adjudicates the decision. If the maintainer is the only available tester, record independent review as pending rather than self-attesting.
 
