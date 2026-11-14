@@ -81,41 +81,23 @@ Required test: on a test merchant or controlled checkout, compare payment succes
 
 ### Polaris Office hostname
 
-- AdAway hosts snapshot: https://git.eeqj.de/sneak/sneak.berlin-dns-blocklist/src/branch/main/hostlists/adaway-default-hosts.txt
-- Public hosts-list mirror: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
+- AdGuard mobile tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
+- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileSpyware.txt
+- Older AdAway snapshot: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
 
-Multiple list appearances are weak corroboration only. They do not establish the endpoint's current purpose, and they do not prove that blocking is harmless to Polaris Office features.
+The exact hostname appears in AdGuard's mobile tracking section and a separate mobile spyware list. This strengthens the tracking/analytics hypothesis, but does not prove that Polaris Office login, cloud sync, document open/save or collaboration is independent of it.
 
 Required test: sign-in, cloud sync, open/save, collaboration and recovery.
 
 ### Mobiuspace ad callback
 
-- Public AdAway list mirror: https://git.eeqj.de/sneak/sneak.berlin-dns-blocklist/src/branch/main/hostlists/adaway-default-hosts.txt
-- Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
-
-The exact hostname appears in multiple public mobile-ad lists. These lists may share upstream ancestry and are not independent ground truth. Treat the advertising callback hypothesis as plausible, not proven.
-
-Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
-
-
-### Mobiuspace ad callback and CloudMobi ad endpoint
-
 - AdGuard MobileFilter adservers section: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
 - Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
 
-AdGuard's current mobile adservers section contains both exact hostnames, `api-ad-callback.mobiuspace.net` and `api.cloudmobi.net`. This is stronger purpose evidence than an unverified domain-name guess. It still does not identify all apps using them or prove that app state, rewarded-ad flows or other functions are unaffected.
+The exact hostname appears in AdGuard's current mobile adservers section. This supports an advertising role more directly than domain-name inference, but it does not identify all querying apps or prove that callback failure is harmless to app state or rewarded-ad flows.
 
-Required test: identify apps that actually query each host, then test app cold start, sign-in, core actions, rewarded-ad-dependent features and recovery with the exact rule toggled.
+Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
 
-### Polaris Office analysis endpoint
-
-- AdGuard mobile spyware section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
-- Mobile spyware list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileSpyware.txt
-- Older AdAway snapshot: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
-
-The exact hostname is present in AdGuard's mobile spyware section and a separate mobile spyware list. This strengthens the tracking/analytics hypothesis, but does not prove that Polaris Office login, cloud sync, document open/save or collaboration is independent of it.
-
-Required test: Polaris Office sign-in, cloud sync, open/save, collaboration and account recovery with the exact rule toggled.
 
 ### Datescan tracking endpoint
 
@@ -166,6 +148,48 @@ Required test: storefront product browsing, cart, checkout page, support widgets
 - AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
 
 This source supports a first-party tracking/analytics classification for the exact hostnames. It does not answer whether any endpoint also participates in application health, fraud prevention, checkout or other operational workflows. Test the listed user journeys before declaring the rules harmless.
+
+
+### Additional exact-host matches from upstream classifications
+
+The following entries were found by matching the exact hostname—not just a parent domain or keyword—against current upstream list files. These classifications are evidence of how the upstream list maintainers categorize the host; they are not independent proof of purpose, and they do not establish that blocking is harmless.
+
+**AdGuard MobileFilter adservers**
+- `api.cloudmobi.net`
+- `config.appjolt.com`
+- `et-code.ru`
+- `pavoshare.com`
+
+Source: https://github.com/AdguardTeam/AdguardFilters/blob/master/MobileFilter/sections/adservers.txt
+
+Required test: identify the applications that actually query each hostname, then test cold launch, sign-in, configuration refresh, core actions and ad/reward-dependent features. In particular, do not assume a hostname beginning with `config.` is optional merely because it is classified in an ad-server list.
+
+**AdGuard tracking classifications**
+- `c.bigmir.net` — mobile and first-party tracking sections
+- `hitcounter.ru` — third-party tracking section
+- `img.opentracker.net` — first-party tracking section
+- `script.opentracker.net` — third-party tracking section
+- `stats.debatdirect.tweedekamer.nl` — first-party tracking section
+- `tms-st.cdn.ngenix.net` — third-party tracking section
+- `uts.auction.co.kr` — first-party tracking section
+- `zorosrv.com` — third-party tracking section
+
+Sources:
+- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/mobile.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+- https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers.txt
+
+Required test: determine which site or app issues each request from DNS logs, then test the relevant content, media, search, account, commerce or public-service workflow. CDN-style and image/script endpoints require particular caution because an endpoint can carry both measurement and user-visible resources.
+
+**EasyPrivacy third-party classifications**
+- `d2fj3s7h83rb61.cloudfront.net`
+
+Source: https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt
+
+Required test: identify the embedding site/app and test script-dependent page behavior, media/assets and the complete core user journey. CloudFront is shared hosting infrastructure; the list match alone does not establish the asset's full role.
+
+The complete hostname-by-hostname evidence URLs, source-line attribution, limitations and required workflow are maintained in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv). The CSV is the machine-readable source of detail; the summary above avoids treating list membership as a safety verdict.
+
 
 ## Decision policy
 
