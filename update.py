@@ -394,16 +394,18 @@ def write_csv(path: Path, header, rows):
 def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     """Inventory documented DNS rule forms; flag only forms needing semantic review."""
     forms = {
-        "domain_and_subdomains_wildcard": re.compile(r"^\|\|[^\^/$|]*\*[^\^/$|]*\^$"),
-        "domain_and_subdomains_important": re.compile(r"^\|\|[^\^/$|]+\^\$important$"),
-        "domain_and_subdomains": re.compile(r"^\|\|[^\^/$|]+\^$"),
-        "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^\^/$|]+$"),
+        "domain_and_subdomains_wildcard": re.compile(r"^\\|\\|[^\\^/$|]*\\*[^\\^/$|]*\\^$"),
+        "domain_and_subdomains_important": re.compile(r"^\\|\\|[^\\^/$|*]+\\^\\$important$"),
+        "domain_and_subdomains": re.compile(r"^\\|\\|[^\\^/$|*]+\\^$"),
+        "wildcard_anchor_without_end_boundary": re.compile(r"^\\|\\|[^\\^/$|]*\\*[^\\^/$|]*$"),
+        "domain_anchor_without_end_boundary": re.compile(r"^\\|\\|[^\\^/$|*]+$"),
     }
     semantics = {
-        "domain_and_subdomains_wildcard": "Preserves a supported AdGuard hostname wildcard pattern unchanged; dynamic public suffixes are excluded.",
+        "domain_and_subdomains_wildcard": "Preserves a supported AdGuard hostname wildcard pattern with an explicit end separator.",
         "domain_and_subdomains_important": "Blocks the matching hostname scope with AdGuard's documented important priority modifier.",
         "domain_and_subdomains": "Blocks the domain and all subdomains.",
-        "domain_anchor_without_end_boundary": "Valid hostname-start anchor; retained unchanged because AdGuard documents || as matching the hostname start, including subdomains.",
+        "wildcard_anchor_without_end_boundary": "Preserves a hostname-start wildcard without an explicit end separator; keep separate from static bare anchors because its matching scope needs client verification.",
+        "domain_anchor_without_end_boundary": "Preserves a static hostname-start anchor without an explicit end separator; matching scope needs client verification.",
     }
     counts = {name: 0 for name in forms}
     examples = {name: [] for name in forms}
