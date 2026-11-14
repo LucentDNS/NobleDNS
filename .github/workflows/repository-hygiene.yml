@@ -69,7 +69,7 @@ jobs:
             fi
 
             remote_ref="refs/remotes/origin/$branch"
-            [[ -e ".git/$remote_ref" ]] || {
+            git show-ref --verify --quiet "$remote_ref" || {
               echo "KEEP unavailable ref (cannot verify): $branch"
               branch_kept=$((branch_kept + 1))
               continue
