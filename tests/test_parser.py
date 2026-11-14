@@ -31,6 +31,7 @@ class ParserTests(unittest.TestCase):
             "||ads.example.com^",
             "||bare.example.com",
             "||*.wildcard.example.com^",
+            "||wild*.bare.example.net",
             "||priority.example.com^$important",
         }
         summary, review = mod.syntax_audit(
@@ -40,13 +41,14 @@ class ParserTests(unittest.TestCase):
                 "hagezi_normal": {"||bare.example.com"},
             },
         )
-        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["total"], 5)
         self.assertEqual(
             summary["forms"],
             {
                 "domain_and_subdomains_wildcard": 1,
                 "domain_and_subdomains_important": 1,
                 "domain_and_subdomains": 1,
+                "wildcard_anchor_without_end_boundary": 1,
                 "domain_anchor_without_end_boundary": 1,
             },
         )
