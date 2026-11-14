@@ -7,15 +7,21 @@
 
 The 69 bare-anchor rules are inherited from the AdGuard DNS Filter. The automated 69-by-72 essential-service sentinel check currently reports no hits, but it cannot cover every app-specific hostname or distinguish telemetry from required application dependencies.
 
-A first public-evidence pass identified three domains worth testing before we make stronger compatibility claims. The exact upstream source line numbers below refer to the run-453 build audit artifact.
+A public-evidence pass has identified nine hostnames requiring targeted investigation. Four are high priority because of potential payment, sign-up, device-component or static-resource impact; five are medium-priority workflow checks. These are investigation priorities, not findings that the rules are incorrect.
 
-| Rule | Source line | Priority | What is known | What remains unknown |
+| Rule | Source line | Priority | Evidence signal | Required workflow |
 |---|---:|---|---|---|
-| `||mssdk.capcutapi.us` | 19072 | High | HaGeZi issue #7901 categorizes it as analytics/metrics/telemetry; an AdGuard issue separately lists it among domains reported in a CapCut signup-page problem | Whether blocking this exact hostname breaks signup, login, editing, export or only optional telemetry in current CapCut versions |
-| `||logservice.dbankcloud.cn` | 19205 | High | Public reporting associates it with a Huawei China-region log-server route for a HiViewTunnel component | Which devices/components use it, whether collection is opt-in, whether it is required for diagnostics or other functions, and the impact of blocking |
-| `||global-staticplat.cdn.bcebos.com` | 11476 | High | It appears in a public adblocking list; a sandbox report shows a TeraBox process resolving it in a static-widget/resource context | Whether the hostname currently serves ads, functional static assets, or both, and which TeraBox tasks fail if blocked |
+| `||mssdk.capcutapi.us` | 19072 | High | HaGeZi classifies it as analytics/telemetry; an AdGuard issue separately mentions it in a CapCut signup problem report | CapCut signup/login, editing, upload, export and playback |
+| `||logservice.dbankcloud.cn` | 19205 | High | Public reporting associates it with a Huawei China-region HiViewTunnel log-server route | Identify component and opt-in scope; device/system diagnostics and normal device services |
+| `||global-staticplat.cdn.bcebos.com` | 11476 | High | Public adblock classification conflicts with a TeraBox process observation in a static-widget/resource context | TeraBox login, file browse, preview, upload/download and static UI |
+| `||logs.juspay.in` | 21748 | High | Official Juspay documentation identifies it as a payment-status analytics endpoint | Merchant checkout, payment success/failure/cancel, order confirmation and status reconciliation |
+| `||analysis.polarisoffice.com` | 19279 | Medium | Appears in public hosts lists grouped under Polaris Office | Polaris Office sign-in, cloud sync, open/save and collaboration |
+| `||api-ad-callback.mobiuspace.net` | 11625 | Medium | Exact hostname appears in multiple public mobile-ad lists | Identify affected apps; launch, sign-in, core actions and rewarded-ad-dependent features |
+| `||ats.gmarket.co.kr` | 15186 | Medium | Listed in AdGuard's first-party tracking section | Gmarket account, search, cart, checkout, order and payment |
+| `||datadog-log.clovergames.io` | 15234 | Medium | Listed in AdGuard's first-party tracking section | Clover Games login, gameplay, purchases and account recovery |
+| `||taplytics-umami.grubhub.com` | 16203 | Medium | Listed in AdGuard's first-party tracking section | Grubhub browsing, cart, checkout, order status and account |
 
-Machine-readable references and limitations are recorded in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv).
+Machine-readable evidence, source URLs, limitations and statuses are recorded in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv).
 
 ## Evidence interpretation
 
@@ -46,13 +52,48 @@ The sandbox trace shows a TeraBox process resolving the hostname in a static-wid
 
 Required test: current TeraBox launch, login, file browsing, preview, upload/download and widget/static UI tasks, with DNS logs and matched-rule evidence.
 
+### Juspay payment-status endpoint
+
+- Official vulnerability-disclosure scope: https://juspay.io/vulnerability-disclosure-policy
+- Godel integration documentation: https://juspay.gitbooks.io/godel-integration-document/content/7.html
+
+Juspay lists `logs.juspay.in` in its official service scope. Its integration documentation describes POSTing payment status data to this host and explains that these status events support transaction success/failure metrics and merchant-side enhancements. This is stronger evidence of a real payment-workflow role than a generic hostname label, but it does not prove that checkout authorization itself depends on the endpoint.
+
+Required test: on a test merchant or controlled checkout, compare payment success, failure and cancellation; order confirmation; merchant reconciliation and status updates with the hostname allowed and blocked. Do not test by disrupting a live financial transaction.
+
+### Polaris Office hostname
+
+- AdAway hosts snapshot: https://git.eeqj.de/sneak/sneak.berlin-dns-blocklist/src/branch/main/hostlists/adaway-default-hosts.txt
+- Public hosts-list mirror: https://gist.github.com/JBarnden/cc092e8742796b6ee52bcd204c1d5bbf
+
+Multiple list appearances are weak corroboration only. They do not establish the endpoint's current purpose, and they do not prove that blocking is harmless to Polaris Office features.
+
+Required test: sign-in, cloud sync, open/save, collaboration and recovery.
+
+### Mobiuspace ad callback
+
+- Public AdAway list mirror: https://git.eeqj.de/sneak/sneak.berlin-dns-blocklist/src/branch/main/hostlists/adaway-default-hosts.txt
+- Mobile ad list: https://github.com/r-a-y/mobile-hosts/blob/master/AdguardMobileAds.txt
+
+The exact hostname appears in multiple public mobile-ad lists. These lists may share upstream ancestry and are not independent ground truth. Treat the advertising callback hypothesis as plausible, not proven.
+
+Required test: identify current apps that query it, then distinguish optional ad/reward behavior from core app functionality.
+
+### Gmarket, Clover Games and Grubhub tracking endpoints
+
+- AdGuard first-party tracking section: https://github.com/AdguardTeam/AdguardFilters/blob/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+
+This source supports a first-party tracking/analytics classification for the exact hostnames. It does not answer whether any endpoint also participates in application health, fraud prevention, checkout or other operational workflows. Test the listed user journeys before declaring the rules harmless.
+
 ## Decision policy
 
 - Do not remove a rule based on one user report.
 - Do not retain a rule merely because an upstream list contains it.
 - Do not relabel a telemetry endpoint as harmless because an app still launches.
+- An upstream tracking label is evidence of purpose, not proof of zero functional dependency.
+- Payment, identity, banking, messaging, device-management and system-update workflows receive higher priority than optional ad/reward behavior.
 - Require reproducible task-level outcomes, current version identifiers and a matched hostname/rule before deciding.
 - If the hostname has mixed use, prefer a narrower rule or no block over knowingly breaking a core user task.
-- Keep all three records unresolved until the required tests and independent review are available.
+- Keep every entry unresolved until the required tests and independent review are available.
 
-This queue is deliberately small and high priority. It is a starting point for actual compatibility work, not a claim that the other 66 domains have been fully cleared.
+The nine entries are a prioritized slice of the 69-rule inventory, not a claim that the other 60 domains have been cleared. Production blocking rules remain unchanged.
