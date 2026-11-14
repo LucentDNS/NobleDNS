@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config" / "sources.json"
 PROJECT = "NobleDNS"
-VERSION_BASE = "1.0.3"
+VERSION_BASE = "1.0.4"
 MAX_RULES = 500_000
 FILTER_HEADER = (
     "! Title: NobleDNS Filter\n"
