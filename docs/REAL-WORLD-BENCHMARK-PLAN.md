@@ -23,7 +23,6 @@ Run the same test corpus against, at minimum:
 - HaGeZi Multi PRO (`https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt`; exact downloaded snapshot and SHA-256). This is the primary HaGeZi target; Multi NORMAL is not a substitute for Pro.
 - OISD Big (`https://big.oisd.nl/`; exact downloaded snapshot and SHA-256).
 - anti-AD AdGuard edition (`https://anti-ad.net/adguard.txt`; exact downloaded snapshot and SHA-256). Do not substitute anti-AD's AdGuard Home `easylist.txt`, which uses a different and broader rule grammar.
-- AdGuard DNS Filter (`https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt`; exact downloaded snapshot and SHA-256).
 
 These are independent comparators, not production inputs. Do not merge comparator data into NobleDNS or treat overlapping entries as independent evidence. Record each snapshot's license, upstream notices, format and parser exclusions before scoring. If a comparator cannot be normalized without changing semantics, mark the affected entries unsupported and disclose the exclusions rather than silently simplifying them.
 
