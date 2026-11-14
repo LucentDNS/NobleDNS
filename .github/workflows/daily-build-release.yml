@@ -564,9 +564,9 @@ jobs:
           test -s THIRD-PARTY-NOTICES.md
           test -s licenses/GPL-3.0.txt
 
-      # GitHub Releases are reserved for immutable SemVer product versions.
+      # GitHub Releases are reserved for stable SemVer product-version snapshots.
       # Daily validated subscription updates are published to the main branch only.
-      - name: Publish immutable SemVer release
+      - name: Publish versioned SemVer release
         env:
           GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
         shell: bash
@@ -591,8 +591,8 @@ jobs:
               exit 1
             fi
 
-            echo "Stable version release already exists; leaving it immutable."
-            echo "Daily subscription updates are published on main; this SemVer release remains immutable."
+            echo "Stable version release already exists; leaving its tag and assets unchanged."
+            echo "Daily subscription updates are published on main; this SemVer release remains unchanged by the publisher workflow."
             exit 0
           fi
 
