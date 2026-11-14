@@ -75,7 +75,7 @@ NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪�
 
 ## 项目文档
 
-[安全政策](SECURITY.md) · [贡献指南](CONTRIBUTING.md) · [质量政策](docs/QUALITY.md) · [兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md) · [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [单一版本政策](docs/EDITION-POLICY.md) · [第三方声明与许可证](THIRD-PARTY-NOTICES.md)
+[安全政策](SECURITY.md) · [贡献指南](CONTRIBUTING.md) · [质量政策](docs/QUALITY.md) · [兼容性测试计划](docs/COMPATIBILITY-TEST-PLAN.md) · [成熟规则集差异基线](docs/COMPARATOR-BASELINE-2026-11-14.md) · [AdGuard 中文过滤器 DNS 审计](docs/ADGUARD-CHINESE-DNS-AUDIT.md) · [真实效果评测方案](docs/REAL-WORLD-BENCHMARK-PLAN.md) · [单一版本政策](docs/EDITION-POLICY.md) · [第三方声明与许可证](THIRD-PARTY-NOTICES.md)
 
 ## 许可证
 
