@@ -42,7 +42,7 @@ to separate terms. Those terms must be respected where applicable.
 - License file:
   https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE
 
-NobleDNS uses the dedicated Ads-only variant, not the upstream Full Protection, No Privacy or No Unwelcome variants. The builder retains only supported simple DNS hostname rules and records unsupported lines as parser exclusions.
+NobleDNS uses the dedicated Ads-only variant, not the upstream Full Protection, No Privacy or No Unwelcome variants. The builder preserves supported AdGuard DNS hostname rules, including documented wildcard patterns with a static suffix and the `$important` modifier. Unsupported or ambiguous lines are recorded as parser exclusions rather than rewritten.
 
 ## 4. NobleDNS modifications
 
