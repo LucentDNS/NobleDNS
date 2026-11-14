@@ -10,12 +10,6 @@
       "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
     },
     {
-      "key": "hagezi_normal",
-      "name": "HaGeZi Multi Normal",
-      "filename": "hagezi_normal.txt",
-      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt"
-    },
-    {
       "key": "hagezi_multi_pro",
       "name": "HaGeZi Multi PRO",
       "filename": "hagezi_multi_pro.txt",
