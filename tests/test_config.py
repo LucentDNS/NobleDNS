@@ -111,9 +111,9 @@ class ConfigTests(unittest.TestCase):
     def test_exactly_four_approved_sources(self):
         cfg = mod.load_config()
         self.assertEqual([x["key"] for x in cfg["sources"]], ["hagezi_multi_pro", "hagezi_tif_mini", "adguard_dns", "awavenue_ads"])
-        self.assertEqual(cfg["sources"][0]["url"], "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt")
+        self.assertEqual(cfg["sources"][0]["url"], "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt")
         self.assertEqual(cfg["sources"][0]["min_bytes"], 1000000)
-        self.assertEqual(cfg["sources"][0]["min_rules"], 100000)
+        self.assertEqual(cfg["sources"][0]["min_rules"], 90000)
         self.assertEqual(cfg["sources"][1]["url"], "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.mini.txt")
         self.assertEqual(cfg["sources"][1]["min_bytes"], 1000000)
         self.assertEqual(cfg["sources"][1]["min_rules"], 100000)
