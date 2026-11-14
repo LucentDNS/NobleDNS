@@ -15,7 +15,8 @@ class DocumentationConsistencyTests(unittest.TestCase):
         self.assertIn("当前固定使用四个互补上游", guide)
         for source in config["sources"]:
             self.assertIn(source["name"], guide)
-        self.assertNotIn("HaGeZi Multi Normal", guide)
+        self.assertNotIn("| HaGeZi Multi Normal |", guide)
+        self.assertIn("Multi Normal 不在生产来源中", guide)
 
     def test_benchmark_plan_does_not_describe_multi_normal_as_production(self):
         plan = (ROOT / "docs" / "REAL-WORLD-BENCHMARK-PLAN.md").read_text(encoding="utf-8")
