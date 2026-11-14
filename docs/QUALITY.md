@@ -100,7 +100,7 @@ Do not expand parser scope or alter source semantics merely to increase coverage
 - Exactly the four approved sources load successfully and decode as strict UTF-8.
 - Each source exceeds configured minimum size and parsed-block count.
 - Per-source parsed rule count does not drift more than 15% from the last published manifest without review/override.
-- Main output has valid supported syntax, no duplicates, nonzero rules and no more than 500,000 rules.
+- Main output has valid supported syntax, no duplicates, nonzero rules and remains within the configured capacity guard.
 - Regression tests pass.
 - Parsed upstream exceptions exactly match the review register; only approved exceptions and the frozen legacy pending baseline can be emitted.
 - Public artifacts are generated from the same validated build and checked before publication.
