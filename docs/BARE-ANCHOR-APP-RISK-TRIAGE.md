@@ -25,6 +25,9 @@ A public-evidence pass has identified 17 hostnames requiring targeted investigat
 | `||analysis.polarisoffice.com` | 19279 | Medium | Exact hostname is in AdGuard mobile spyware section and a separate mobile spyware list | Polaris Office sign-in, cloud sync, open/save and collaboration |
 | `||track.datescan.info` | 18038 | Medium | Exact hostname is in AdGuard first-party tracking section | Identify embedding site/app; test core user journey |
 | `||events-proxy.mintlify.com` | 184755 | Medium | Public request trace records it on a documentation page; request semantics remain unknown | Documentation load, search, navigation and feedback |
+| `||deliveryengine.adswizz.com` | 11789 | Medium | Official AdsWizz SDK docs describe its ad-server and companion-banner role | Audio playback, ad breaks, resume and player stability |
+| `||id-msp.newsbreak.com` | 7988 | Medium | Public privacy scan observes an identity/sync iframe request | NewsBreak sign-in, account linking, feed, preferences and consent |
+| `||d241ujsiy3yht0.cloudfront.net` | 185395 | Medium | Exact host appears in EasyPrivacy and a storefront script observation | Product browsing, cart, checkout page, support widgets and order status |
 
 Machine-readable evidence, source URLs, limitations and statuses are recorded in [bare-anchor-app-risk-triage.csv](../benchmark/discovery/bare-anchor-app-risk-triage.csv).
 
