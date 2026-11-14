@@ -193,5 +193,45 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertTrue(any("evidence expired" in error for error in errors))
 
 
+class BenchmarkDiscoveryIntegrityTests(unittest.TestCase):
+    def _write(self, root: Path, name: str, fields: list[str], rows: list[dict[str, str]]) -> Path:
+        path = root / name
+        with path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
+        return path
+
+    def test_discovery_and_triage_match_without_approving_candidates(self) -> None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("nobledns_discovery_validator", ROOT / "tools" / "validate_benchmark_discovery.py")
+        validator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(validator)
+        source_row = {"request_domain":"ads.example.com","pages_seen_on":"100","share_of_pages":"0.1","requests_total":"200","requests_setting_cookies":"50","cookie_setting_request_share":"0.25"}
+        triage_row = {**source_row,"owner":"Example Ads","owner_category":"ads","preliminary_lane":"adtech_candidate","evidence":"https://example.com/source","review_status":"primary_triage_only","review_note":"Not approved for blocking; domain-level review required."}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            source=self._write(root,"source.csv",validator.SOURCE_FIELDS,[source_row])
+            triage=self._write(root,"triage.csv",validator.TRIAGE_FIELDS,[triage_row])
+            counts,errors=validator.validate(source,triage)
+        self.assertEqual(errors,[])
+        self.assertEqual(counts["adtech_candidate"],1)
+
+    def test_tampered_metrics_and_incorrect_lane_are_rejected(self) -> None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("nobledns_discovery_validator", ROOT / "tools" / "validate_benchmark_discovery.py")
+        validator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(validator)
+        source_row = {"request_domain":"cdn.example.com","pages_seen_on":"100","share_of_pages":"0.1","requests_total":"200","requests_setting_cookies":"50","cookie_setting_request_share":"0.25"}
+        triage_row = {**source_row,"share_of_pages":"0.9","owner":"Example CDN","owner_category":"infra","preliminary_lane":"adtech_candidate","evidence":"https://example.com/source","review_status":"primary_triage_only","review_note":"Not approved for blocking."}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            source=self._write(root,"source.csv",validator.SOURCE_FIELDS,[source_row])
+            triage=self._write(root,"triage.csv",validator.TRIAGE_FIELDS,[triage_row])
+            _,errors=validator.validate(source,triage)
+        self.assertTrue(any("source field changed" in e for e in errors))
+        self.assertTrue(any("conflicts with owner_category" in e for e in errors))
+
+
 if __name__ == "__main__":
     unittest.main()
