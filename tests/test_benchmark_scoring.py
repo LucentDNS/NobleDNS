@@ -43,6 +43,45 @@ class BenchmarkScorerTests(unittest.TestCase):
         self.assertEqual(scorer.decide("example.test.evil.test", caret, set())[0], "allow")
         self.assertEqual(scorer.decide("www.example.test", caret, set())[0], "block")
 
+    def test_wildcard_hostname_rules_match_adguard_masks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.txt"
+            path.write_text(
+                "||*-datareceiver.aki-game.net^\n||*.example.test^\n||*.*.test^\n",
+                encoding="utf-8",
+            )
+            blocks, exceptions, unsupported = scorer.load_rules(path)
+            self.assertEqual(exceptions, set())
+            self.assertEqual(len(unsupported), 1)
+            self.assertIn("*.*.test", unsupported[0])
+            self.assertEqual(len(blocks), 2)
+            self.assertEqual(scorer.decide("foo-datareceiver.aki-game.net", blocks, set())[0], "block")
+            self.assertEqual(scorer.decide("prefix.foo-datareceiver.aki-game.net", blocks, set())[0], "block")
+            self.assertEqual(scorer.decide("foo-datareceiver.aki-game.net.evil", blocks, set())[0], "allow")
+            self.assertEqual(scorer.decide("a.b.example.test", blocks, set())[0], "block")
+            self.assertEqual(scorer.decide("example.test", blocks, set())[0], "allow")
+
+    def test_important_block_overrides_basic_exception(self) -> None:
+        blocks = {"||ads.example.test^$important"}
+        exceptions = {"@@||ads.example.test^"}
+        self.assertEqual(scorer.decide("ads.example.test", blocks, exceptions)[0], "block")
+        self.assertEqual(scorer.decide("child.ads.example.test", blocks, exceptions)[0], "block")
+
+    def test_important_exception_overrides_important_block(self) -> None:
+        blocks = {"||ads.example.test^$important"}
+        exceptions = {"@@||ads.example.test^$important"}
+        self.assertEqual(scorer.decide("ads.example.test", blocks, exceptions)[0], "allow")
+
+    def test_important_modifier_requires_hostname_end_separator(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.txt"
+            path.write_text("||ads.example.test$important\n", encoding="utf-8")
+            blocks, exceptions, unsupported = scorer.load_rules(path)
+            self.assertEqual(blocks, set())
+            self.assertEqual(exceptions, set())
+            self.assertEqual(len(unsupported), 1)
+            self.assertIn("$important", unsupported[0])
+
     def test_undocumented_leading_dot_syntax_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rules.txt"

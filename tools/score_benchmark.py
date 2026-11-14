@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Score a reviewed hostname corpus against a simple AdGuard DNS subscription.
+"""Score a reviewed hostname corpus against supported AdGuard DNS hostname rules.
 
 This is an offline rule-semantics evaluator, not a live DNS/client test.
-Supported forms: ||domain^, ||domain and @@||domain^.
+Supported forms: ||domain^, ||domain, hostname wildcards, $important,
+and simple exception forms with optional $important.
 """
 from __future__ import annotations
 
@@ -16,7 +17,8 @@ from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
-RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?$")
+RULE_RE = re.compile(r"^(?P<exception>@@)?\|\|(?P<domain>[^\^/$|]+)(?P<caret>\^)?(?:\$(?P<modifier>important))?$")
+WILDCARD_LABEL_RE = re.compile(r"^[a-z0-9*](?:[a-z0-9*-]{0,61}[a-z0-9*])?$", re.I)
 CATEGORIES = {"ad", "tracking", "telemetry", "threat", "essential", "legitimate"}
 FIELDS = [
     "hostname", "category", "expected", "evidence_ref", "evidence_summary",
@@ -33,6 +35,20 @@ def valid_hostname(value: str) -> bool:
         and re.fullmatch(r"[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?", label)
         for label in labels
     )
+
+
+def valid_wildcard_pattern(value: str) -> bool:
+    """Match the compiler's conservative hostname-wildcard acceptance subset."""
+    if not value or value.endswith(".") or len(value) > 253 or "*" not in value:
+        return False
+    labels = value.split(".")
+    if len(labels) < 2 or "*" in labels[-1]:
+        return False
+    if sum("*" not in label for label in labels) < 2:
+        return False
+    if any(not WILDCARD_LABEL_RE.fullmatch(label) for label in labels):
+        return False
+    return valid_hostname(value.replace("*", "x"))
 
 
 def file_identity(path: Path) -> dict[str, str | int]:
@@ -127,33 +143,41 @@ def load_rules(path: Path) -> tuple[set[str], set[str], list[str]]:
             unsupported.append(f"line {line_no}: {line}")
             continue
         domain = match.group("domain").lower()
-        if domain.endswith(".") or not valid_hostname(domain):
+        if domain.endswith("."):
             unsupported.append(f"line {line_no}: invalid hostname in {line}")
             continue
-        is_exception = bool(match.groupdict().get("exception"))
+        valid = valid_wildcard_pattern(domain) if "*" in domain else valid_hostname(domain)
+        if not valid:
+            unsupported.append(f"line {line_no}: invalid hostname or wildcard in {line}")
+            continue
+        is_exception = bool(match.group("exception"))
         has_caret = bool(match.group("caret"))
+        important = match.group("modifier") == "important"
+        if important and not has_caret:
+            unsupported.append(f"line {line_no}: $important requires a hostname-end separator in {line}")
+            continue
         if is_exception and not has_caret:
             unsupported.append(f"line {line_no}: unsupported exception {line}")
-        elif is_exception:
-            exceptions.add("@@||" + domain + "^")
+            continue
+        canonical = "||" + domain + ("^" if has_caret else "") + ("$important" if important else "")
+        if is_exception:
+            exceptions.add("@@" + canonical)
         else:
-            blocks.add("||" + domain + ("^" if has_caret else ""))
+            blocks.add(canonical)
     return blocks, exceptions, unsupported
 
-
 def rule_matches(hostname: str, rule: str) -> bool:
-    if rule.startswith("@@"):
-        rule = rule[2:]
-    if not rule.startswith("||"):
+    """Apply AdGuard hostname anchors, wildcard masks and end separators."""
+    match = RULE_RE.fullmatch(rule.removeprefix("@@"))
+    if not match:
         return False
-    pattern = rule[2:]
-    if pattern.endswith("^"):
-        domain = pattern[:-1]
-        return hostname == domain or hostname.endswith("." + domain)
-    # Without ^, || anchors the pattern at a hostname label start but does
-    # not assert the end of the hostname.
-    return hostname.startswith(pattern) or ("." + pattern) in hostname
-
+    domain = match.group("domain")
+    has_caret = bool(match.group("caret"))
+    # || anchors at the hostname start or at a subdomain label boundary.
+    # A bare anchor deliberately does not require the hostname to end here.
+    expression = r"(?:^|\.)" + re.escape(domain).replace(r"\*", ".*")
+    expression += "$" if has_caret else ""
+    return re.search(expression, hostname, flags=re.IGNORECASE) is not None
 
 def matches(hostname: str, rules: set[str]) -> list[str]:
     return sorted(rule for rule in rules if rule_matches(hostname, rule))
@@ -162,12 +186,18 @@ def matches(hostname: str, rules: set[str]) -> list[str]:
 def decide(hostname: str, blocks: set[str], exceptions: set[str]) -> tuple[str, list[str]]:
     matched_blocks = matches(hostname, blocks)
     matched_exceptions = matches(hostname, exceptions)
+    important_blocks = [rule for rule in matched_blocks if rule.endswith("$important")]
+    important_exceptions = [rule for rule in matched_exceptions if rule.endswith("$important")]
+    # AdGuard priority: important exception > important block > basic exception > basic block.
+    if important_exceptions:
+        return "allow", important_exceptions
+    if important_blocks:
+        return "block", important_blocks
     if matched_exceptions:
         return "allow", matched_exceptions
     if matched_blocks:
         return "block", matched_blocks
     return "allow", []
-
 
 def score(rows: list[dict], blocks: set[str], exceptions: set[str]) -> dict:
     categories: dict[str, dict[str, int]] = defaultdict(lambda: {
