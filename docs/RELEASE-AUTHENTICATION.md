@@ -112,3 +112,17 @@ If the publisher token cannot be created, the App installation is missing, or th
 - Inspect the App installation, repository selection, permission grant, Client ID variable, environment secret, and environment branch restriction.
 - Keep the validated build artifact for investigation.
 - Resume publication only after the scoped publisher identity is working.
+
+
+## GitHub-enforced release immutability
+
+The workflow's no-overwrite behavior is a project policy; it is not a substitute for GitHub's repository-level immutable-release protection. The repository owner should enable it once:
+
+1. Open **LucentDNS/NobleDNS → Settings**.
+2. Find the **Releases** section.
+3. Enable **Enable release immutability**.
+4. Verify that a newly published release is marked **Immutable** and that its release API object reports `immutable: true`.
+
+GitHub applies this setting only to releases published after it is enabled. Existing releases v1.0.0 through v1.0.7 remain outside that server-side protection. Do not try to recreate or retarget those existing tags; the workflow deliberately leaves them untouched.
+
+Official GitHub instructions: [Preventing changes to your releases](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes).
