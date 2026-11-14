@@ -33,6 +33,7 @@ class AdGuardChineseAuditTests(unittest.TestCase):
             self.assertEqual(report["candidate_count"], 2)
             self.assertEqual(report["candidate_coverage_count"], 1)
             self.assertEqual(report["candidate_not_covered_count"], 1)
+            self.assertEqual(report["classification_counts"]["domain_hostname_pattern"], 2)
             rows = out_csv.read_text(encoding="utf-8")
             self.assertIn("audit_only_not_approved_for_inclusion", rows)
             saved = json.loads(out_json.read_text(encoding="utf-8"))
