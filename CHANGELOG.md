@@ -10,6 +10,7 @@ All notable changes to NobleDNS are documented here. Versioned sections describe
 - Record an updated mature-list differential baseline and align hostname benchmark scoring with production validation by excluding IP literals from hostname counts.
 
 ### Changed
+- Switch the HaGeZi Multi base source from the full PRO list to the size-optimized PRO Mini list; retain the same four-source composition pending post-switch differential validation.
 - Clarify that exact-rule overlap and automated build success are not measurements of real-world efficacy, precision, recall or client compatibility.
 - Retain large build-audit artifacts for 5 days rather than 30 to keep recurring Actions storage within a conservative budget.
 
@@ -22,8 +23,8 @@ All notable changes to NobleDNS are documented here. Versioned sections describe
 ## [1.0.6] - 2026-11-14
 
 ### Added
-- Add HaGeZi TIF Mini as a threat-intelligence supplement alongside HaGeZi Multi PRO.
-- Add HaGeZi Multi PRO as the sole HaGeZi Multi tier and remove Multi Normal from production inputs, following the upstream cumulative-tier model.
+- Add HaGeZi TIF Mini as a threat-intelligence supplement alongside HaGeZi Multi PRO Mini.
+- Add HaGeZi Multi PRO Mini as the sole HaGeZi Multi tier and remove Multi Normal from production inputs, following the upstream cumulative-tier model.
 - Complete the four-source production composition with AdGuard DNS Filter and AWAvenue Ads-only.
 - Record the exact comparison against the previous v1.0.5 subscription: 68,404 duplicate rules and 117,911 incremental rules; the resulting build contained 457,446 blocking rules and 11 inherited exceptions.
 
