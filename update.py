@@ -61,6 +61,7 @@ PROJECT_CODE_LICENSE = "GPL-3.0-only"
 LICENSE_PATH = ROOT / "LICENSE"
 LICENSE_COPY_PATH = ROOT / "licenses" / "GPL-3.0.txt"
 THIRD_PARTY_NOTICES_PATH = ROOT / "THIRD-PARTY-NOTICES.md"
+MPL_LICENSE_PATH = ROOT / "licenses" / "MPL-2.0.txt"
 
 UPSTREAM_LICENSES = {
     "adguard_dns": {
@@ -88,7 +89,7 @@ UPSTREAM_LICENSES = {
 
 def validate_licensing_files() -> None:
     """Fail closed if required license and attribution files are missing or inconsistent."""
-    required = (LICENSE_PATH, LICENSE_COPY_PATH, THIRD_PARTY_NOTICES_PATH)
+    required = (LICENSE_PATH, LICENSE_COPY_PATH, THIRD_PARTY_NOTICES_PATH, MPL_LICENSE_PATH)
     missing = [str(path.relative_to(ROOT)) for path in required if not path.is_file()]
     if missing:
         raise FileNotFoundError("Required licensing files missing: " + ", ".join(missing))
@@ -101,6 +102,10 @@ def validate_licensing_files() -> None:
     license_text = license_bytes.decode("utf-8-sig", errors="strict")
     if "GNU GENERAL PUBLIC LICENSE" not in license_text or "Version 3" not in license_text:
         raise ValueError("LICENSE must contain the complete GNU GPL version 3 text")
+
+    mpl_text = MPL_LICENSE_PATH.read_text(encoding="utf-8-sig")
+    if "Mozilla Public License Version 2.0" not in mpl_text or "Exhibit A - Source Code Form License Notice" not in mpl_text:
+        raise ValueError("licenses/MPL-2.0.txt must contain the complete Mozilla Public License 2.0 text")
 
     notices = THIRD_PARTY_NOTICES_PATH.read_text(encoding="utf-8-sig")
     required_notice_terms = (
@@ -689,6 +694,7 @@ def build(args) -> Path:
         shutil.copy2(THIRD_PARTY_NOTICES_PATH, stage / "THIRD-PARTY-NOTICES.md")
         staged_licenses = stage / "licenses"; staged_licenses.mkdir()
         shutil.copy2(LICENSE_COPY_PATH, staged_licenses / "GPL-3.0.txt")
+        shutil.copy2(MPL_LICENSE_PATH, staged_licenses / "MPL-2.0.txt")
         (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (stage / "validation-report.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
         active_allowlist_lines = ["! Approved exceptions and frozen legacy pending exceptions active in dns-filter.txt.", "! Pending legacy entries are not independently approved by NobleDNS."]
