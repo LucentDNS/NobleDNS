@@ -32,9 +32,8 @@ DNS 过滤只处理域名解析，不能拦截所有广告，也不能替代网�
 当前正式构建组合以下四个来源：
 
 1. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — 通用 DNS 广告与跟踪防护。
-2. [HaGeZi Multi Normal](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt) — 均衡型通用规则。
-3. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — 更广覆盖的补充；与 Normal 并行保留，避免丢失 Normal 独有规则。
-4. [AWAvenue 秋风规则（纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — 广告场景专项补充。
+2. [HaGeZi Multi PRO](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt) — 均衡型通用规则；采用 HaGeZi 官方推荐的 Pro 主版本。
+3. [AWAvenue 秋风规则（纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — 广告场景专项补充。
 
 构建器只收录明确支持的规则语法；不支持或语义不明确的内容会记录并排除，不擅自猜测或改写。当前订阅继承的 11 条上游例外仍处于待审核状态，尚不代表 NobleDNS 已独立批准。详见[例外规则审核登记册](data/exception-review.csv)。
 
