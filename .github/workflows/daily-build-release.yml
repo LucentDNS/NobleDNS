@@ -133,6 +133,13 @@ jobs:
             --essential tests/fixtures/essential-domains.txt \
             --output build-output/latest/bare-anchor-audit.csv
 
+      - name: Validate bare-anchor review worksheet coverage
+        run: |
+          set -euo pipefail
+          python tools/validate_bare_anchor_review_worksheet.py \
+            --audit build-output/latest/bare-anchor-audit.csv \
+            --worksheet benchmark/review/bare-anchor-review-worksheet.csv
+
       - name: Record build environment provenance
         shell: bash
         run: |
