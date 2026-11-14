@@ -147,6 +147,9 @@ jobs:
             --audit build-output/latest/bare-anchor-audit.csv \
             --queue benchmark/discovery/bare-anchor-app-risk-triage.csv
 
+      - name: Validate browser third-party scope-loss audit
+        run: python tools/validate_browser_third_party_scope_audit.py --queue benchmark/discovery/bare-anchor-app-risk-triage.csv --audit benchmark/discovery/browser-third-party-scope-audit.csv
+
       - name: Record build environment provenance
         shell: bash
         run: |
