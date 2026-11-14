@@ -1,9 +1,9 @@
 {
-  "total": 350287,
+  "total": 339535,
   "forms": {
     "domain_and_subdomains_wildcard": 355,
     "domain_and_subdomains_important": 3,
-    "domain_and_subdomains": 349858,
+    "domain_and_subdomains": 339106,
     "domain_anchor_without_end_boundary": 71
   },
   "semantics": {

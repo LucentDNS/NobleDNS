@@ -3,7 +3,7 @@
   "version": "1.0.5",
   "status": "PUBLIC",
   "release_channel": "public",
-  "built_at_utc": "2026-11-14T07:32:24.895679+00:00",
+  "built_at_utc": "2026-11-14T08:21:35.434693+00:00",
   "subscription_last_modified": "2026-11-14",
   "licensing": {
     "original_project_code": {
@@ -12,25 +12,18 @@
     },
     "upstream_rule_data": [
       {
-        "key": "adguard_dns",
-        "name": "AdGuard DNS Filter",
-        "spdx": "GPL-3.0",
-        "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
-        "qualification": "upstream project license; third-party rights may apply"
-      },
-      {
-        "key": "hagezi_normal",
-        "name": "HaGeZi Multi Normal",
-        "spdx": "GPL-3.0",
-        "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
-        "qualification": "upstream project license; third-party input terms may apply"
-      },
-      {
         "key": "hagezi_multi_pro",
         "name": "HaGeZi Multi PRO",
         "spdx": "GPL-3.0",
         "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
         "qualification": "upstream project license; Multi PRO is a distinct list variant; third-party input terms may apply"
+      },
+      {
+        "key": "adguard_dns",
+        "name": "AdGuard DNS Filter",
+        "spdx": "GPL-3.0",
+        "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
+        "qualification": "upstream project license; third-party rights may apply"
       },
       {
         "key": "awavenue_ads",
@@ -44,15 +37,27 @@
     "compiled_data_notice": "Contains upstream-derived rule material; applicable upstream licenses and third-party rights remain relevant. NobleDNS does not claim the compiled data is wholly original."
   },
   "sources": {
+    "hagezi_multi_pro": {
+      "name": "HaGeZi Multi PRO",
+      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
+      "license_basis": "upstream project license; Multi PRO is a distinct list variant; third-party input terms may apply",
+      "bytes": 5181990,
+      "sha256": "7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc",
+      "supported_block_rules": 226838,
+      "simple_exception_rules": 0,
+      "excluded_lines_by_reason": {}
+    },
     "adguard_dns": {
       "name": "AdGuard DNS Filter",
       "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
       "license": "GPL-3.0",
       "license_url": "https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE",
       "license_basis": "upstream project license; third-party rights may apply",
-      "bytes": 4679546,
-      "sha256": "a36d352b3c102d87fc34e7a5c9b5b70e61d1ec16aa3f76915b6be1271173907b",
-      "supported_block_rules": 190922,
+      "bytes": 4679830,
+      "sha256": "c92cac0d119051ff734783996c9ca20cf54114503d3c8b989ee1cef5e72ac25d",
+      "supported_block_rules": 190935,
       "simple_exception_rules": 11,
       "excluded_lines_by_reason": {
         "ip_literal_not_domain": 74,
@@ -67,30 +72,6 @@
         "single_label_not_fqdn": 1,
         "other_exception_syntax": 195
       }
-    },
-    "hagezi_normal": {
-      "name": "HaGeZi Multi Normal",
-      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt",
-      "license": "GPL-3.0",
-      "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
-      "license_basis": "upstream project license; third-party input terms may apply",
-      "bytes": 4938559,
-      "sha256": "8efb755163dfdb32ce1058a8b8402bbc779ea19ea44b9b310f508bf256ed8b26",
-      "supported_block_rules": 211014,
-      "simple_exception_rules": 0,
-      "excluded_lines_by_reason": {}
-    },
-    "hagezi_multi_pro": {
-      "name": "HaGeZi Multi PRO",
-      "url": "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt",
-      "license": "GPL-3.0",
-      "license_url": "https://github.com/hagezi/dns-blocklists/blob/main/LICENSE",
-      "license_basis": "upstream project license; Multi PRO is a distinct list variant; third-party input terms may apply",
-      "bytes": 5181990,
-      "sha256": "7668471dd94d03d962149b07a5e44c64b16c90af35bd5786524b5bb3ce40d1cc",
-      "supported_block_rules": 226838,
-      "simple_exception_rules": 0,
-      "excluded_lines_by_reason": {}
     },
     "awavenue_ads": {
       "name": "AWAvenue Ads Rule (Only Ads)",
@@ -107,12 +88,11 @@
       }
     }
   },
-  "blocking_rules": 350287,
+  "blocking_rules": 339535,
   "active_exception_rules": 11,
   "active_exception_rules_by_source": {
-    "adguard_dns": 11,
-    "hagezi_normal": 0,
     "hagezi_multi_pro": 0,
+    "adguard_dns": 11,
     "awavenue_ads": 0
   },
   "exception_review": {
@@ -121,23 +101,22 @@
     "pending_legacy_baseline": 11,
     "new_unreviewed_exceptions_allowed": false
   },
-  "main_subscription_rules": 350298,
-  "common_rules": 71,
+  "main_subscription_rules": 339546,
+  "common_rules": 75,
   "source_only_rules": {
-    "adguard_dns": 94771,
-    "hagezi_normal": 10765,
-    "hagezi_multi_pro": 43435,
-    "awavenue_ads": 190
+    "hagezi_multi_pro": 148036,
+    "adguard_dns": 112420,
+    "awavenue_ads": 258
   },
   "exception_rules_separate": 0,
   "max_rules": 500000,
-  "main_subscription_sha256": "f67723c61379c2001a802e991a2fbcd6af9dd3c29f109b308da445a5b92c2661",
+  "main_subscription_sha256": "8f7f5f490c028157955323e94656a3c1731384a70e4e3206f17553febf75f342",
   "syntax_audit": {
-    "total": 350287,
+    "total": 339535,
     "forms": {
       "domain_and_subdomains_wildcard": 355,
       "domain_and_subdomains_important": 3,
-      "domain_and_subdomains": 349858,
+      "domain_and_subdomains": 339106,
       "domain_anchor_without_end_boundary": 71
     },
     "semantics": {
