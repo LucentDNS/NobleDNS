@@ -226,6 +226,8 @@ jobs:
           test -s "$OUT/adguard-chinese-dns-candidates.csv"
           test -s "$OUT/allowlist-active.txt"
           test -s "$OUT/parser-exclusions.csv"
+          test -s "$OUT/domain-compression-audit.csv"
+          test -s "$OUT/public-suffix-metadata.json"
           test -s "$OUT/LICENSE"
           test -s "$OUT/THIRD-PARTY-NOTICES.md"
           test -s "$OUT/licenses/GPL-3.0.txt"
@@ -257,6 +259,13 @@ jobs:
           assert "! Expires: 8 hours" in subscription.splitlines(), "Filter expiry metadata missing"
           published_rules = [line for line in subscription.splitlines() if line and not line.startswith(("!", "#"))]
           assert not any(line.startswith(".") for line in published_rules), "Undocumented leading-dot rule found in public output"
+          compression = manifest.get("domain_compression", {})
+          assert compression.get("enabled") is True, "Pinned-PSL parent/child compression is not enabled"
+          assert compression.get("psl_commit") == "c3a53eed2cc49353c5fb5c30536186795d5c451b", "Unexpected PSL snapshot commit"
+          assert compression.get("psl_sha256") == "a078bef78fa2c8b5e09c41b44669f7403e0afceca21a3144c2a9f98872b26be6", "Unexpected PSL snapshot hash"
+          assert compression.get("before_rules") - compression.get("after_rules") == compression.get("removed_rules"), "Compression accounting mismatch"
+          compression_rows = Path("build-output/latest/domain-compression-audit.csv").read_text(encoding="utf-8-sig").splitlines()
+          assert len(compression_rows) - 1 == compression.get("removed_rules"), "Compression audit row count mismatch"
           syntax_forms = manifest.get("syntax_audit", {}).get("forms", {})
           assert set(syntax_forms) == {"domain_and_subdomains", "domain_anchor_without_end_boundary", "wildcard_anchor_without_end_boundary", "domain_and_subdomains_wildcard", "domain_and_subdomains_important"}, "Unexpected public DNS syntax form"
           assert manifest.get("syntax_audit", {}).get("total") == manifest.get("blocking_rules"), "Syntax audit total differs from blocking rule count"
@@ -319,7 +328,7 @@ jobs:
               else ""
           )
 
-          audit_paths = ("syntax-audit.json", "syntax-review.csv", "exception-overlap-audit.csv", "bare-anchor-audit.csv", "adguard-chinese-dns-audit.json", "adguard-chinese-dns-candidates.csv")
+          audit_paths = ("syntax-audit.json", "syntax-review.csv", "exception-overlap-audit.csv", "bare-anchor-audit.csv", "adguard-chinese-dns-audit.json", "adguard-chinese-dns-candidates.csv", "domain-compression-audit.csv", "public-suffix-metadata.json")
 
           def normalized_audit_bytes(path):
               # Git normalizes text files to LF; compare semantic text, not checkout
