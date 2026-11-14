@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-14 — Align threat-feed refresh and subscription expiry
+
+- Run the scheduled build three times daily at 8-hour intervals to match HaGeZi TIF Mini's upstream expiry.
+- Set the generated subscription expiry to 8 hours so clients refresh the compiled threat-intelligence data on the same cadence.
+- Bump the build version to 1.0.7 and update CI assertions and maintainer/release documentation.
+
 ## 2026-11-14 — Add HaGeZi TIF Mini threat-intelligence coverage
 
 - Add HaGeZi TIF Mini as a dedicated security add-on alongside the sole Multi main tier, HaGeZi Multi PRO.

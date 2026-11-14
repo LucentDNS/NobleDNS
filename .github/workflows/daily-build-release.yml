@@ -1,9 +1,9 @@
-name: NobleDNS daily build and release
+name: NobleDNS scheduled build and release
 
 on:
   schedule:
-    # 02:23 China Standard Time (UTC+8); GitHub Actions cron uses UTC.
-    - cron: '23 18 * * *'
+    # 02:23, 10:23 and 18:23 China Standard Time (UTC+8); cron uses UTC.
+    - cron: '23 2,10,18 * * *'
 
   workflow_dispatch:
     inputs:
@@ -260,7 +260,7 @@ jobs:
           legacy = Path("build-output/latest/NobleDNS.txt").read_text(encoding="utf-8")
           assert subscription == legacy, "Legacy subscription differs from canonical list"
           assert f"! Version: {manifest['version']}" in subscription.splitlines(), "Header version differs from manifest"
-          assert "! Expires: 1 day" in subscription.splitlines(), "Filter expiry metadata missing"
+          assert "! Expires: 8 hours" in subscription.splitlines(), "Filter expiry metadata missing"
           published_rules = [line for line in subscription.splitlines() if line and not line.startswith(("!", "#"))]
           assert not any(line.startswith(".") for line in published_rules), "Undocumented leading-dot rule found in public output"
           syntax_forms = manifest.get("syntax_audit", {}).get("forms", {})
