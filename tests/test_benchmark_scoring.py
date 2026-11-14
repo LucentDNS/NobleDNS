@@ -26,7 +26,24 @@ class BenchmarkScorerTests(unittest.TestCase):
             self.assertEqual(identity["sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(identity["path"], str(path))
 
-    def test_parent_block_and_exception_precedence(self) -> None:
+    def test_hostname_validation_rejects_ip_literals_like_the_production_parser(self) -> None:
+        for value in ("127.0.0.1", "999.999.999.999", "::1"):
+            with self.subTest(value=value):
+                self.assertFalse(scorer.valid_hostname(value))
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.txt"
+            path.write_text(
+                "||127.0.0.1^\\n||999.999.999.999^\\n||ads.example.test^\\n",
+                encoding="utf-8",
+            )
+            blocks, exceptions, unsupported = scorer.load_rules(path)
+            self.assertEqual(blocks, {"||ads.example.test^"})
+            self.assertEqual(exceptions, set())
+            self.assertEqual(len(unsupported), 2)
+            self.assertTrue(all("invalid hostname" in item for item in unsupported))
+
+    def test_parent_block_and_exception_precedence(self) -> None
         blocks = {"||ads.example.test^", "||example.test^"}
         exceptions = {"@@||safe.example.test^"}
         self.assertEqual(scorer.decide("cdn.ads.example.test", blocks, exceptions)[0], "block")
