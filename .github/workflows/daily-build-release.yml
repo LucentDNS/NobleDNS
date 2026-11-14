@@ -155,8 +155,16 @@ jobs:
             --audit build-output/latest/bare-anchor-audit.csv \
             --queue benchmark/discovery/bare-anchor-app-risk-triage.csv
 
+      - name: Fetch immutable AdGuard Ukrainian filter evidence snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/AdguardTeam/AdguardBrowserExtension/69965fa59a5d5a44531768780850d3e788fa93e1/Extension/filters/edge/filter_23.txt" \
+            --output /tmp/nobledns-adguard-filter-23.txt
+
       - name: Validate browser third-party scope-loss audit
-        run: python tools/validate_browser_third_party_scope_audit.py --queue benchmark/discovery/bare-anchor-app-risk-triage.csv --audit benchmark/discovery/browser-third-party-scope-audit.csv
+        run: python tools/validate_browser_third_party_scope_audit.py --queue benchmark/discovery/bare-anchor-app-risk-triage.csv --audit benchmark/discovery/browser-third-party-scope-audit.csv --source /tmp/nobledns-adguard-filter-23.txt
 
       - name: Record build environment provenance
         shell: bash
