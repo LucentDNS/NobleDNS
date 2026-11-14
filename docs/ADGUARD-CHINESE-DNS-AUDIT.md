@@ -18,7 +18,7 @@ AdGuard Chinese is primarily a browser/content filter. NobleDNS is a hostname-le
 - Source lines: 22,067
 - Non-comment rule lines: 20,358
 - Matching NobleDNS build: v1.0.7, subscription SHA-256 `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`
-- Audit run: [GitHub Actions #568](https://github.com/LucentDNS/NobleDNS/actions/runs/43578645582), [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76)
+- Audit run: [GitHub Actions #575](https://github.com/LucentDNS/NobleDNS/actions/runs/43579150459), [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76)
 
 The line counts below are a static syntax classification of this snapshot, not a measure of useful or safe DNS coverage. Categories are exclusive under the audit classifier; upstream conditional directives and rule semantics are not fully interpreted by this first pass.
 
