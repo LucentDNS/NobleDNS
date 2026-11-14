@@ -10,9 +10,9 @@ This file is a maintainer-generated **first-pass work queue** over the 100-domai
 
 ## Preliminary lanes
 
-- `adtech_candidate`: owner category is `ads`; prioritize for hostname-level function review. **Not approved for blocking.**
-- `functional_control`: owner category is `infra` or `platform`; prioritize as false-positive controls. Do not block broad shared domains.
-- `mixed_or_contextual`: social, martech or other context-dependent owners; require more evidence.
+- `ads_owner_review`: the parent entity is categorized as `ads`; prioritize for hostname-level review. This does **not** mean the individual hostname is an ad endpoint and is not approval to block it.
+- `infra_platform_owner_review`: the parent entity is categorized as `infra` or `platform`; prioritize for essential-function and false-positive review. This is not a verified allow label.
+- `mixed_owner_review`: social, martech or other context-dependent parent entities; require hostname-level evidence.
 - `unmapped`: no owner record in this source; remain unresolved.
 
 Every row is marked `primary_triage_only`. A second distinct reviewer and additional independent evidence are still required before any row enters the scored benchmark corpus. The queue does not change NobleDNS production rules.
