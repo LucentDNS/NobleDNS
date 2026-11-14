@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import unittest
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,11 +24,19 @@ class BareAnchorSafetyTests(unittest.TestCase):
         self.assertFalse(audit_module.matches_bare_anchor("fooexample.com", "example.com"))
 
     def test_current_bare_anchors_do_not_hit_essential_sentinels(self) -> None:
-        rows = audit_module.audit(
-            ROOT / "dist" / "dns-filter.txt",
-            ROOT / "dist" / "sources" / "adguard_dns.txt",
-            ROOT / "tests" / "fixtures" / "essential-domains.txt",
-        )
+        rules_path = ROOT / "dist" / "dns-filter.txt"
+        rules = [
+            line.strip() for line in rules_path.read_text(encoding="utf-8-sig").splitlines()
+            if line.strip().startswith("||") and not line.strip().endswith("^")
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            source_path = Path(tmp) / "adguard_dns.txt"
+            source_path.write_text("\\n".join(rules) + "\\n", encoding="utf-8")
+            rows = audit_module.audit(
+                rules_path,
+                source_path,
+                ROOT / "tests" / "fixtures" / "essential-domains.txt",
+            )
         self.assertEqual(len(rows), 69)
         self.assertEqual(
             sum(int(row["essential_match_count"]) for row in rows),
