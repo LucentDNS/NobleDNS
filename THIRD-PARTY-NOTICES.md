@@ -15,14 +15,14 @@ NobleDNS does not claim original authorship of upstream rule content.
 - License file:
   https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE
 
-## 2. HaGeZi Multi PRO
+## 2. HaGeZi Multi PRO Mini
 
 - Project: HaGeZi DNS Blocklists
 - Maintainer: HaGeZi
 - Official repository:
   https://github.com/hagezi/dns-blocklists
 - Upstream rule:
-  https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt
+  https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt
 - License: GPL-3.0
 - License file:
   https://github.com/hagezi/dns-blocklists/blob/main/LICENSE
