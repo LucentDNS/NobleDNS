@@ -60,6 +60,36 @@ The `kqzyfj.com` corroborating references are [IPFire's advertising-domain entry
 
 This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the five uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review. The fifth unmatched hostname appeared in the latest upstream snapshot; it has not been promoted or treated as malicious.
 
+## What AdGuard actually does when compiling Chinese rules for DNS
+
+The supplied [HostlistCompiler China example](https://github.com/AdguardTeam/HostlistCompiler/blob/master/examples/china/configuration.json) is specifically named **“EasyList China ad servers”**. It is not a recipe for converting the entire AdGuard Chinese browser filter into a DNS list. Its configuration narrows EasyList China to hostname-shaped domain rules, excludes third-party-scoped entries and non-hostname syntax, then applies modifier removal, validation, deduplication and compression. The companion README describes it as a compiler example for that narrow task.
+
+More importantly, AdGuard's own [AdGuard DNS Filter configuration](https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/configuration.json) explicitly includes two separate Chinese-filter inputs:
+
+1. [Chinese adservers](https://github.com/AdguardTeam/AdGuardFilters/blob/master/ChineseFilter/sections/adservers.txt) — its header says this section is for **third-party advertising-network domains**, only full-domain rules, and sends first-party ad subdomains to the separate section.
+2. [Chinese first-party adservers](https://github.com/AdguardTeam/AdGuardFilters/blob/master/ChineseFilter/sections/adservers_firstparty.txt) — its header says these are full advertising subdomains hosted on otherwise legitimate sites.
+
+For both inputs, AdGuard's DNS configuration applies its shared `Filters/exclusions.txt` and the `RemoveModifiers` + `ValidateAllowIp` transformations. The exclusion file is not cosmetic: it contains issue-linked exceptions for legitimate services and CNAME-related false positives. The HostlistCompiler documentation itself warns that blindly removing `$third-party` from traditional browser rules causes many false positives.
+
+This is the important distinction: **AdGuard does not simply dump all Chinese browser-filter rules into DNS.** It maintains DNS-oriented ad-server sections, separates third-party and first-party cases, applies a shared exclusion set, and validates the result. The full Chinese browser filter also contains cosmetic, URL, scriptlet, platform and request-context rules that cannot be faithfully represented by global DNS blocking.
+
+### NobleDNS decision
+
+- Keep the existing four production sources unchanged. The current `adguard_dns` source is the precompiled AdGuard DNS Filter, whose official build configuration already includes the two Chinese DNS-oriented sections above.
+- The current mature-list differential confirms that every supported hostname rule in the audited AdGuard DNS Filter snapshot is already present in NobleDNS. This is aggregate exact-rule coverage, not a claim that every Chinese browser rule is covered or that every upstream rule is individually safe.
+- Do **not** add the full AdGuard Chinese filter, EasyList China, or the HostlistCompiler example as another production source. That would mix browser semantics with DNS semantics and duplicate existing DNS coverage.
+- Do **not** globally strip `$third-party` from the full Chinese filter. Do **not** convert cosmetic, URL, regex, platform-conditional or exception rules into guessed DNS rules.
+- Keep the five unmatched simple-hostname candidates from the full Chinese browser filter in the audit queue only. None has enough independent evidence and compatibility assurance to justify a production block at this time.
+
+The upstream snapshots used for this review were:
+- HostlistCompiler China example configuration blob: `4a579b761e125c7fa8c9c7ab98d12ec8d2ff3261`.
+- AdGuard DNS Filter configuration blob: `434f6aefb8a33f732d0e002c8610828d39f355ab`.
+- AdGuard DNS shared exclusions blob: `ba814815e88575b7b39d90e45acab849cff2ff8d`.
+- AdGuard Chinese third-party adservers section blob: `97eba692185799988e3c1057145bcfc19f37c00a`.
+- AdGuard Chinese first-party adservers section blob: `bbfcb39e47d48822ccfcba292cc8458b6265ca26`.
+
+These are repository blob identifiers for the reviewed files; the upstream projects remain authoritative for subsequent updates.
+
 ## Mandatory exclusions
 
 The following must not be flattened into DNS blocks:
