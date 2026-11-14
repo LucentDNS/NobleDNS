@@ -84,6 +84,7 @@ def audit(source: Path, current: Path, csv_path: Path, json_path: Path) -> dict:
     text = raw.decode("utf-8-sig", errors="strict")
     exact, wildcard = load_current_rules(current)
     counts: Counter[str] = Counter()
+    metrics: Counter[str] = Counter()
     candidate_rows: list[dict[str, str | int]] = []
     seen: set[str] = set()
 
@@ -105,12 +106,13 @@ def audit(source: Path, current: Path, csv_path: Path, json_path: Path) -> dict:
             continue
         canonical = f"||{hostname}" + ("^" if match.group(2) else "")
         if canonical in seen:
+            counts[kind] -= 1
             counts["duplicate_dns_candidates"] += 1
             continue
         seen.add(canonical)
         covered = covered_by_current(hostname, exact, wildcard)
-        counts["dns_syntax_candidates"] += 1
-        counts["covered_by_current_suffix_or_wildcard"] += int(covered)
+        metrics["dns_syntax_candidates"] += 1
+        metrics["covered_by_current_suffix_or_wildcard"] += int(covered)
         candidate_rows.append({
             "source_line": line_no,
             "rule": canonical,
@@ -139,9 +141,9 @@ def audit(source: Path, current: Path, csv_path: Path, json_path: Path) -> dict:
         "source_lines": len(text.splitlines()),
         "current_subscription_sha256": hashlib.sha256(current.read_bytes()).hexdigest(),
         "classification_counts": dict(sorted(counts.items())),
-        "candidate_count": len(candidate_rows),
-        "candidate_coverage_count": sum(row["current_coverage"] == "covered" for row in candidate_rows),
-        "candidate_not_covered_count": sum(row["current_coverage"] != "covered" for row in candidate_rows),
+        "candidate_count": metrics["dns_syntax_candidates"],
+        "candidate_coverage_count": metrics["covered_by_current_suffix_or_wildcard"],
+        "candidate_not_covered_count": metrics["dns_syntax_candidates"] - metrics["covered_by_current_suffix_or_wildcard"],
         "limitations": [
             "A syntactically simple hostname rule is only a DNS-syntax candidate, not proof that global DNS blocking is safe.",
             "The source contains browser-context, platform, first-party and exception semantics that this static audit does not resolve.",
