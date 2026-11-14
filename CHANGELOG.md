@@ -6,7 +6,7 @@ All notable changes to NobleDNS are documented here. Versioned sections describe
 
 ### Added
 - Apply conservative parent/child compression to simple hostname rules using a pinned Mozilla Public Suffix List snapshot, with deterministic per-rule audit output and source provenance.
-- Verify the PSL snapshot SHA-256 and interpret exact, wildcard, exception, ICANN and PRIVATE suffix rules; fail the build if the pinned data is missing or altered.
+- Verify the PSL snapshot SHA-256 and interpret exact, wildcard, exception, ICANN and PRIVATE suffix rules; reject source rules targeting public suffixes and fail the build if the pinned data is missing or altered.
 - Publish compression and PSL metadata artifacts with the build.
 
 ### Changed
