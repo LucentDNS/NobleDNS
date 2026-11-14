@@ -93,6 +93,19 @@ class ParserTests(unittest.TestCase):
         )
         self.assertEqual(rejected["wildcard_syntax"], 0)
 
+    def test_public_suffix_domains_and_wildcard_scopes_are_excluded(self):
+        psl = mod.PublicSuffixList()
+        blocks, exceptions, rejected, _ = mod.parse_source(
+            b"||co.uk^\n||shop.co.uk^\n||*.co.uk^\n@@||co.uk^\n",
+            "test",
+            min_blocks=0,
+            psl=psl,
+        )
+        self.assertEqual(blocks, {"||shop.co.uk^"})
+        self.assertEqual(exceptions, set())
+        self.assertEqual(rejected["public_suffix_not_allowed"], 2)
+        self.assertEqual(rejected["wildcard_public_suffix_not_allowed"], 1)
+
     def test_dynamic_public_suffix_wildcard_is_excluded(self):
         blocks, _, rejected, _ = self.parse(
             "||example.*^\n||example.com*path\n||ok.example.com^\n"
