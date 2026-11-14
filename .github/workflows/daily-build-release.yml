@@ -105,6 +105,8 @@ jobs:
           if [ "$ALLOW_LARGE_CHANGE" = "true" ]; then
             EXTRA_ARGS+=(--allow-large-change)
             echo "Large change explicitly approved by workflow_dispatch input."
+          fi
+
           if [ -f dist/manifest.json ]; then
             python update.py \
               --out build-output \
