@@ -31,4 +31,4 @@ The 72 sentinels cover mainland banks and payments, telecom carriers, government
 
 `tools/audit_bare_anchor_safety.py` runs against the exact compiled subscription and downloaded AdGuard source snapshot on every build. It records source line numbers and every match against the critical-service fixture. A hit fails the build so a potential critical-service conflict is reviewed before publication.
 
-The generated `bare-anchor-audit.csv` is archived with the build evidence and published as a diagnostic artifact. The test suite also checks the matcher semantics and asserts that the current 69 bare anchors do not hit the current 72 essential-service sentinels.
+The generated `bare-anchor-audit.csv` is archived with the build evidence and published as a diagnostic artifact. The test suite also checks the matcher semantics and asserts that the current 69 bare anchors do not hit the current 72 essential-service sentinels. A separate [app compatibility risk triage](BARE-ANCHOR-APP-RISK-TRIAGE.md) records three unresolved high-priority leads (CapCut SDK, Huawei component logging and a Baidu CDN hostname) without treating public reports as confirmed false positives.
