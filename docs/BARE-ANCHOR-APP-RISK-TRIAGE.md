@@ -273,3 +273,10 @@ The complete hostname-by-hostname evidence URLs, source-line attribution, limita
 - Keep every entry unresolved until the required tests and independent review are available.
 
 The queue now covers all 69 current bare-anchor rules with public evidence leads. Evidence coverage is not a compatibility clearance; every entry remains unresolved until the relevant task-level tests and independent review are completed. Production blocking rules remain unchanged.
+
+
+## Browser third-party scope-loss audit
+
+A pinned-source comparison found **30 exact-host rules** in AdGuard BrowserExtension filter ID 23 that carry the `$third-party` modifier. The source is the AdGuard Ukrainian filter at immutable commit `69965fa59a5d5a44531768780850d3e788fa93e1` (not a universal tracker list). Those browser rules apply only when the request is third-party in the browser's request context. DNS filtering cannot see that context, so translating the hostname into a DNS block broadens the effective scope. These matches are purpose evidence only; they are not compatibility clearance and do not prove that the NobleDNS DNS rule is safe or unsafe.
+
+The complete line-numbered inventory is in [browser-third-party-scope-audit.csv](../benchmark/discovery/browser-third-party-scope-audit.csv). CI validates that every row maps to the 69-host queue, the immutable source commit, exact rule syntax, a positive source-line reference and the mandatory DNS scope-loss warning. The audit does not fetch the upstream source during CI; the commit-pinned line references are a reviewed evidence snapshot.
