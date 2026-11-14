@@ -108,9 +108,11 @@ class ConfigTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Download failed after 5 attempts"):
                 mod.fetch("https://source.example/filter.txt", None)
 
-    def test_exactly_two_approved_sources(self):
+    def test_exactly_three_approved_sources(self):
         cfg = mod.load_config()
-        self.assertEqual([x["key"] for x in cfg["sources"]], ["adguard_dns", "hagezi_normal"])
+        self.assertEqual([x["key"] for x in cfg["sources"]], ["adguard_dns", "hagezi_normal", "awavenue_ads"])
+        self.assertEqual(cfg["sources"][2]["min_bytes"], 10000)
+        self.assertEqual(cfg["sources"][2]["min_rules"], 300)
         self.assertEqual(cfg["max_rules"], 500000)
     def test_drift_gate_blocks_large_source_change(self):
         import tempfile, json
