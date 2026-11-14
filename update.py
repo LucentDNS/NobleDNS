@@ -394,11 +394,11 @@ def write_csv(path: Path, header, rows):
 def syntax_audit(rules: set[str], source_rules: dict[str, set[str]]):
     """Inventory documented DNS rule forms; flag only forms needing semantic review."""
     forms = {
-        "domain_and_subdomains_wildcard": re.compile(r"^\|\|[^^/$|]*\*[^^/$|]*^$"),
-        "domain_and_subdomains_important": re.compile(r"^\|\|[^^/$|*]+\^\$important$"),
-        "domain_and_subdomains": re.compile(r"^\|\|[^^/$|*]+\^$"),
-        "wildcard_anchor_without_end_boundary": re.compile(r"^\|\|[^^/$|]*\*[^^/$|]*$"),
-        "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^^/$|*]+$"),
+        "domain_and_subdomains_wildcard": re.compile(r"^\|\|[^/$|^]*\*[^/$|^]*\^$"),
+        "domain_and_subdomains_important": re.compile(r"^\|\|[^/$|^*]+\^\$important$"),
+        "domain_and_subdomains": re.compile(r"^\|\|[^/$|^*]+\^$"),
+        "wildcard_anchor_without_end_boundary": re.compile(r"^\|\|[^/$|^]*\*[^/$|^]*$"),
+        "domain_anchor_without_end_boundary": re.compile(r"^\|\|[^/$|^*]+$"),
     }
     semantics = {
         "domain_and_subdomains_wildcard": "Preserves a supported AdGuard hostname wildcard pattern with an explicit end separator.",
