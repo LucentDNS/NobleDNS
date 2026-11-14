@@ -21,7 +21,7 @@ Official references:
 | Mail Tracking Protection | Block tracking pixels in email | Complementary only where a dedicated tracking hostname can be safely identified; DNS cannot selectively remove a pixel from message content |
 | Filter unblocking search ads and self-promotions | Allow selected contextual search ads and site self-promotion | DNS cannot make URL/context-specific allow decisions; do not broaden allow rules to entire search or platform domains |
 | Experimental filter | Test potentially conflicting page-level rules | Not a production DNS source; do not import experimental page rules as domain blocks |
-| AdGuard DNS Filter | DNS-compatible domain blocking | Direct DNS-layer comparator and overlapping source; preserve its supported rule semantics and audit conflicts |
+| AdGuard DNS Filter | DNS-compatible domain blocking | Optional DNS-layer supplement, not a requirement for AdGuard client compatibility; currently retained for incremental coverage and subject to overlap/compatibility review |
 | Security filters | Malicious/phishing domain protection | Complementary only with reliable, current evidence and clear separation from ad/tracker classification |
 
 ## Mandatory compatibility principles
