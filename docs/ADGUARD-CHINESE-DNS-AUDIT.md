@@ -13,12 +13,12 @@ AdGuard Chinese is primarily a browser/content filter. NobleDNS is a hostname-le
 - Upstream file: [AdGuard Chinese filter](https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt)
 - Repository: [AdguardTeam/FiltersRegistry](https://github.com/AdguardTeam/FiltersRegistry)
 - Path: `filters/filter_224_Chinese/filter.txt`
-- CI snapshot SHA-256: `f6d123fbcf4f5952d0f109faad1a2b4accf8ea0a378bf6f85b13a14158d02a8b`
-- Snapshot size: 758,748 bytes
-- Source lines: 22,067
-- Non-comment rule lines: 20,358
-- Matching NobleDNS build: v1.0.7, subscription SHA-256 `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`
-- Audit run: [GitHub Actions #575](https://github.com/LucentDNS/NobleDNS/actions/runs/43579150459), [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76)
+- CI snapshot SHA-256: `acba900510ad8403977fb2c96a82e85d8cedfce88e5ccf37341008ae94034c2a`
+- Snapshot size: 758,767 bytes
+- Source lines: 22,068
+- Non-comment rule lines: 20,359
+- Matching NobleDNS build: v1.0.7, subscription SHA-256 `635d5fcab5605459f5d1df59911de26dde5e6f218b2ce5acd9ed812e03cece47`
+- Audit run: [GitHub Actions #578](https://github.com/LucentDNS/NobleDNS/actions/runs/43579323077), [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76)
 
 The line counts below are a static syntax classification of this snapshot, not a measure of useful or safe DNS coverage. Categories are exclusive under the audit classifier; upstream conditional directives and rule semantics are not fully interpreted by this first pass.
 
@@ -27,23 +27,23 @@ The line counts below are a static syntax classification of this snapshot, not a
 | Exceptions | 1,153 |
 | Cosmetic / element rules | 7,657 |
 | Domain rules with modifiers | 703 |
-| Simple hostname-pattern syntax passing validation | 5,958 |
+| Simple hostname-pattern syntax passing validation | 5,959 |
 | Invalid simple hostname-pattern lines | 8 |
 | Wildcard-bearing domain rules (not all are portable DNS wildcards) | 829 |
 | URL / regex-like rules | 819 |
 | Other domain syntax | 3,103 |
 | Other / conditional / unsupported syntax | 128 |
-| **Total** | **20,358** |
+| **Total** | **20,359** |
 
 The 703 modifier-bearing domain rules include contextual conditions such as `$third-party` and `$domain=`. Removing those modifiers changes the original rule's meaning. DNS filtering cannot preserve request-party or page-domain context. Exceptions are also not automatically portable: they require exact precedence and scope handling.
 
 
 ## Results from the first recurring CI audit
 
-The CI run above extracted **5,958 syntactically simple, valid hostname candidates**. The conservative suffix/wildcard comparison found:
+The CI run above extracted **5,959 syntactically simple, valid hostname candidates**. The conservative suffix/wildcard comparison found:
 
 - **5,954 already covered** by the current NobleDNS subscription.
-- **4 not covered** by that comparison.
+- **5 not covered** by that comparison.
 - **0 candidates approved or added** to the production subscription.
 
 The four uncovered candidates were individually triaged:
@@ -54,10 +54,11 @@ The four uncovered candidates were individually triaged:
 | `h1.azuimeh.top` | No sufficiently reliable independent evidence was found to establish its current purpose and impact. | Unresolved; do not block on source presence alone |
 | `symaa.cn` | Appears under an upstream `NOT_OPTIMIZED PLATFORM(ios, ext_android_cb, ext_safari)` condition. DNS cannot preserve this client/platform scope; the domain's purpose is not independently established. | Exclude from DNS conversion |
 | `https-filtering-check.adtidy.org` | The upstream section labels this endpoint as an AdGuard HTTPS-filtering detection check, not an advertising hostname. | Do not block; preserve legitimate security/filter diagnostics |
+| `uyux77jurw.com` | It appears in a cluster of unrelated, opaque-looking hostnames, but no reliable independent reputation or behavioral evidence was found. A name pattern is not proof. | Unresolved; hold for evidence, do not import |
 
 The `kqzyfj.com` corroborating references are [IPFire's advertising-domain entry](https://www.ipfire.org/dbl/lists/ads/domains/kqzyfj.com) and an [affiliate-link reference identifying CJ's rotating redirect domains](https://dailyintelservice.com/learn/affiliate-link-anatomy-identify-a-network-from-a-url). These are supporting signals, not proof that the domain should be globally blocked.
 
-This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the four uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review.
+This result shows that the Chinese filter's simple hostname rules add almost no obvious *syntactic* coverage to the current NobleDNS build. It does not prove the 5,954 covered rules are all desirable, nor that the four uncovered rules should be added. The full candidate CSV preserves each upstream line for future evidence-based review. The fifth unmatched hostname appeared in the latest upstream snapshot; it has not been promoted or treated as malicious.
 
 ## Mandatory exclusions
 
