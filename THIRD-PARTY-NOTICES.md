@@ -15,19 +15,19 @@ NobleDNS does not claim original authorship of upstream rule content.
 - License file:
   https://github.com/AdguardTeam/AdGuardSDNSFilter/blob/master/LICENSE
 
-## 2. HaGeZi Multi PRO
+## 2. HaGeZi Pro Mini
 
 - Project: HaGeZi DNS Blocklists
 - Maintainer: HaGeZi
 - Official repository:
   https://github.com/hagezi/dns-blocklists
 - Upstream rule:
-  https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt
+  https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.mini.txt
 - License: GPL-3.0
 - License file:
   https://github.com/hagezi/dns-blocklists/blob/main/LICENSE
 
-NobleDNS uses Multi PRO as its only HaGeZi Multi tier. HaGeZi documents the Multi tiers as cumulative, so Multi Normal is not subscribed alongside PRO. HaGeZi also identifies third-party input data that may be subject to separate terms. Those terms must be respected where applicable.
+NobleDNS uses Pro Mini, HaGeZi's size-optimized Pro variant for DNS and mobile blockers. It is an alternative to the full Pro list, not an additional tier to stack with it. HaGeZi also identifies third-party input data that may be subject to separate terms. Those terms must be respected where applicable.
 
 ## 3. HaGeZi TIF Mini
 
