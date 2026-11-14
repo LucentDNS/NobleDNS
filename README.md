@@ -36,7 +36,7 @@ The current build combines four sources:
 3. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — a separately audited DNS-layer supplement. It is retained for its incremental source contribution, not because AdGuard clients require their own DNS list.
 4. [AWAvenue Ads Rule — Ads-only variant](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — focused advertising coverage.
 
-AdGuard DNS Filter is not required for format compatibility with AdGuard software: HaGeZi PRO already provides the Adblock format. Its continued inclusion is a source-selection decision, subject to ongoing overlap and compatibility review. HaGeZi recommends pairing one main Multi tier with a TIF variant; NobleDNS uses TIF Mini to stay within its fixed rule ceiling.
+AdGuard DNS Filter is not required for format compatibility with AdGuard software: HaGeZi PRO already provides the Adblock format. Its continued inclusion is a source-selection decision, subject to ongoing overlap and compatibility review. HaGeZi recommends pairing one main Multi tier with a TIF variant; NobleDNS uses TIF Mini as a compact threat-intelligence supplement.
 
 The compiler includes only explicitly supported syntax. Unsupported or ambiguous input is recorded and excluded rather than guessed or rewritten. The 11 inherited upstream exceptions currently in the subscription remain pending review; their presence does not mean NobleDNS has independently approved them. See the [exception review register](data/exception-review.csv).
 
@@ -60,7 +60,7 @@ These generated files document the current build:
 - [Active exceptions](dist/allowlist-active.txt) — exceptions present in the subscription.
 - [AdGuard Chinese DNS-scope audit](dist/adguard-chinese-dns-audit.json) and [candidate review CSV](dist/adguard-chinese-dns-candidates.csv) — audit-only evidence; no Chinese regional source is automatically imported.
 
-The project enforces a 500,000-rule ceiling and runs source-change checks and automated regression tests. These controls reduce maintenance risk; they do not replace real-device testing or an independent effectiveness benchmark.
+The project runs source-change checks and automated regression tests. These controls reduce maintenance risk; they do not replace real-device testing or an independent effectiveness benchmark.
 
 ## Report a problem
 

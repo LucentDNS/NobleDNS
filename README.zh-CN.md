@@ -36,7 +36,7 @@ DNS 过滤只处理域名解析，不能拦截所有广告，也不能替代网�
 3. [AdGuard DNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) — 经独立审计的 DNS 层补充来源。保留依据是其增量规则价值，而不是 AdGuard 客户端必须搭配官方 DNS 规则。
 4. [AWAvenue 秋风规则（纯广告版）](https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Adguard-Only.Ads.txt) — 广告场景专项补充。
 
-AdGuard DNS Filter 并非 AdGuard 软件的格式兼容要求：HaGeZi PRO 本身就提供 Adblock 格式。是否继续集成官方 DNS 规则，属于上游来源取舍，仍须持续审计其增量价值与兼容性。HaGeZi 建议主 Multi 版本搭配一种 TIF 版本；NobleDNS 选择 TIF Mini，以满足项目固定规则上限。
+AdGuard DNS Filter 并非 AdGuard 软件的格式兼容要求：HaGeZi PRO 本身就提供 Adblock 格式。是否继续集成官方 DNS 规则，属于上游来源取舍，仍须持续审计其增量价值与兼容性。HaGeZi 建议主 Multi 版本搭配一种 TIF 版本；NobleDNS 选择 TIF Mini，作为轻量的威胁情报补充。
 
 构建器只收录明确支持的规则语法；不支持或语义不明确的内容会记录并排除，不擅自猜测或改写。当前订阅继承的 11 条上游例外仍处于待审核状态，尚不代表 NobleDNS 已独立批准。详见[例外规则审核登记册](data/exception-review.csv)。
 
@@ -60,7 +60,7 @@ NobleDNS 是 DNS 层补充，不替代 AdGuard Base、语言过滤器、跟踪�
 - [当前生效例外](dist/allowlist-active.txt)：订阅中包含的例外规则。
 - [AdGuard 中文过滤器 DNS 范围审计](dist/adguard-chinese-dns-audit.json)及[候选规则清单](dist/adguard-chinese-dns-candidates.csv)：仅供审计，不会自动并入正式订阅。
 
-项目设置 500,000 条规则上限，并执行来源变化检查与自动化回归测试。这些措施用于降低维护风险，不能替代真实设备测试和独立效果评测。
+项目执行来源变化检查与自动化回归测试，以降低维护风险；这些措施不能替代真实设备测试和独立效果评测。
 
 ## 反馈问题
 
