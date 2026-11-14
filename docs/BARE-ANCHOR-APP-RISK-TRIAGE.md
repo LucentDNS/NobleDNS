@@ -136,7 +136,7 @@ Required test: NewsBreak sign-in, account linking, feed loading, preferences and
 
 ### CloudFront script endpoint
 
-- EasyPrivacy exact-host entry: https://github.com/easylist/easylist/blob/6db59e375bb5c16601f036f804111eaee296fa73/easyprivacy/easyprivacy_thirdparty.txt
+- EasyPrivacy exact-host entry: https://github.com/easylist/easylist/blob/881ab27bc819bf20b21b174415fcd572ba2ab2bc/easyprivacy/easyprivacy_thirdparty.txt
 - Storefront observation: https://seositecheckup.com/seo-audit/www.directfix.com
 
 The exact host appears in EasyPrivacy, and a storefront scan shows a JavaScript asset loaded from it. That is consistent with third-party measurement or marketing code, but a site may also depend on widgets or conversion features delivered by the script.
@@ -155,7 +155,7 @@ This source supports a first-party tracking/analytics classification for the exa
 GitHub-hosted evidence files cited in this report are pinned to immutable source commits inspected on 2026-11-14:
 
 - AdGuard filters: `0cbe282a7b179745c082e2d570fc4e9d4b110538` (2026-11-13)
-- EasyList: `6db59e375bb5c16601f036f804111eaee296fa73` (2026-11-14)
+- EasyList: `881ab27bc819bf20b21b174415fcd572ba2ab2bc` (2026-11-14)
 - r-a-y mobile-hosts: `88c316dea56b1e3f5461f39d66142078fc5716f9` (2026-11-13)
 - StevenBlack hosts: `35c74714ad86b36806b3f40f3c36abf8b2063cb5` (2026-11-14)
 
@@ -195,7 +195,7 @@ Required test: determine which site or app issues each request from DNS logs, th
 **EasyPrivacy third-party classifications**
 - `d2fj3s7h83rb61.cloudfront.net`
 
-Source: https://github.com/easylist/easylist/blob/6db59e375bb5c16601f036f804111eaee296fa73/easyprivacy/easyprivacy_thirdparty.txt
+Source: https://github.com/easylist/easylist/blob/881ab27bc819bf20b21b174415fcd572ba2ab2bc/easyprivacy/easyprivacy_thirdparty.txt
 
 Required test: identify the embedding site/app and test script-dependent page behavior, media/assets and the complete core user journey. CloudFront is shared hosting infrastructure; the list match alone does not establish the asset's full role.
 
