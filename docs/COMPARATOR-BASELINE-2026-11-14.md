@@ -1,7 +1,7 @@
 # Comparator differential baseline — 2026-11-14
 
 > Run: GitHub Actions #578, PR validation run. This is a frozen exact-rule differential, **not** an efficacy benchmark.
-> NobleDNS: v1.0.7; subscription SHA-256: `e75877c27ec937deccb906c29a2a3278f57e8e0f9ec5470a381dd048a40d67a8`.
+> NobleDNS: v1.0.7; subscription SHA-256: `635d5fcab5605459f5d1df59911de26dde5e6f218b2ce5acd9ed812e03cece47`.
 > Workflow: [run #578](https://github.com/LucentDNS/NobleDNS/actions/runs/43579323077) · [PR #76](https://github.com/LucentDNS/NobleDNS/pull/76).
 
 ## Snapshot identities
