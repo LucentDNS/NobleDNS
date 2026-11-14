@@ -10,9 +10,9 @@ All notable changes to NobleDNS are documented here.
 ## Unreleased
 
 ### Added
-- Add HaGeZi Multi PRO as a fourth production input while retaining HaGeZi Multi Normal; the one-time source migration is narrowly exempted from the ordinary drift gate, which automatically resumes after the new baseline is published.
+- Replace HaGeZi Multi Normal with HaGeZi Multi PRO as the sole HaGeZi Multi tier, following the upstream cumulative-tier guidance; the exact four-to-three-source transition is narrowly exempted from the ordinary drift gate, which automatically resumes after the new baseline is published.
 - Document the DNS-layer complementarity boundary with AdGuard's official filter categories: NobleDNS does not claim to replace page-element, URL-modification or annoyance filters.
-- Add source-count, URL, license and subscription-header regression checks for the four-source composition.
+- Add source-count, URL, license and subscription-header regression checks for the three-source composition.
 
 
 ### Added
